@@ -3,7 +3,7 @@ test("community triage examples preserve the rubric and never reveal source answ
   let calls = 0;
   await page.route("https://openrouter.ai/**", (route) => { calls++; return route.abort(); });
   await page.goto("/");
-  await page.getByRole("button", { name: "Docs or feature request?", exact: true }).click();
+  await page.getByRole("button", { name: "Retry defaults", exact: true }).click();
   await expect(page.getByLabel("Question and context")).toHaveValue(/Please document the retry defaults/);
   await expect(page.getByLabel("Question and context")).toHaveValue(/The documentation, README/);
   await expect(page.getByLabel("Option 4", { exact: true })).toHaveValue("docs");

@@ -23,7 +23,7 @@ export const communityTasks: { challenge: Challenge; observation: string; source
   {
     sourceId: "ambiguous-5",
     challenge: {
-      schemaVersion: 1, id: "community-export-limit", title: "Bug or product limit?", language: "en", kind: "judgment",
+      schemaVersion: 1, id: "community-export-limit", title: "Export limit", language: "en", kind: "judgment",
       content: "The export stops at 1000 rows. Is that a limit I can raise, or is it broken?",
       question: triageQuestion, options: triageOptions, source: communityTaskSource.post,
     },
@@ -32,7 +32,7 @@ export const communityTasks: { challenge: Challenge; observation: string; source
   {
     sourceId: "ambiguous-23",
     challenge: {
-      schemaVersion: 1, id: "community-retry-defaults", title: "Docs or feature request?", language: "en", kind: "judgment",
+      schemaVersion: 1, id: "community-retry-defaults", title: "Retry defaults", language: "en", kind: "judgment",
       content: "Please document the retry defaults, or else make them configurable.",
       question: triageQuestion, options: triageOptions, source: communityTaskSource.post,
     },
@@ -41,7 +41,7 @@ export const communityTasks: { challenge: Challenge; observation: string; source
   {
     sourceId: "ambiguous-26",
     challenge: {
-      schemaVersion: 1, id: "community-safari-login", title: "Bug report or question?", language: "en", kind: "judgment",
+      schemaVersion: 1, id: "community-safari-login", title: "Safari login", language: "en", kind: "judgment",
       content: "Does login work in Safari? A few of my users mention something odd there.",
       question: triageQuestion, options: triageOptions, source: communityTaskSource.post,
     },
