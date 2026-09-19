@@ -6,6 +6,22 @@ The transferable interaction is simple: supply a task, compare anonymous respons
 
 The simple composer is a yes/no/unsure judgment, not unrestricted chat. A deterministic prompt and fixed choices preserve Jev's decision interface without an extra model call to interpret the input. Custom choices and two-answer assessment remain available through the advanced editor. BYOK connection and cost review still precede paid execution.
 
+## User-pinned Proofpress visual reference
+
+The subsequent visual direction is the local Proofpress landing implementation,
+inspected at `/Users/richardtang/Proofpress/web/landing/src/index.css` on 2026-09-19.
+This is a typography and visual-system reference; the single-composer interaction
+above remains intact. JevArena uses locally bundled DM Sans Variable for interface
+and headings, plus IBM Plex Mono for identifiers, result values, and JSON. It
+adopts Proofpress's white canvas, warm paper, dark ink, teal accent and fine rules,
+with compact corners and no floating panel shadows.
+
+The implemented source of truth is `web/app/globals.css` and the font imports in
+`web/app/layout.tsx`; `DESIGN.md` and `.impeccable/design.json` document that built
+state. Proofpress's marketing layout, product claims, governance terminology,
+imagery, and logo are not transferred into JevArena. This visual revision makes
+no change to BYOK execution, evidence status, or collection/backend behavior.
+
 ## What remains specific to JevArena
 
 - Every battle includes Jev, which selects a judgment rather than generating a chat response.
