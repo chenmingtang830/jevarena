@@ -1,0 +1,31 @@
+{
+  "models": [
+    {
+      "id": "jev-1.13-direct",
+      "kind": "typesafe",
+      "model": "jev-1.13.0",
+      "endpoint": "https://api.typesafe.ai/v1/systemone",
+      "api_key_env": "TYPESAFE_API_KEY",
+      "input_usd_per_million": 0.042,
+      "output_usd_per_million": 0,
+      "max_request_usd": 0.003,
+      "pricing_source": "https://docs.typesafe.ai/models",
+      "pricing_checked_at": "2026-09-19"
+    },
+    {
+      "id": "comparison-model-configure-before-use",
+      "kind": "chat",
+      "model": "REPLACE_WITH_VERIFIED_MODEL_ID",
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "max_output_tokens": 1024,
+      "output_token_field": "max_tokens",
+      "probability_mode": "none",
+      "input_usd_per_million": null,
+      "output_usd_per_million": null,
+      "max_request_usd": null,
+      "pricing_source": "REPLACE_WITH_PROVIDER_RATE_CARD",
+      "pricing_checked_at": null
+    }
+  ]
+}

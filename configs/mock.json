@@ -1,0 +1,5 @@
+{
+  "models": [
+    {"id": "mock-pipeline-only", "kind": "mock", "model": "MOCK-NOT-A-MODEL"}
+  ]
+}

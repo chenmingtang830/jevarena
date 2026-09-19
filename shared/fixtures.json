@@ -1,0 +1,4 @@
+{
+  "challenge": {"schemaVersion":1,"id":"shared-example","title":"A simple comparison","language":"en","kind":"comparison","prompt":"What is two plus two?","answer1":"Four","answer2":"Five","expected":"answer1","basis":"Arithmetic","source":"JevArena original fixture"},
+  "modelInput": {"content":"{\"prompt\":\"What is two plus two?\",\"answer1\":\"Four\",\"answer2\":\"Five\"}","options":[{"id":"answer1","label":"Answer 1 is better"},{"id":"answer2","label":"Answer 2 is better"},{"id":"tie","label":"Both answers are equally good"}]}
+}

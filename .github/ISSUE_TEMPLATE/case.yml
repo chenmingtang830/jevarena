@@ -1,0 +1,27 @@
+name: Contribute a judgment case
+description: Share a public, reproducible challenge or model failure
+title: '[Case] '
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Challenge and expected judgment
+      description: Include a short public example and evidence for the answer. Attach large JSON exports.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction and provenance
+      description: Model/provider/version, prompt version, settings, source/license, language, network conditions, and whether results are real or simulated.
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Publication consent
+      options:
+        - label: This contains no secrets or private content and I have permission to publish it.
+          required: true
+        - label: I license my original contribution under CC BY 4.0; third-party material retains its original license.
+          required: true

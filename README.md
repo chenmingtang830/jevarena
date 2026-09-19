@@ -1,0 +1,118 @@
+# JevArena
+
+An independent, open-source BYOK judgment arena. Every battle includes Jev; compare judgment quality before revealing speed and cost. The Python research harness remains **JevJudge-Bench**.
+
+[Play JevArena](https://jevarena-lab.vercel.app) · [Community](https://github.com/chenmingtang830/jevarena/discussions)
+
+## Web playground
+
+```sh
+cd web
+npm ci
+npm run dev
+```
+
+Keys exist only in the current tab's memory. OpenRouter calls are browser-direct; other providers require the fixed relay, disabled until deployment security gates are met. No page load makes a model call. The six included cases are original educational templates, not measured model results.
+
+```sh
+npm run typecheck
+npm test
+npm run build
+npm run test:e2e
+```
+
+See [contributing](CONTRIBUTING.md), [security](SECURITY.md), and [provider verification](docs/PROVIDERS.md). No paid canary or research results have been produced. Mock runs must never enter a model leaderboard.
+
+## Python benchmark
+
+Find where Jev fails as a judge, what other judges get right, and what those differences cost.
+
+**Status: runnable local evaluation harness, not measured model findings. No live model calls have been made.**
+Independent project; not affiliated with TypeSafe, JudgeBench, RM-Bench, or Ai2.
+
+## Quick start
+
+```sh
+uv sync
+uv run jevjudge fetch
+uv run jevjudge prepare --groups-per-domain 2 --partition test --out data/pilot.jsonl
+uv run jevjudge plan --data data/pilot.jsonl --config configs/jev-direct.json
+
+# No credentials or model calls: exercise the full pipeline on public examples.
+uv run jevjudge run --data data/pilot.jsonl --config configs/mock.json --out runs/smoke
+uv run jevjudge report runs/smoke
+```
+
+Open `runs/smoke/report.md`. Every simulated report is marked **MOCK / PIPELINE TEST**.
+Raw datasets and runs are gitignored. Source URLs, revisions, byte digests, licenses and
+selection parameters are recorded under `data/`; no third-party dataset is republished here.
+
+## Research question
+
+Where is Jev on the quality/cost/latency frontier, and which tasks break its apparent confidence?
+The primary artifact is a reviewed failure atlas, not one averaged leaderboard number.
+
+| Source | What it probes | Implementation |
+|---|---|---|
+| [JudgeBench](https://github.com/ScalerLab/JudgeBench) | Knowledge, reasoning, mathematics, coding; subtle correctness differences | Both response-generator sets; upstream A/B labels |
+| [RM-Bench](https://github.com/THU-KEG/RM-Bench) | Correctness versus verbosity/Markdown; subtle errors | All 3×3 chosen/rejected style combinations; easy/normal/hard tags |
+| [RewardBench 2](https://huggingface.co/datasets/allenai/reward-bench-2) | Factuality, precise instruction following, math, safety, focus, ties | Diagnostic chosen/rejected pairs and chosen/chosen tie pairs |
+
+All three use a common three-way pairwise protocol here, with both A/B orders.
+**These transformed scores are not official leaderboard scores.** In particular,
+RewardBench 2 evaluates groups of completions and reward margins; this harness does not
+implement its native reward-margin metric. RM-Bench's published scalar-reward protocol
+also differs from a direct pairwise choice. Native-protocol replication is a separate next track.
+
+## Run actual judges
+
+Use `configs/jev-direct.json` for TypeSafe's documented direct HTTP API. Set the
+`TYPESAFE_API_KEY` environment variable in your shell; never put keys in a config or commit.
+Jev is pinned to `jev-1.13.0`, and the actual response model ID is recorded.
+
+Copy and complete `configs/comparison.template.json` for an OpenAI-compatible endpoint.
+Choose a budget model, a strong direct-answer judge and a reasoning judge as separate model
+config entries. Verify exact provider IDs, availability, prices and output-token parameter
+before running. Null rate fields deliberately fail validation. No baseline model has been
+selected or live-verified yet. Direct Anthropic/Gemini APIs and Vercel's experimental Jev
+evaluation API are not implemented; compatible chat gateways may route comparison models.
+
+```sh
+# Example operational limits, not authorization or a forecast of the actual bill.
+uv run jevjudge run --data data/pilot.jsonl --config configs/jev-direct.json \
+  --out runs/jev-pilot --execute --max-cost-usd 1 --max-calls 100
+uv run jevjudge report runs/jev-pilot
+```
+
+Calls are serial and models/orderings interleaved with a fixed seed. Both orders and repeats
+count toward the call and cost limits. Before each call the runner reserves the configured
+`max_request_usd`; it stops when this would exceed the run limit. **This is a client-side
+reservation policy, not a provider-enforced cap.** Use a provider spending cap for a hard
+billing limit. Unknown costs, invalid responses, HTTP failures, or a request exceeding its
+reservation stop the run. There are no hidden retries. Reported USD costs are preferred;
+otherwise recorded input/output usage is priced at the configured rate card. Cached-input
+discounts are not inferred; an estimate is labelled as such.
+
+Resume with the identical command and higher limits if needed. The same data, source code,
+rubric and configuration must match. Failed/unknown-cost or interrupted in-flight requests
+require billing reconciliation and a new run directory. Existing completed attempts are
+never silently rerun. A process killed mid-request leaves `RUNNING.lock` and its started event;
+inspect before manually removing the lock. Do not delete accounting records to bypass it.
+
+## Read the output
+
+- `manifest.json`: data and implementation digests, rubric, models, run identity, planned calls.
+- `attempts.jsonl`: durable start/end events, input hashes, model identity, token counts,
+  native probabilities, provider confidence, USD basis, latency and sanitized error types.
+- `report.json` / `report.md`: coverage, errors, slice accuracy, prompt-cluster bootstrap
+  intervals, order consistency, calibration, risk/coverage and paired model differences.
+- `failures.jsonl`: unreviewed disagreements, prioritized by other-model successes and
+  selected-label probability. Join with `examples.jsonl` to inspect the source text.
+
+Provider confidence is stored separately from predicted class probability. Brier score,
+log loss and ECE use the latter. Chat judges default to decision-only; a separate model
+entry with `probability_mode: self_reported` enables elicited probabilities, labelled as
+self-reported and never silently equated with Jev's native distribution.
+
+Read [PROTOCOL.md](PROTOCOL.md) before making capability claims, and
+[RESEARCH_PLAN.md](RESEARCH_PLAN.md) for the initial hypotheses and experiment ladder.
