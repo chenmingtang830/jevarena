@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "status": "unreviewed-canary",
+  "startedAt": "2026-09-19T07:35:28.491Z",
+  "endedAt": "2026-09-19T07:35:38.435Z",
+  "conditions": "Local Node, sequential calls, default provider reasoning, max output 4096, no retries. Not a browser test or benchmark.",
+  "normalization": "Offline correction from original returned metadata: preserve billed zero and vendor confidence; transport corrected to local direct. No repeat calls.",
+  "calls": 4,
+  "budgetUsd": 0.05,
+  "estimatedUpperUsd": 0.011177196,
+  "providerReportedTotalUsd": 0.00013035,
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "id": "cbdeb1c4-6b4b-40fa-b6c4-826455ced8f9",
+      "challengeId": "decimal-comparison",
+      "challengeHash": "e6b1c947f8dd5974fff0f508a92aec9e8d43332c6c32152145edc0a2556d170c",
+      "provider": "vercel",
+      "model": "typesafe-ai/jev",
+      "resolvedModel": null,
+      "promptVersion": "jevarena-1",
+      "createdAt": "2026-09-19T07:35:28.495Z",
+      "choice": "answer2",
+      "probabilities": {
+        "answer2": 1,
+        "tie": 0,
+        "answer1": 0
+      },
+      "confidence": 1,
+      "usage": {
+        "inputTokens": 457,
+        "outputTokens": 43
+      },
+      "cost": {
+        "usd": 0,
+        "basis": "provider"
+      },
+      "latencyMs": 701.311791,
+      "status": "success",
+      "settings": {
+        "maxOutputTokens": 4096,
+        "transport": "direct"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "e5aebed5-b4ec-4793-bb86-a21c420aa44c",
+      "challengeId": "decimal-comparison",
+      "challengeHash": "e6b1c947f8dd5974fff0f508a92aec9e8d43332c6c32152145edc0a2556d170c",
+      "provider": "vercel",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "resolvedModel": null,
+      "promptVersion": "jevarena-1",
+      "createdAt": "2026-09-19T07:35:29.200Z",
+      "choice": "answer2",
+      "usage": {
+        "inputTokens": 231,
+        "outputTokens": 7
+      },
+      "cost": {
+        "usd": 0.00003885,
+        "basis": "provider"
+      },
+      "latencyMs": 6864.791458000001,
+      "status": "success",
+      "settings": {
+        "maxOutputTokens": 4096,
+        "transport": "direct"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "99e6fbc7-8cc3-4aa3-a6b9-e25989f4d6f5",
+      "challengeId": "chinese-negation",
+      "challengeHash": "eaf2ed6aaa20d381c21bfa2937d6b332a9a4357ec9fa062b9fb9f03a1b33dd0c",
+      "provider": "vercel",
+      "model": "typesafe-ai/jev",
+      "resolvedModel": null,
+      "promptVersion": "jevarena-1",
+      "createdAt": "2026-09-19T07:35:36.067Z",
+      "choice": "no",
+      "probabilities": {
+        "yes": 0,
+        "no": 1,
+        "unknown": 0
+      },
+      "confidence": 1,
+      "usage": {
+        "inputTokens": 366,
+        "outputTokens": 40
+      },
+      "cost": {
+        "usd": 0,
+        "basis": "provider"
+      },
+      "latencyMs": 273.82950000000073,
+      "status": "success",
+      "settings": {
+        "maxOutputTokens": 4096,
+        "transport": "direct"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "0ccfa43e-aadd-46df-86e0-f9a4d8d212b3",
+      "challengeId": "chinese-negation",
+      "challengeHash": "eaf2ed6aaa20d381c21bfa2937d6b332a9a4357ec9fa062b9fb9f03a1b33dd0c",
+      "provider": "vercel",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "resolvedModel": null,
+      "promptVersion": "jevarena-1",
+      "createdAt": "2026-09-19T07:35:36.341Z",
+      "choice": "no",
+      "usage": {
+        "inputTokens": 142,
+        "outputTokens": 56
+      },
+      "cost": {
+        "usd": 0.0000915,
+        "basis": "provider"
+      },
+      "latencyMs": 2093.8115419999995,
+      "status": "success",
+      "settings": {
+        "maxOutputTokens": 4096,
+        "transport": "direct"
+      }
+    }
+  ]
+}

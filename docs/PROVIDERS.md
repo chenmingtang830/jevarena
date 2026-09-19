@@ -1,6 +1,6 @@
 # Provider contracts and relay operation
 
-Verified 2026-09-19 using public official documentation, OpenAPI and model catalog responses. **No authenticated model canary has run.** Catalog `validation: contract-only` must not be represented as measured availability, accuracy, or a successful production integration. User BYOK runs may encounter account-specific access, quota, or provider changes.
+Verified 2026-09-19 using public official documentation, OpenAPI and model catalog responses. A [four-call local Vercel canary](CANARY-2026-09-19.md) now verifies Jev and DeepSeek V4.1 Flash through the Gateway API. This is not deployed-browser/relay acceptance; the UI catalog remains experimental. Other providers remain contract-only. User BYOK runs may encounter account-specific access, quota, or provider changes.
 
 | Provider | Jev endpoint | Comparator | Browser route |
 | --- | --- | --- | --- |
@@ -16,7 +16,7 @@ The exact `deepseek/deepseek-r1-0528` exists in the OpenRouter catalog. Vercel c
 
 ## Pricing
 
-Static standard-rate snapshot lives in `web/lib/catalog.ts` with per-model public source URLs. OpenRouter Jev pricing comes from its [endpoint catalog](https://openrouter.ai/api/v1/models/typesafe/jev-1.13/endpoints), because the general model endpoint can omit decision models. Vercel pricing is from its public `/v1/models`. TypeSafe price remains unknown. Cost prefers provider-reported USD; otherwise it estimates using measured token usage and the snapshot, or remains unknown. Preflight byte-based ranges are illustrative estimates, not hard budget limits or quotes. Caching, route and price changes can alter billing.
+Static standard-rate snapshot lives in `web/lib/catalog.ts` with per-model public source URLs. OpenRouter Jev pricing comes from its [endpoint catalog](https://openrouter.ai/api/v1/models/typesafe/jev-1.13/endpoints), because the general model endpoint can omit decision models. Vercel pricing is from its public `/v1/models`. TypeSafe price remains unknown. Cost prefers provider-reported USD, including Gateway evaluation `providerMetadata.gateway.cost` and zero; `marketCost` is not billed cost. Otherwise it estimates using measured token usage and the snapshot, or remains unknown. Preflight byte-based ranges are illustrative estimates, not hard budget limits or quotes. Caching, route and price changes can alter billing.
 
 ## Relay deployment
 
