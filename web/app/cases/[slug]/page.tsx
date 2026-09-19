@@ -18,7 +18,7 @@ export async function generateMetadata({
     title: c?.title ?? study?.title ?? "Case",
     description: study
       ? `${study.kind} by ${study.author}. Source checked, not reproduced. Explore the report, evidence limits, and proposed reproduction protocol.`
-      : "Explore a judgment challenge and reproduce it with your own API key.",
+      : "Open an editable judgment template, adjust the task, and compare models with your own API key.",
   };
 }
 export default async function CasePage({

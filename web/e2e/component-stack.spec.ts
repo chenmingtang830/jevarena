@@ -11,12 +11,15 @@ test("registry components preserve the quick-start and preflight boundary", asyn
     return route.continue();
   });
   await page.goto("/");
-  await expect(page.getByRole("textbox", { name: "Your claim or question" })).toHaveAttribute("data-slot", "textarea");
+  await expect(page.getByRole("textbox", { name: "What should Jev judge?" })).toHaveAttribute("data-slot", "textarea");
   const starter = page.getByRole("button", { name: "Check a claim", exact: true });
   await expect(starter).toHaveAttribute("data-slot", "button");
   await starter.click();
   await expect(page.getByRole("region", { name: "Privacy before you run" })).toBeVisible();
-  await page.getByRole("button", { name: "Review & compare" }).click();
+  await page.getByRole("button", { name: "Compare models", exact: true }).click();
+  await expect(page.locator('[data-slot="native-select"]').first()).not.toBeVisible();
+  await expect(page.locator("#key-openrouter")).toBeFocused();
+  await page.locator("#key-openrouter").fill("test-only-not-a-real-key");
   await expect(page.locator('[data-slot="native-select"]').first()).toBeVisible();
   expect(paidRequests).toBe(0);
 });

@@ -7,10 +7,8 @@ export const REPO = "https://github.com/chenmingtang830/jevarena";
 export function SiteHeader() {
   const pathname = usePathname();
   const pages = [
-    ["/", "Playground"],
-    ["/cases", "Cases"],
-    ["/results", "Results"],
-    ["/methodology", "Methodology"],
+    ["/", "Compare"],
+    ["/cases", "Examples"],
   ];
   return (
     <header className="site-header">
@@ -41,6 +39,8 @@ export function SiteFooter() {
     <footer className="site-footer">
       <span>Open experiments. Better judgments.</span>
       <div>
+        <Link href="/methodology">How it works</Link>
+        <Link href="/results">Research results</Link>
         <Link href="/contribute">Contribute</Link>
         <a href={`${REPO}/discussions`}>Community</a>
         <span>Independent, community-built.</span>

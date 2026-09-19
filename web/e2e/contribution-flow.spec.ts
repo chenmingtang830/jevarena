@@ -9,9 +9,9 @@ async function experiment(page: Page) {
     });
   });
   await page.goto("/");
-  await page.getByRole("textbox", { name: "Your claim or question" }).fill("Synthetic research fixture: two plus two equals four.");
-  await page.getByRole("button", { name: "Review & compare" }).click();
-  await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
+  await page.getByRole("textbox", { name: "What should Jev judge?" }).fill("Synthetic research fixture: two plus two equals four.");
+  await page.getByRole("button", { name: "Compare models", exact: true }).click();
+  await expect(page.locator("#key-openrouter")).toBeFocused();
   await page.getByLabel("OpenRouter", { exact: true }).fill("test-only-never-collect-key");
   await page.getByRole("button", { name: "Start blind comparison" }).click();
   await page.getByRole("button", { name: "Both good", exact: true }).click();
@@ -75,7 +75,7 @@ test("editing the experiment resets research consent and submission identity", a
   await consent(page);
   await page.getByRole("button", { name: "Submit for private research" }).click();
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
-  await page.getByRole("textbox", { name: "Your claim or question" }).fill("A different synthetic task for a new submission.");
+  await page.getByRole("textbox", { name: "What should Jev judge?" }).fill("A different synthetic task for a new submission.");
   await page.getByRole("button", { name: "Start blind comparison" }).click();
   await page.getByRole("button", { name: "Both good", exact: true }).click();
   await page.getByRole("button", { name: "Share this experiment" }).click();
@@ -150,7 +150,7 @@ test("capacity refusal preserves the experiment and offers an explicit public Gi
   await consent(page);
   await page.getByRole("button", { name: "Submit for private research" }).click();
   await expect(page.locator("main").getByRole("alert")).toContainText("Storage or submission capacity reached");
-  await expect(page.getByRole("textbox", { name: "Your claim or question" })).toHaveValue("Synthetic research fixture: two plus two equals four.");
+  await expect(page.getByRole("textbox", { name: "What should Jev judge?" })).toHaveValue("Synthetic research fixture: two plus two equals four.");
   await expect(page.getByRole("link", { name: "contribute on GitHub", exact: true })).toHaveAttribute("href", "https://github.com/chenmingtang830/jevarena/issues/new/choose");
   await expect(page.getByText("GitHub contributions are public; review the contents first.", { exact: false })).toBeVisible();
   await page.getByLabel(/I have reviewed this content and am comfortable sharing it/).check();

@@ -1,8 +1,7 @@
 "use client";
-import { useState } from "react";
+import Link from "next/link";
 import { Challenge, CaseContribution, modelInput } from "@/lib/contracts";
 import { Playground } from "./playground";
-import { Button } from "./ui/button";
 import { ShareTools } from "./share-tools";
 import { REPO } from "./site-shell";
 export function CaseViewer({
@@ -12,53 +11,24 @@ export function CaseViewer({
   challenge: Challenge;
   contribution?: CaseContribution;
 }) {
-  const [guess, setGuess] = useState("");
-  const [playing, setPlaying] = useState(false);
-  if (playing) return <Playground initial={challenge} />;
   const input = modelInput(challenge);
   return (
-    <main id="main" className="prose-page">
+    <>
+      <Playground initial={challenge} />
+      <aside className="prose-page" aria-label="Original case details">
+      <p><Link href="/cases">Back to cases</Link></p>
       <span className="tag">
         {contribution
           ? "Community submitted · unverified"
           : "Starter template · no measured runs"}
       </span>
-      <h1 style={{ marginTop: 18 }}>{challenge.title}</h1>
+      <h2 style={{ marginTop: 18 }}>{challenge.title}</h2>
       <p>
-        {challenge.kind === "judgment" ? challenge.question : challenge.prompt}
+        The original case is loaded in the editable experiment above. Editing or opening it does not call a model. Details and exports below describe the original case.
       </p>
-      <div className="case-content">
-        {challenge.kind === "judgment" ? (
-          challenge.content
-        ) : (
-          <>
-            <h3>Candidate answer 1</h3>
-            <p>{challenge.answer1}</p>
-            <h3 style={{ marginTop: 22 }}>Candidate answer 2</h3>
-            <p>{challenge.answer2}</p>
-          </>
-        )}
-      </div>
-      <section>
-        <h2>Your judgment first</h2>
-        <p>What would you choose? No model call is made.</p>
-        <div className="guess-options" style={{ marginTop: 16 }}>
-          {input.options.map((o) => (
-            <Button
-              variant="secondary"
-              key={o.id}
-              onClick={() => setGuess(o.id)}
-            >
-              {guess === o.id ? "Selected: " : ""}
-              {o.label}
-            </Button>
-          ))}
-        </div>
-        {guess && (
-          <div className="notice">
-            <p>
-              Your choice: {input.options.find((o) => o.id === guess)?.label}
-            </p>
+      <details style={{ marginTop: 20 }}>
+        <summary>Reference answer and reasoning</summary>
+        <div className="notice">
             <p>
               Reference:{" "}
               {input.options.find((o) => o.id === challenge.expected)?.label ??
@@ -69,21 +39,20 @@ export function CaseViewer({
               Reference answers can be disputed. This is not a model performance
               result.
             </p>
-          </div>
-        )}
-      </section>
-      {guess && contribution && contribution.runs.length > 0 && (
+        </div>
+      </details>
+      {contribution && contribution.runs.length > 0 && (
         <section>
-          <h2>Submitted observations</h2>
+          <h2>Imported observations · unverified</h2>
           <p>
             These results were imported from a user-controlled file. They have
-            not been independently verified.
+            not been independently verified. They belong to the original imported task, not edits or new comparisons above.
           </p>
           {contribution.runs.map((r) => (
             <div key={r.id} className="case-entry">
               <h3>{r.model}</h3>
               <p>
-                Choice: {r.choice ?? r.status} ·{" "}
+                Choice: {input.options.find((option) => option.id === r.choice)?.label ?? r.choice ?? r.status} ·{" "}
                 {(r.latencyMs / 1000).toFixed(2)} s ·{" "}
                 {r.cost.usd === null
                   ? "Cost unknown"
@@ -94,12 +63,10 @@ export function CaseViewer({
         </section>
       )}
       <section className="inline">
-        <Button onClick={() => setPlaying(true)}>
-          Reproduce with your keys
-        </Button>
         <a href={`${REPO}/discussions`}>Discuss this case</a>
       </section>
       <ShareTools
+        label={contribution?.runs.length ? "Share original observations" : "Share this example"}
         value={
           contribution ?? {
             schemaVersion: 1,
@@ -111,6 +78,7 @@ export function CaseViewer({
           }
         }
       />
-    </main>
+      </aside>
+    </>
   );
 }

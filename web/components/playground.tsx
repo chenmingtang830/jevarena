@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -110,7 +110,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
     input.style.height = "auto";
     input.style.height = `${Math.min(360, Math.max(148, input.scrollHeight))}px`;
   }, [c, advanced]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (focusTarget) {
       document.getElementById(focusTarget)?.focus();
       setFocusTarget(null);
@@ -200,7 +200,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
     edit({ ...simpleBlank, id: newId(), content: example.text });
     setSelectedExample(example);
     setPendingSimple(null);
-    setExampleNotice(`Loaded “${example.label}”. Edit it or review the models and cost.`);
+    setExampleNotice(`Example filled in. You can edit the text.`);
     setFocusTarget("content");
   }
   function review() {
@@ -212,7 +212,10 @@ export function Playground({ initial }: { initial?: Challenge }) {
       return;
     }
     setSettings(true);
-    setFocusTarget("preflight-heading");
+    if (!keys.openrouter.trim()) {
+      setConnections(true);
+      setFocusTarget("key-openrouter");
+    } else setFocusTarget("preflight-heading");
   }
   function load(t: Challenge, confirmed = false) {
     if (busy) return;
@@ -395,8 +398,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
         {announcement}
       </p>
       <div className="composer-intro">
-        <h1>Put a judgment to the test.</h1>
-        <p>Jev meets another model. You decide which judgment holds up.</p>
+        <h1>Compare Jev with another model</h1>
+        <p>Give them the same task. Compare their decisions, then reveal speed and cost.</p>
       </div>
       <div className="composer-flow">
         <section className="editor composer" aria-label="Set up experiment">
@@ -407,18 +410,14 @@ export function Playground({ initial }: { initial?: Challenge }) {
             <div className="editor-body">
               {!advanced && c.kind === "judgment" && (
                 <div className="simple-input">
-                  {selectedExample && <div className="selected-example">
-                    <div><h2>{selectedExample.label}</h2><p>{selectedExample.description}</p></div>
-                    <Button variant="ghost" onClick={() => setFocusTarget("content")}>Edit text</Button>
-                  </div>}
-                  <label htmlFor="content" className="sr-only">Your claim or question</label>
+                  <label htmlFor="content">What should Jev judge?</label>
                   <Textarea
                     id="content"
                     {...fieldProps("content")}
                     aria-describedby={fieldErrors.content ? "content-error simple-task-hint" : "simple-task-hint"}
                     rows={5}
                     aria-keyshortcuts="Control+Enter Meta+Enter"
-                    placeholder="Enter a claim to judge. Add any context the judges should consider…"
+                    placeholder="Type a claim and any context here… e.g. ‘A 20% rise followed by a 20% fall cancels out.’"
                     value={c.content}
                     onChange={(e) => edit({ ...c, content: e.target.value })}
                     onKeyDown={(e) => {
@@ -429,7 +428,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     }}
                   />
                   {fieldError("content")}
-                  <p className="hint" id="simple-task-hint">Is the statement supported? Judges choose Yes, No, or Unsure. <span className="shortcut-hint">Ctrl / ⌘ + Enter to review</span></p>
+                  <p className="hint" id="simple-task-hint">Both models answer Yes, No, or Unsure. Customize in Task options.</p>
                 </div>
               )}
               {advanced && <div id="advanced-task" className="advanced-task">
@@ -597,13 +596,13 @@ export function Playground({ initial }: { initial?: Challenge }) {
               </div>}
               <div className="composer-toolbar">
                 <Button variant="ghost" aria-expanded={advanced} aria-controls="advanced-task" onClick={toggleAdvanced}>
-                  <Plus size={16} /> Advanced
+                  <Plus size={16} /> Task options
                 </Button>
                 <Button variant="ghost" aria-expanded={settings} aria-controls="model-settings" onClick={() => setSettings(!settings)}>
                   <SlidersHorizontal size={16} /> Models &amp; keys
                 </Button>
                 {!advanced && (hasTaskInput || selectedExample) && <Button variant="ghost" onClick={clearSimple}>Clear</Button>}
-                <Button className="composer-submit" onClick={review}>Review &amp; compare <ArrowRight size={16} /></Button>
+                {!settings && <Button className="composer-submit" onClick={review}>Compare models <ArrowRight size={16} /></Button>}
               </div>
               {!advanced && clearedDraft && <div className="clear-notice" role="status">
                 <span>Text cleared.</span><Button variant="ghost" onClick={undoClear}>Undo clear</Button>
@@ -615,20 +614,20 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <Button variant="ghost" onClick={() => { setPendingSimple(null); setFocusTarget("content"); }}>Keep draft</Button>
                 </div>
               )}
-              {!advanced && <p className={exampleNotice ? "hint" : "sr-only"} role="status">{exampleNotice}</p>}
+              {!advanced && <p className="sr-only" role="status">{exampleNotice}</p>}
               {hasTaskInput && <section className="privacy-note" aria-label="Privacy before you run">
-                <p>When you run, your task goes to the selected model providers. Don’t include secrets or sensitive personal information.</p>
                 <details>
-                  <summary>How your data is handled</summary>
+                  <summary>Privacy: your text goes to model providers</summary>
+                  <p>When you run, your task goes to the selected model providers. Don’t include secrets or sensitive personal information.</p>
                   <p>Providers receive your prompt, context and any candidate answers needed to judge the task. Their own data and retention policies apply.</p>
                   <p>Your API keys stay in this tab’s memory and disappear on refresh. OpenRouter requests go directly from your browser to OpenRouter.</p>
                   <p>JevArena does not collect or publish your task automatically. When enabled, private research submission requires separate consent after you review the task and results. Exporting, sharing or permitting publication is a separate action you choose.</p>
                 </details>
               </section>}
               {settings && <div className="model-settings" id="model-settings">
-              <h2 id="preflight-heading" tabIndex={-1}>Review models &amp; cost</h2>
-              <p className="hint preflight-intro">Two paid calls using your key. Review the estimate before starting.</p>
-              <div className="tabs" aria-label="Match mode">
+              <h2 id="preflight-heading" tabIndex={-1}>{keys.openrouter.trim() ? "Ready to compare" : "Connect your OpenRouter key"}</h2>
+              <p className="hint preflight-intro">{keys.openrouter.trim() ? "Review the cost below, then run both models." : "One key runs both models. It stays in this tab and is cleared on refresh."}</p>
+              {keys.openrouter.trim() && <><div className="tabs" aria-label="Match mode">
                 <Button variant="ghost"
                   aria-pressed={mode === "arena"}
                   onClick={() => setMode("arena")}
@@ -712,6 +711,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   {fieldError("budget")}
                 </div>
               </div>
+              </>}
               <details
                 className="connection-box"
                 open={connections}
@@ -725,7 +725,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <span className="small">Memory only</span>
                 </summary>
                 <div className="connection-grid">
-                  {PROVIDERS.map((p) => (
+                  {PROVIDERS.filter((p) => p.transport === "direct").map((p) => (
                     <div key={p.id}>
                       <label htmlFor={`key-${p.id}`}>{p.label}</label>
                       <Input
@@ -751,7 +751,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       </p>
                     </div>
                   ))}
-                  <div>
+                  <div hidden>
                     <label htmlFor="jev-provider">Use Jev through</label>
                     <NativeSelect
                       id="jev-provider"
@@ -780,8 +780,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
               </details>
               <div className="run-foot">
                 <p className="hint" style={{ marginBottom: 12 }}>
-                  Experimental browser integration. Local API canaries do not
-                  verify browser access or your account’s model availability.
+                  Calls use your OpenRouter balance. Model access depends on your account.
                 </p>
                 <div className="price-note">
                   <ShieldCheck size={14} />
@@ -799,7 +798,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     {mode === 'compare' && selected && <> · <a href={selected.priceSource} target="_blank" rel="noreferrer" style={{textDecoration:'underline'}}>Selected model rates</a></>}
                   </span>
                 </div>
-                <Button className="full-width" onClick={run}>
+                <Button className="full-width" disabled={!keys.openrouter.trim()} onClick={run}>
                   <span>Start blind comparison</span>
                   <ArrowRight size={16} />
                 </Button>

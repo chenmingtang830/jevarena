@@ -14,8 +14,8 @@ export default function Cases() {
       </h1>
       <p>
         Try a ready-to-use judgment template, or explore a community report and
-        what it would take to reproduce it. Reading and making a prediction are
-        free; running models uses your own API keys.
+        what it would take to reproduce it. Templates open directly as editable
+        experiments. Browsing and editing are free; running models uses your own API keys.
       </p>
       <nav className="case-jump-nav" aria-label="Case collections">
         <Link href="#templates">Templates</Link>
