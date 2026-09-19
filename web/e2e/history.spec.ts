@@ -54,7 +54,7 @@ test("private saving is opt-in, guest-safe and manually retryable without creden
   await expect(login).toHaveAttribute("target", "_blank");
   expect(sessionRequests).toBe(1);
   expect(saved).toEqual([]);
-  await expect(page).toHaveURL("/play");
+  await expect(page).toHaveURL("/battle");
   await expect(page.getByLabel("Question and context")).toHaveValue("Synthetic private history: is 2 + 2 equal to 4?");
   // A later explicit click after a mock login is necessary: there is no polling or autosave.
   authenticated = true;
@@ -72,6 +72,7 @@ test("private saving is opt-in, guest-safe and manually retryable without creden
   expect(JSON.stringify(saved)).not.toContain("synthetic-history-key-not-for-storage");
   expect(JSON.stringify(saved)).not.toContain("allowPublication");
   expect(await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))).not.toContain("synthetic-history-key-not-for-storage");
+  await page.getByRole("button", { name: "Edit question", exact: true }).click();
   await page.getByLabel("Question and context").fill("A different synthetic private history task.");
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Start judging", exact: true }).click();

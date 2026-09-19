@@ -18,7 +18,7 @@ test("quickstart editing, clear and undo work by keyboard without sending data",
   await expect(page.locator("textarea:visible")).toHaveCount(1);
   await mkdir("../.impeccable/review", { recursive: true });
   await page.screenshot({ path: `../.impeccable/review/quickstart-empty-${testInfo.project.name}.png`, fullPage: true });
-  const example = page.getByRole("button", { name: "Phishing email", exact: true });
+  const example = page.getByRole("button", { name: "A surprising remainder", exact: true });
   await example.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".selected-example")).toHaveCount(0);
@@ -73,7 +73,7 @@ test("privacy is contextual and replacing an edited draft needs confirmation", a
   await simple.fill("My private question");
   await page.getByLabel("Option 1", { exact: true }).fill("My custom answer");
   await expect(privacy).toBeVisible();
-  await page.getByRole("button", { name: "Phishing email", exact: true }).click();
+  await page.getByRole("button", { name: "A surprising remainder", exact: true }).click();
   await expect(page.getByRole("button", { name: "Replace draft", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Keep draft", exact: true }).click();
   await expect(simple).toHaveValue("My private question");

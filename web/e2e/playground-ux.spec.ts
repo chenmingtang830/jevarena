@@ -72,14 +72,14 @@ test("editable answers support two through ten options and drafts stay in tab me
 });
 
 test("examples acknowledge loading, focus the question and protect custom answers", async ({ page }) => {
-  const example = page.getByRole("button", { name: "Phishing email", exact: true });
+  const example = page.getByRole("button", { name: "A surprising remainder", exact: true });
   const question = page.getByLabel("Question and context");
   await expect(page.locator(".composer-context").getByRole("link", { name: "Try without a key" })).toHaveAttribute("href", "/try");
   await example.click();
   await expect(question).toBeFocused();
   await expect(page.getByRole("status").filter({ hasText: "Example filled in" })).toHaveCount(1);
   await page.getByLabel("Option 1", { exact: true }).fill("Custom response");
-  await page.getByRole("button", { name: "Math claim", exact: true }).click();
+  await page.getByRole("button", { name: "A bigger power", exact: true }).click();
   await expect(page.getByRole("button", { name: "Replace draft", exact: true })).toBeFocused();
   await expect(page.getByLabel("Option 1", { exact: true })).toHaveValue("Custom response");
   await page.getByRole("button", { name: "Keep draft", exact: true }).click();
@@ -87,7 +87,7 @@ test("examples acknowledge loading, focus the question and protect custom answer
   await expect(question).toBeFocused();
   await example.click();
   await page.getByRole("button", { name: "Replace draft", exact: true }).click();
-  await expect(page.getByLabel("Option 1", { exact: true })).toHaveValue("Yes");
+  await expect(page.getByLabel("Option 1", { exact: true })).toHaveValue("38");
   await expect(question).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

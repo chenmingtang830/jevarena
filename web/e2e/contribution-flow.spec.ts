@@ -78,6 +78,7 @@ test("editing the experiment resets research consent and submission identity", a
   await consent(page);
   await page.getByRole("button", { name: "Submit for private research" }).click();
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
+  await page.getByRole("button", { name: "Edit question", exact: true }).click();
   await page.getByRole("textbox", { name: "Question and context" }).fill("A different synthetic task for a new submission.");
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Ready to compare" })).toBeVisible();
@@ -155,7 +156,7 @@ test("capacity refusal preserves the experiment and offers an explicit public Gi
   await consent(page);
   await page.getByRole("button", { name: "Submit for private research" }).click();
   await expect(page.locator("main").getByRole("alert")).toContainText("Storage or submission capacity reached");
-  await expect(page.getByRole("textbox", { name: "Question and context" })).toHaveValue("Synthetic research fixture: two plus two equals four.");
+  await expect(page.locator("#content")).toHaveValue("Synthetic research fixture: two plus two equals four.");
   await expect(page.getByRole("link", { name: "contribute on GitHub", exact: true })).toHaveAttribute("href", "https://github.com/chenmingtang830/jevarena/issues/new/choose");
   await expect(page.getByText("GitHub contributions are public; review the contents first.", { exact: false })).toBeVisible();
   await page.getByLabel(/I have reviewed this content and am comfortable sharing it/).check();

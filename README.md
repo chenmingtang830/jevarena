@@ -4,6 +4,15 @@ An independent, open-source judgment arena. Try recorded examples without an acc
 
 [Play JevArena](https://jevarena-lab.vercel.app) · [Community](https://github.com/chenmingtang830/jevarena/discussions)
 
+Maintained by [Richard Tang (@richardt830)](https://x.com/richardt830).
+The source code is Apache-2.0 licensed; third-party examples retain their own licenses.
+Normal guest runs do not save your API key or conversation to JevArena's database.
+Keys live only in the current tab's memory. Explicit research submissions are an
+exception: they save the data you preview and consent to contribute. Providers and
+hosting services may retain operational data under their own policies. This is
+not a zero-logging or zero-risk service. Use a limited-budget key or run locally.
+Send private privacy/deletion requests to richard@learnest.org, not public issues.
+
 ## Web playground
 
 ```sh
@@ -13,6 +22,13 @@ npm run dev
 ```
 
 The homepage is an editable question composer with one-click examples; `/play` remains an alias for custom tasks. `/try` shows two real recorded canary examples, clearly labeled as diagnostic runs, not a benchmark. OpenRouter authorization uses a popup and PKCE; the returned key exists only in the original tab's memory. Manual keys are a separate, mutually exclusive connection view. No page load or connection automatically calls a model. Other case templates remain explicitly unmeasured.
+
+Starting a confirmed run opens `/battle`, a separate tab-memory battle view.
+No prompt, result or key is put in the URL or browser storage. Reloading or
+opening that URL in another tab shows an empty state and never repeats a call.
+The homepage offers only two source-backed community examples, not trivial
+Yes/No templates. Additional OpenRouter opponents are explicitly labeled
+experimental until live-tested and are excluded from random Arena selection.
 
 For local Vercel AI Gateway use, start from `web` with `NEXT_PUBLIC_VERCEL_BYOK_ENABLED=true JEVARENA_RELAY_ENABLED=true npm run dev`, then choose Vercel under the manual key disclosure. The loopback server forwards to Gateway without saving the key. Do not expose this relay publicly. Public Vercel support stays disabled pending deployment security review. See `/run-locally` for the full steps.
 
