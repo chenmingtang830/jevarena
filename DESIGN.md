@@ -72,6 +72,8 @@ components:
 
 # Design System: JevArena
 
+Related: [TypeSafe reference and adaptation boundaries](docs/DESIGN_REFERENCES.md). References inform proposals; the tokens below describe the current shipped workbench.
+
 ## Overview
 
 **Creative North Star: "The Experimental Workbench"**

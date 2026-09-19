@@ -150,7 +150,18 @@ export function normalizeResponse(
     outputTokens = tokens(
       usage.output_tokens ?? usage.completion_tokens ?? usage.outputTokens,
     );
-  const cost = number(usage.cost);
+  const metadata = object(data.providerMetadata);
+  const gatewayCost = object(metadata.gateway).cost;
+  const parsedGatewayCost =
+    typeof gatewayCost === "string" &&
+    /^(?:0|[1-9]\d*)(?:\.\d+)?$/.test(gatewayCost)
+      ? number(Number(gatewayCost))
+      : number(gatewayCost);
+  // Gateway cost is billed cost; marketCost is a different, undiscounted figure.
+  const cost =
+    args.provider === "vercel"
+      ? (parsedGatewayCost ?? number(usage.cost))
+      : number(usage.cost);
   // An echoed request alias does not establish the actual served model revision.
   const resolvedModel =
     typeof data.model === "string" &&
@@ -220,10 +231,13 @@ export function normalizeResponse(
         throw new Error("Invalid probabilities.");
       record.probabilities = probs as Record<string, number>;
     }
-    if (model.kind === "jev" && answer.confidence !== undefined) {
-      if (number(answer.confidence) === null || Number(answer.confidence) > 1)
+    const confidence =
+      answer.confidence ??
+      object(object(metadata.typesafe).confidence).judgment;
+    if (model.kind === "jev" && confidence !== undefined) {
+      if (number(confidence) === null || Number(confidence) > 1)
         throw new Error("Invalid confidence.");
-      record.confidence = Number(answer.confidence);
+      record.confidence = Number(confidence);
     }
     return RunRecordSchema.parse(record);
   } catch {
@@ -258,7 +272,9 @@ export async function executeUpstream(args: JudgeRequest): Promise<RunRecord> {
     latencyMs: 0,
     status: "error",
     settings: {
-      maxOutputTokens: 4096,
+      ...(lookupModel(checked.provider, checked.model).kind === "chat"
+        ? { maxOutputTokens: 4096 }
+        : {}),
       transport: checked.provider === "openrouter" ? "direct" : "relay",
     },
   };

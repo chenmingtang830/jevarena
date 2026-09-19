@@ -1,6 +1,6 @@
 # Provider contracts and relay operation
 
-Verified 2026-09-19 using public official documentation, OpenAPI and model catalog responses. **A four-call local OpenRouter canary passed** for Jev 1.13 and Gemini 2.5 Flash; see [scope and evidence](OPENROUTER_CANARY-2026-09-19.md). A separate Gateway canary and normalization fixes remain in [PR #1](https://github.com/chenmingtang830/jevarena/pull/1). Neither validates production-browser BYOK or the disabled relay. Catalog `validation: contract-only` remains conservative browser-integration status, not a claim that local canaries never ran. User BYOK runs may encounter account-specific access, quota, or provider changes.
+Verified 2026-09-19 using public official documentation, OpenAPI and model catalog responses. A [four-call local OpenRouter canary](OPENROUTER_CANARY-2026-09-19.md) passed for Jev 1.13 and Gemini 2.5 Flash; a separate [four-call local Gateway canary](CANARY-2026-09-19.md) passed for Jev and DeepSeek V4.1 Flash. Gateway normalization fixes are merged from PR #1. Neither local canary validates production-browser BYOK or the disabled relay. Catalog `validation: contract-only` remains conservative browser-integration status. User BYOK runs may encounter account-specific access, quota, or provider changes.
 
 | Provider | Jev endpoint | Comparator | Browser route |
 | --- | --- | --- | --- |
@@ -16,7 +16,7 @@ The exact `deepseek/deepseek-r1-0528` exists in the OpenRouter catalog. Vercel c
 
 ## Pricing
 
-Static standard-rate snapshot lives in `web/lib/catalog.ts` with per-model public source URLs. OpenRouter Jev pricing comes from its [endpoint catalog](https://openrouter.ai/api/v1/models/typesafe/jev-1.13/endpoints), because the general model endpoint can omit decision models. Vercel pricing is from its public `/v1/models`. TypeSafe price remains unknown. Cost prefers provider-reported USD; otherwise it estimates using measured token usage and the snapshot, or remains unknown. Preflight byte-based ranges are illustrative estimates, not hard budget limits or quotes. Caching, route and price changes can alter billing.
+Static standard-rate snapshot lives in `web/lib/catalog.ts` with per-model public source URLs. OpenRouter Jev pricing comes from its [endpoint catalog](https://openrouter.ai/api/v1/models/typesafe/jev-1.13/endpoints), because the general model endpoint can omit decision models. Vercel pricing is from its public `/v1/models`. TypeSafe price remains unknown. Cost prefers provider-reported USD, including Gateway evaluation `providerMetadata.gateway.cost` and zero; `marketCost` is not billed cost. Otherwise it estimates using measured token usage and the snapshot, or remains unknown. Preflight byte-based ranges are illustrative estimates, not hard budget limits or quotes. Caching, route and price changes can alter billing.
 
 ## Relay deployment
 
