@@ -2,7 +2,15 @@
 
 An independent, open-source judgment arena. Try recorded examples without an account or API key; connect OpenRouter or run locally to test your own questions. Every live battle includes Jev. The Python research harness remains **JevJudge-Bench**.
 
-[Play JevArena](https://jevarena-lab.vercel.app) · [Community](https://github.com/chenmingtang830/jevarena/discussions)
+[Play JevArena](https://jevarena-lab.vercel.app) · [Try without a key](https://jevarena-lab.vercel.app/try) · [Contribute a case](https://github.com/chenmingtang830/jevarena/issues/new?template=case.yml) · [Community](https://github.com/chenmingtang830/jevarena/discussions)
+
+**Public preview.** Help find the questions Jev gets wrong—not crown a winner from a few examples.
+
+1. Pick a [community question](https://jevarena-lab.vercel.app/cases), make your own guess, and reveal the recorded result. No key or model call required.
+2. To run your own comparison, enter a question and possible answers, connect OpenRouter, review the cost, and start. Vote before seeing identities, speed and cost.
+3. Found a disagreement? Export the case and contribute a redacted reproduction through an Issue or PR. Keep the original source and distinguish an author's report from your own rerun.
+
+Want to help with code? Start with the [contribution guide](CONTRIBUTING.md). Want to discuss a result? Use [Discussions](https://github.com/chenmingtang830/jevarena/discussions). Security and deletion requests belong in private channels, not public issues.
 
 Maintained by [Richard Tang (@richardt830)](https://x.com/richardt830).
 The source code is Apache-2.0 licensed; third-party examples retain their own licenses.
@@ -21,7 +29,7 @@ npm ci
 npm run dev
 ```
 
-The homepage is an editable question composer with one-click examples; `/play` remains an alias for custom tasks. `/try` shows two real recorded canary examples, clearly labeled as diagnostic runs, not a benchmark. OpenRouter authorization uses a popup and PKCE; the returned key exists only in the original tab's memory. Manual keys are a separate, mutually exclusive connection view. No page load or connection automatically calls a model. Other case templates remain explicitly unmeasured.
+The homepage is an editable question composer with one-click examples; `/play` remains an alias for custom tasks. `/try` includes five attributed community tasks plus one English maintainer canary example. Author-reported observations and our diagnostic runs are labeled separately; neither is a benchmark. OpenRouter authorization uses a popup and PKCE; the returned key exists only in the original tab's memory. Manual keys are a separate, mutually exclusive connection view. No page load or connection automatically calls a model. Other case templates remain explicitly unmeasured.
 
 Starting a confirmed run opens `/battle`, a separate tab-memory battle view.
 No prompt, result or key is put in the URL or browser storage. Reloading or
@@ -36,7 +44,9 @@ For local Vercel AI Gateway use, start from `web` with `NEXT_PUBLIC_VERCEL_BYOK_
 npm run typecheck
 npm test
 npm run build
-npm run test:e2e
+# Full integration suite includes feature-gated research and history UI:
+NEXT_PUBLIC_CONTRIBUTIONS_ENABLED=true NEXT_PUBLIC_HISTORY_ENABLED=true npm run build
+CI=true npm run test:e2e
 ```
 
 See [contributing](CONTRIBUTING.md), [security](SECURITY.md), and [provider verification](docs/PROVIDERS.md). Small real OpenRouter and Gateway transport canaries have passed; they are not a benchmark or evidence of general model superiority. Mock runs must never enter a model leaderboard.
