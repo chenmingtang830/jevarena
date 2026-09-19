@@ -101,6 +101,10 @@ export function Playground({ initial }: { initial?: Challenge }) {
     ? (estimates[0].maxUsd ?? 0) +
       Math.max(...estimates.slice(1).map((e) => e.maxUsd ?? 0))
     : null;
+  const minimum = known
+    ? (estimates[0].minUsd ?? 0) +
+      Math.min(...estimates.slice(1).map((e) => e.minUsd ?? 0))
+    : null;
   function edit(next: Challenge) {
     setC(next);
     setError("");
@@ -559,11 +563,15 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <span>
                     2 calls ·{" "}
                     {maximum === null
-                      ? "Connect keys to see the estimated upper cost"
-                      : `Estimated upper cost ${money(maximum)}`}
+                      ? "Connect keys to see the estimated cost range"
+                      : `Estimated ${money(minimum)}–${money(maximum)}`}
                     <br />
                     Estimate uses provider list prices and bounded output. Not a
                     billing cap; actual token accounting can vary.
+                    <br />
+                    Public standard rates checked {jev.verifiedAt}.{" "}
+                    <a href="https://openrouter.ai/api/v1/models" target="_blank" rel="noreferrer" style={{textDecoration:'underline'}}>Price source</a>
+                    {mode === 'compare' && selected && <> · <a href={selected.priceSource} target="_blank" rel="noreferrer" style={{textDecoration:'underline'}}>Selected model rates</a></>}
                   </span>
                 </div>
                 <Button className="full-width" onClick={run}>
@@ -665,7 +673,9 @@ export function Playground({ initial }: { initial?: Challenge }) {
                                   <dd>{(v * 100).toFixed(1)}%</dd>
                                 </div>
                               ))}
+                            {r.confidence !== undefined && <div><dt>Vendor confidence</dt><dd>{(r.confidence * 100).toFixed(1)}%</dd></div>}
                           </dl>
+                          {r.confidence !== undefined && <p className="hint">Vendor confidence is separate from choice probability and verified correctness.</p>}
                           {r.error && <p className="error">{r.error}</p>}
                         </>
                       )}

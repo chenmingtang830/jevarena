@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T00:00:00Z",
+  "title": "Design System: JevArena",
+  "extensions": {
+    "colorMeta": {
+      "primary": {"role":"primary","displayName":"Workbench Green","canonical":"#38664c"},
+      "paper": {"role":"neutral","displayName":"Warm Paper","canonical":"#f6f5f0"},
+      "ink": {"role":"neutral","displayName":"Dark Ink","canonical":"#1e2822"}
+    },
+    "shadows": [{"name":"active-tab","value":"0 1px 3px #18261c15","purpose":"Distinguish the selected task tab."}],
+    "motion": [{"name":"control-state","value":"background .16s ease","purpose":"Button hover changes; disabled for reduced motion."}],
+    "breakpoints": [{"name":"stack-workbench","value":"850px"},{"name":"compact-phone","value":"500px"}]
+  },
+  "components": [
+    {"name":"Primary Button","kind":"button","refersTo":"button-primary","description":"Start or advance an experiment.","html":"<button class=\"ds-primary\">Start blind comparison</button>","css":".ds-primary{background:var(--green,#38664c);color:white;border:1px solid transparent;border-radius:7px;padding:10px 16px;font:550 13px sans-serif;cursor:pointer}.ds-primary:hover{background:#2b533c}.ds-primary:focus-visible{outline:2px solid #38664c;outline-offset:4px}"},
+    {"name":"Secondary Button","kind":"button","refersTo":"button-secondary","description":"Voting and optional actions.","html":"<button class=\"ds-secondary\">Both good</button>","css":".ds-secondary{background:var(--white,#fffefa);color:var(--ink,#1e2822);border:1px solid #d8dcd3;border-radius:7px;padding:10px 16px;font:550 13px sans-serif;cursor:pointer}.ds-secondary:hover{background:#eff2eb}.ds-secondary:focus-visible{outline:2px solid #38664c;outline-offset:4px}"},
+    {"name":"Text Field","kind":"input","refersTo":"input","description":"Plain task input with a clear focus state.","html":"<input class=\"ds-input\" placeholder=\"What is the judgment?\" aria-label=\"Judgment question\" />","css":".ds-input{background:var(--white,#fffefa);color:var(--ink,#1e2822);border:1px solid #d8dcd3;border-radius:7px;padding:11px 13px;font:15px sans-serif;caret-color:#38664c}.ds-input:focus-visible{outline:2px solid #38664c;outline-offset:4px}"},
+    {"name":"Template Tag","kind":"chip","description":"Evidence-status label, never a performance claim.","html":"<span class=\"ds-tag\">Template</span>","css":".ds-tag{display:inline-block;border:1px solid #d8dcd3;border-radius:4px;padding:3px 7px;font:10px sans-serif;color:#626b63}"},
+    {"name":"Judge Result","kind":"card","description":"Equal-weight decision surface before identity reveal.","html":"<article class=\"ds-judge\"><span>JUDGE X</span><h3>Evidence is insufficient</h3></article>","css":".ds-judge{padding:18px;border:1px solid #d8dcd3;border-radius:9px;background:#fffefa;color:#1e2822}.ds-judge span{font:12px monospace;color:#626b63}.ds-judge h3{font:500 20px sans-serif;margin:16px 0}"},
+    {"name":"Navigation Link","kind":"nav","description":"Compact persistent navigation.","html":"<nav class=\"ds-nav\"><a href=\"/\">Playground</a><a href=\"/cases\">Cases</a></nav>","css":".ds-nav{display:flex;gap:26px;font:13px sans-serif}.ds-nav a{color:#1e2822;text-decoration:none;text-underline-offset:4px}.ds-nav a:hover{text-decoration:underline}.ds-nav a:focus-visible{outline:2px solid #38664c;outline-offset:4px}"}
+  ],
+  "narrative": {
+    "northStar":"The Experimental Workbench",
+    "overview":"The user-approved, code-led Operate surface makes the task and the two judgments the visual center. Warm paper, dark ink, and a restrained green accent create a calm working environment. Editorial hierarchy supports compact forms without turning the page into a marketing hero.",
+    "keyCharacteristics":["Clear task controls and equally weighted model judgments.","Flat bordered surfaces, generous separation, and compact labels.","Honest empty states, visible errors, and no fabricated results."],
+    "rules":[{"name":"The Equal Judges Rule","body":"Neither hidden judge receives a privileged color or visual weight.","section":"colors"}],
+    "dos":["Do keep the task and decisions visually central.","Do preserve equal visual weight between judges.","Do label templates, unverified observations, unknown costs, and unavailable providers clearly.","Do maintain keyboard focus and mobile completion announcements."],
+    "donts":["Don't show model identity, speed, cost, or probability before the blind vote.","Don't invent results or imply community votes establish correctness.","Don't add decorative raster imagery to the working surface."]
+  }
+}

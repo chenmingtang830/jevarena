@@ -76,6 +76,7 @@ test("synthetic battle hides metadata until vote, never stores keys", async ({
     page.getByText("Which judgment is better?", { exact: true }),
   ).toBeVisible();
   const results = page.getByRole("region", { name: "Comparison results" });
+  await expect(page.getByRole("heading", { name: "The arena", exact: true })).toBeFocused();
   await expect(results).not.toContainText("gemini");
   await expect(results).not.toContainText("probability");
   await page.getByRole("button", { name: "Both good", exact: true }).click();
