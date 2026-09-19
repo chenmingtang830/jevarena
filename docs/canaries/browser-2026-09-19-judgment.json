@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "074b0b4d-32f8-4663-ba68-44f648b27d24",
+  "challenge": {
+    "schemaVersion": 1,
+    "id": "b16e0f0e-2e8f-41ac-be60-efe2618ef2d0",
+    "title": "Is the statement supported by the provided context or established facts?",
+    "language": "en",
+    "kind": "judgment",
+    "content": "Claim: A 20% increase followed by a 20% decrease returns a price to its original value.",
+    "question": "Is the statement supported by the provided context or established facts?",
+    "options": [{"id":"option1","label":"Yes"},{"id":"option2","label":"No"},{"id":"option3","label":"Unsure"}]
+  },
+  "runs": [
+    {
+      "schemaVersion":1,"id":"074b0b4d-32f8-4663-ba68-44f648b27d24","challengeId":"b16e0f0e-2e8f-41ac-be60-efe2618ef2d0",
+      "challengeHash":"fb19778c2cda59ee13798cbe4e7c04c3acaf78b09588a4b34435dbd1e8044ae8",
+      "provider":"openrouter","model":"typesafe/jev-1.13","resolvedModel":"typesafe/jev-1.13-20260917","promptVersion":"jevarena-1","createdAt":"2026-09-19T09:34:19.446Z",
+      "choice":"option2","probabilities":{"option2":1,"option3":0,"option1":0},"confidence":1,
+      "usage":{"inputTokens":352,"outputTokens":44},"cost":{"usd":0.000014784,"basis":"provider"},
+      "latencyMs":401.89999997615814,"status":"success","settings":{"transport":"direct"}
+    },
+    {
+      "schemaVersion":1,"id":"04895caa-70c4-4e78-80ca-a0595b93e15f","challengeId":"b16e0f0e-2e8f-41ac-be60-efe2618ef2d0",
+      "challengeHash":"fb19778c2cda59ee13798cbe4e7c04c3acaf78b09588a4b34435dbd1e8044ae8",
+      "provider":"openrouter","model":"google/gemini-2.5-flash","resolvedModel":null,"promptVersion":"jevarena-1","createdAt":"2026-09-19T09:34:19.448Z",
+      "choice":"option2","usage":{"inputTokens":116,"outputTokens":6},"cost":{"usd":0.0000498,"basis":"provider"},
+      "latencyMs":945.2999999523163,"status":"success","settings":{"maxOutputTokens":4096,"transport":"direct"}
+    }
+  ],
+  "vote":{"runIds":["074b0b4d-32f8-4663-ba68-44f648b27d24","04895caa-70c4-4e78-80ca-a0595b93e15f"],"value":"both","revealedBeforeVote":false},
+  "license":"CC-BY-4.0","status":"community-submitted"
+}
