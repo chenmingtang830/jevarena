@@ -13,6 +13,18 @@ the author, not claims of production user traffic. No paid rerun was performed.
 
 ## Upstream license (applies to extracted material)
 
+Additional records: `ambiguous-5`, `ambiguous-23`, `ambiguous-26` from the same
+pinned h6 JSONL. These are author-written synthetic workflow inputs with actual
+native TypeSafe `jev-1.13.0` responses, shared through the same X article. They
+are not examples from three different authors or production customer tickets.
+We preserve all four category definitions in the question rubric; upstream placed
+them in option descriptions. This is an adapted rerun, not byte-identical replay.
+Author labels conflict with model choices, but ambiguity prevents treating those
+labels as independently verified truth. Expected answers are deliberately unset.
+No new model calls were made to reproduce the author observations.
+
+### MIT notice
+
 MIT License
 
 Copyright (c) Pooya Parsa <pooya@pi0.io>

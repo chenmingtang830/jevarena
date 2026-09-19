@@ -26,7 +26,7 @@ The homepage is an editable question composer with one-click examples; `/play` r
 Starting a confirmed run opens `/battle`, a separate tab-memory battle view.
 No prompt, result or key is put in the URL or browser storage. Reloading or
 opening that URL in another tab shows an empty state and never repeats a call.
-The homepage offers only two source-backed community examples, not trivial
+The homepage offers five source-backed community examples, not trivial
 Yes/No templates. Additional OpenRouter opponents are explicitly labeled
 experimental until live-tested and are excluded from random Arena selection.
 

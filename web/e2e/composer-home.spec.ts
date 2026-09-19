@@ -1,4 +1,17 @@
 import { test, expect } from "@playwright/test";
+test("community triage examples preserve the rubric and never reveal source answers in the composer", async ({ page }) => {
+  let calls = 0;
+  await page.route("https://openrouter.ai/**", (route) => { calls++; return route.abort(); });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Docs or feature request?", exact: true }).click();
+  await expect(page.getByLabel("Question and context")).toHaveValue(/Please document the retry defaults/);
+  await expect(page.getByLabel("Question and context")).toHaveValue(/The documentation, README/);
+  await expect(page.getByLabel("Option 4", { exact: true })).toHaveValue("docs");
+  await expect(page.getByText(/Label disagreement/)).toHaveCount(0);
+  await page.goto("/?case=community-safari-login");
+  await expect(page.getByLabel("Question and context")).toHaveValue(/Does login work in Safari/);
+  expect(calls).toBe(0);
+});
 test("real community input fills without calling models or revealing the author's answer", async ({ page }) => {
   const calls: string[] = [];
   page.on("request", (request) => { if (/openrouter.ai|ai-gateway.vercel.sh|api.typesafe.ai/.test(request.url())) calls.push(request.url()); });

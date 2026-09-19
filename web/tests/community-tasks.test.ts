@@ -3,6 +3,18 @@ import { communityTasks } from "../lib/community-tasks";
 import { ChallengeSchema, modelInput } from "../lib/contracts";
 
 describe("source-backed community tasks", () => {
+  it("adds three source-backed triage disagreements without treating author labels as truth", () => {
+    const triage = communityTasks.filter((item) => item.sourceId.startsWith("ambiguous-"));
+    expect(triage).toHaveLength(3);
+    for (const { challenge, observation } of triage) {
+      expect(challenge.kind).toBe("judgment");
+      if (challenge.kind !== "judgment") throw new Error("Wrong kind");
+      expect(challenge.options.map((option) => option.id)).toEqual(["bug", "feature", "question", "docs"]);
+      expect(challenge.question).toContain("Something already built behaves incorrectly");
+      expect(observation).toContain("Label disagreement");
+      expect(challenge.expected).toBeUndefined();
+    }
+  });
   it("keeps source observations out of model requests", () => {
     for (const { challenge, observation } of communityTasks) {
       expect(ChallengeSchema.safeParse(challenge).success).toBe(true);

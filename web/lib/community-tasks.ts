@@ -10,7 +10,43 @@ export const communityTaskSource = {
   license: "MIT",
 };
 
+// Original category definitions, moved into the shared rubric for our adapter.
+const triageQuestion = `Which category does this issue report belong to?
+
+bug: Something already built behaves incorrectly: a crash, an error, a wrong result, a regression.
+feature: A request for new behaviour, a new option, or support for something not built yet.
+question: Someone asking for information or help using the project as it is.
+docs: The documentation, README, guide or changelog is wrong, missing, outdated or unclear.`;
+const triageOptions = ["bug", "feature", "question", "docs"].map((label) => ({ id: label, label }));
+
 export const communityTasks: { challenge: Challenge; observation: string; sourceId: string }[] = [
+  {
+    sourceId: "ambiguous-5",
+    challenge: {
+      schemaVersion: 1, id: "community-export-limit", title: "Bug or product limit?", language: "en", kind: "judgment",
+      content: "The export stops at 1000 rows. Is that a limit I can raise, or is it broken?",
+      question: triageQuestion, options: triageOptions, source: communityTaskSource.post,
+    },
+    observation: "Label disagreement: the author's native TypeSafe run (jev-1.13.0) chose question with probability 0.95; the author's label was bug. The input does not establish whether the limit is intended, so this is a disputed label, not a verified model error.",
+  },
+  {
+    sourceId: "ambiguous-23",
+    challenge: {
+      schemaVersion: 1, id: "community-retry-defaults", title: "Docs or feature request?", language: "en", kind: "judgment",
+      content: "Please document the retry defaults, or else make them configurable.",
+      question: triageQuestion, options: triageOptions, source: communityTaskSource.post,
+    },
+    observation: "Label disagreement: the author's native TypeSafe run (jev-1.13.0) chose feature with probability 0.67; the author's label was docs. Both documentation and configurability are requested. The appropriate label depends on the triage policy; no independent correctness label is assigned here.",
+  },
+  {
+    sourceId: "ambiguous-26",
+    challenge: {
+      schemaVersion: 1, id: "community-safari-login", title: "Bug report or question?", language: "en", kind: "judgment",
+      content: "Does login work in Safari? A few of my users mention something odd there.",
+      question: triageQuestion, options: triageOptions, source: communityTaskSource.post,
+    },
+    observation: "Label disagreement: the author's native TypeSafe run (jev-1.13.0) chose bug with probability 0.70; the author's label was question. The report contains no reproduction or confirmed failure. This is an ambiguous triage decision, not a verified model error.",
+  },
   {
     sourceId: "modexp-1",
     challenge: {
