@@ -1,0 +1,144 @@
+{
+  "startedAt": "2026-09-19T08:12:50.472Z",
+  "endedAt": "2026-09-19T08:12:52.207Z",
+  "budgetUsd": 0.05,
+  "callCeiling": 4,
+  "calls": 4,
+  "estimatedUpperUsd": 0.021826796,
+  "conditions": "Local Node to OpenRouter, sequential, 4096 chat output cap, no retries. Not a browser-origin acceptance test or benchmark.",
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "id": "d07d6ada-1852-421e-8c0b-604a8be92d4d",
+      "challengeId": "decimal-comparison",
+      "challengeHash": "e6b1c947f8dd5974fff0f508a92aec9e8d43332c6c32152145edc0a2556d170c",
+      "provider": "openrouter",
+      "model": "typesafe/jev-1.13",
+      "resolvedModel": "typesafe/jev-1.13-20260917",
+      "promptVersion": "jevarena-1",
+      "createdAt": "2026-09-19T08:12:50.474Z",
+      "choice": "answer2",
+      "probabilities": {
+        "tie": 0,
+        "answer2": 1,
+        "answer1": 0
+      },
+      "confidence": 1,
+      "usage": {
+        "inputTokens": 457,
+        "outputTokens": 43
+      },
+      "cost": {
+        "usd": 0.000019194,
+        "basis": "provider"
+      },
+      "latencyMs": 420.720209,
+      "status": "success",
+      "settings": {
+        "transport": "direct"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "42d50edb-56da-4380-9c8e-f8197ca64b7c",
+      "challengeId": "decimal-comparison",
+      "challengeHash": "e6b1c947f8dd5974fff0f508a92aec9e8d43332c6c32152145edc0a2556d170c",
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-flash",
+      "resolvedModel": null,
+      "promptVersion": "jevarena-1",
+      "createdAt": "2026-09-19T08:12:50.901Z",
+      "choice": "answer2",
+      "usage": {
+        "inputTokens": 220,
+        "outputTokens": 6
+      },
+      "cost": {
+        "usd": 0.000081,
+        "basis": "provider"
+      },
+      "latencyMs": 616.6588340000001,
+      "status": "success",
+      "settings": {
+        "maxOutputTokens": 4096,
+        "transport": "direct"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "0438f273-ec8a-4da9-8721-40466296567d",
+      "challengeId": "chinese-negation",
+      "challengeHash": "eaf2ed6aaa20d381c21bfa2937d6b332a9a4357ec9fa062b9fb9f03a1b33dd0c",
+      "provider": "openrouter",
+      "model": "typesafe/jev-1.13",
+      "resolvedModel": "typesafe/jev-1.13-20260917",
+      "promptVersion": "jevarena-1",
+      "createdAt": "2026-09-19T08:12:51.522Z",
+      "choice": "no",
+      "probabilities": {
+        "yes": 0,
+        "unknown": 0,
+        "no": 1
+      },
+      "confidence": 1,
+      "usage": {
+        "inputTokens": 366,
+        "outputTokens": 40
+      },
+      "cost": {
+        "usd": 0.000015372,
+        "basis": "provider"
+      },
+      "latencyMs": 167.9309999999998,
+      "status": "success",
+      "settings": {
+        "transport": "direct"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "dc552b66-2384-46ec-accc-32dffbff6f1e",
+      "challengeId": "chinese-negation",
+      "challengeHash": "eaf2ed6aaa20d381c21bfa2937d6b332a9a4357ec9fa062b9fb9f03a1b33dd0c",
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-flash",
+      "resolvedModel": null,
+      "promptVersion": "jevarena-1",
+      "createdAt": "2026-09-19T08:12:51.693Z",
+      "choice": "no",
+      "usage": {
+        "inputTokens": 111,
+        "outputTokens": 5
+      },
+      "cost": {
+        "usd": 0.0000458,
+        "basis": "provider"
+      },
+      "latencyMs": 513.4886669999999,
+      "status": "success",
+      "settings": {
+        "maxOutputTokens": 4096,
+        "transport": "direct"
+      }
+    }
+  ],
+  "observations": [
+    {
+      "endpoint": "https://openrouter.ai/api/alpha/decisions",
+      "httpStatus": 200
+    },
+    {
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "httpStatus": 200
+    },
+    {
+      "endpoint": "https://openrouter.ai/api/alpha/decisions",
+      "httpStatus": 200
+    },
+    {
+      "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+      "httpStatus": 200
+    }
+  ],
+  "projectionNote": "Native Jev maxOutputTokens removed offline: no chat-only token cap was sent. Original local receipt unchanged; no calls repeated."
+}

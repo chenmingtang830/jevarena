@@ -42,6 +42,10 @@ const blank: Challenge = {
     { id: "option2", label: "No" },
   ],
 };
+const blankComparison: Challenge = {
+  schemaVersion: 1, id: "custom", title: "Compare two answers", language: "en",
+  kind: "comparison", prompt: "", answer1: "", answer2: "",
+};
 const money = (n: number | null) =>
   n === null ? "Unknown" : `$${n.toFixed(6)}`;
 function newId() {
@@ -49,6 +53,14 @@ function newId() {
 }
 export function Playground({ initial }: { initial?: Challenge }) {
   const [c, setC] = useState<Challenge>(initial ?? blank);
+  const drafts = useRef<Record<Challenge["kind"], Challenge>>({
+    judgment: initial?.kind === "judgment" ? initial : blank,
+    comparison: initial?.kind === "comparison" ? initial : blankComparison,
+  });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [pendingExample, setPendingExample] = useState<Challenge | null>(null);
+  const [exampleNotice, setExampleNotice] = useState("");
+  const [focusTarget, setFocusTarget] = useState<string | null>(null);
   const [mode, setMode] = useState<"arena" | "compare">("arena");
   const [tier, setTier] = useState<Tier>("low-cost");
   const [keys, setKeys] = useState<Record<Provider, string>>({
@@ -68,6 +80,12 @@ export function Playground({ initial }: { initial?: Challenge }) {
   const resultHeading = useRef<HTMLHeadingElement | null>(null);
   const [announcement, setAnnouncement] = useState("");
   useEffect(() => () => controller.current?.abort(), []);
+  useEffect(() => {
+    if (focusTarget) {
+      document.getElementById(focusTarget)?.focus();
+      setFocusTarget(null);
+    }
+  }, [focusTarget, connections, c.kind]);
   useEffect(() => {
     if (!busy && match) {
       setAnnouncement(
@@ -106,34 +124,45 @@ export function Playground({ initial }: { initial?: Challenge }) {
       Math.min(...estimates.slice(1).map((e) => e.minUsd ?? 0))
     : null;
   function edit(next: Challenge) {
+    drafts.current[next.kind] = next;
     setC(next);
-    setError("");
-  }
-  function load(t: Challenge) {
-    if (busy) return;
-    setC({ ...t, id: newId() });
     setMatch(null);
     setError("");
+    setFieldErrors({});
+    setExampleNotice("");
+  }
+  function load(t: Challenge, confirmed = false) {
+    if (busy) return;
+    const draft = drafts.current[t.kind];
+    const empty = t.kind === "judgment" ? blank : blankComparison;
+    if (!confirmed && JSON.stringify(draft) !== JSON.stringify(empty)) {
+      setPendingExample(t);
+      setFocusTarget("confirm-example");
+      return;
+    }
+    edit({ ...t, id: newId() });
+    setPendingExample(null);
+    setExampleNotice(`Loaded “${t.title}”. Review or edit the fields, then connect your key to run.`);
+    setFocusTarget(t.kind === "judgment" ? "content" : "prompt");
   }
   function switchKind(kind: "judgment" | "comparison") {
+    if (kind === c.kind) return;
     setMatch(null);
-    setC(
-      kind === "judgment"
-        ? { ...blank }
-        : {
-            schemaVersion: 1,
-            id: "custom",
-            title: "Compare two answers",
-            language: "en",
-            kind: "comparison",
-            prompt: "",
-            answer1: "",
-            answer2: "",
-          },
-    );
+    setC(drafts.current[kind]);
+    setError("");
+    setFieldErrors({});
+    setPendingExample(null);
+    setExampleNotice("");
+  }
+  function fieldProps(id: string) {
+    return { "aria-invalid": Boolean(fieldErrors[id]), "aria-describedby": fieldErrors[id] ? `${id}-error` : undefined };
+  }
+  function fieldError(id: string) {
+    return fieldErrors[id] ? <p className="error field-error" id={`${id}-error`}>{fieldErrors[id]}</p> : null;
   }
   async function run() {
     setError("");
+    setFieldErrors({});
     setAnnouncement("");
     const parsed = ChallengeSchema.safeParse({
       ...c,
@@ -144,15 +173,31 @@ export function Playground({ initial }: { initial?: Challenge }) {
             "Untitled judgment"
           : c.title,
     });
+    const errors: Record<string, string> = {};
+    const fields = c.kind === "judgment"
+      ? [["content", c.content], ["question", c.question], ...c.options.map((o, i) => [`option-${i}`, o.label]), ["language", c.language]]
+      : [["prompt", c.prompt], ["answer1", c.answer1], ["answer2", c.answer2], ["language", c.language]];
+    for (const [id, value] of fields) {
+      if (!value.trim()) errors[id] = "Enter text in this field before starting.";
+    }
     if (!parsed.success) {
-      setError(
-        "Add the task, a question, and all choices before starting. Each field must contain text.",
-      );
+      for (const issue of parsed.error.issues) {
+        const id = issue.path[0] === "options" ? `option-${typeof issue.path[1] === "number" ? issue.path[1] : 0}` : String(issue.path[0]);
+        errors[id] ??= issue.message;
+      }
+    }
+    if (Object.keys(errors).length || !parsed.success) {
+      setFieldErrors(errors);
+      const first = fields.find(([id]) => errors[id]);
+      setFocusTarget(first?.[0] ?? (c.kind === "judgment" ? "content" : "prompt"));
+      setError(first ? "Check the highlighted fields before starting." : "This imported task has invalid metadata. Load an example or correct the original task before running.");
       return;
     }
     if (!keys[jp].trim() || !jev) {
       setConnections(true);
-      setError("Connect a provider key for Jev.");
+      setFieldErrors({ "key-openrouter": "Paste your OpenRouter API key to run both judges." });
+      setFocusTarget("key-openrouter");
+      setError("Add an OpenRouter key below, then start again. Calls use your provider balance.");
       return;
     }
     if (!candidates.length) {
@@ -160,6 +205,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       setError(
         "Connect a provider that offers a model in this tier, or choose another tier.",
       );
+      setFocusTarget("rival");
       return;
     }
     if (!known || maximum === null) {
@@ -176,6 +222,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
       setError(
         "The estimated upper cost exceeds your estimate threshold. Increase the threshold or choose a lower-cost tier.",
       );
+      setFieldErrors({ budget: "Enter a positive threshold above the estimated upper cost, or choose a lower-cost tier." });
+      setFocusTarget("budget");
       return;
     }
     const rival =
@@ -293,6 +341,24 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   Compare two answers
                 </button>
               </div>
+              <div className="quick-start">
+                <Button variant="secondary" onClick={() => {
+                  const example = templates.find((t) => t.kind === c.kind);
+                  if (example) load(example);
+                }}>
+                  Try an example
+                </Button>
+                <Link href="/cases">Browse cases · no key needed</Link>
+                <p className="hint">Set a task → Compare anonymous judgments → Vote to reveal</p>
+              </div>
+              {pendingExample && (
+                <div className="example-confirm" role="group" aria-label="Replace draft with example">
+                  <p>Load “{pendingExample.title}” and replace your {pendingExample.kind === "judgment" ? "judgment" : "comparison"} draft? Your other task draft stays in this tab.</p>
+                  <Button id="confirm-example" variant="secondary" onClick={() => load(pendingExample, true)}>Replace draft</Button>
+                  <Button variant="ghost" onClick={() => setPendingExample(null)}>Keep draft</Button>
+                </div>
+              )}
+              <p className={exampleNotice ? "hint" : "sr-only"} role="status">{exampleNotice}</p>
               {c.kind === "judgment" ? (
                 <>
                   <div className="field">
@@ -301,27 +367,34 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     </label>
                     <textarea
                       id="content"
+                      {...fieldProps("content")}
                       rows={5}
                       placeholder="Paste an email, a claim, a policy, or any text to evaluate…"
                       value={c.content}
                       onChange={(e) => edit({ ...c, content: e.target.value })}
                     />
+                    {fieldError("content")}
                   </div>
                   <div className="field">
                     <label htmlFor="question">What’s the judgment?</label>
                     <input
                       id="question"
+                      {...fieldProps("question")}
                       placeholder="Does this claim follow from the evidence?"
                       value={c.question}
                       onChange={(e) => edit({ ...c, question: e.target.value })}
                     />
+                    {fieldError("question")}
                   </div>
                   <div className="field">
                     <label>Possible answers</label>
                     {c.options.map((o, i) => (
-                      <div className="option-row" key={o.id}>
+                      <div key={o.id}>
+                      <div className="option-row">
                         <span className="option-index">{i + 1}</span>
                         <input
+                          id={`option-${i}`}
+                          {...fieldProps(`option-${i}`)}
                           aria-label={`Option ${i + 1}`}
                           value={o.label}
                           onChange={(e) =>
@@ -347,6 +420,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
                           <X size={14} />
                         </Button>
                       </div>
+                      {fieldError(`option-${i}`)}
+                      </div>
                     ))}
                     <Button
                       variant="ghost"
@@ -369,29 +444,35 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     <label htmlFor="prompt">Original question</label>
                     <textarea
                       id="prompt"
+                      {...fieldProps("prompt")}
                       rows={3}
                       value={c.prompt}
                       placeholder="What were the answers responding to?"
                       onChange={(e) => edit({ ...c, prompt: e.target.value })}
                     />
+                    {fieldError("prompt")}
                   </div>
                   <div className="field">
                     <label htmlFor="answer1">Candidate answer 1</label>
                     <textarea
                       id="answer1"
+                      {...fieldProps("answer1")}
                       rows={3}
                       value={c.answer1}
                       onChange={(e) => edit({ ...c, answer1: e.target.value })}
                     />
+                    {fieldError("answer1")}
                   </div>
                   <div className="field">
                     <label htmlFor="answer2">Candidate answer 2</label>
                     <textarea
                       id="answer2"
+                      {...fieldProps("answer2")}
                       rows={3}
                       value={c.answer2}
                       onChange={(e) => edit({ ...c, answer2: e.target.value })}
                     />
+                    {fieldError("answer2")}
                   </div>
                 </>
               )}
@@ -399,11 +480,13 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 <label htmlFor="language">Task language</label>
                 <input
                   id="language"
+                  {...fieldProps("language")}
                   value={c.language}
                   placeholder="en, zh, es…"
                   maxLength={40}
                   onChange={(e) => edit({ ...c, language: e.target.value })}
                 />
+                {fieldError("language")}
               </div>
               <div className="divider" />
               <div className="tabs" aria-label="Match mode">
@@ -479,12 +562,14 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <label htmlFor="budget">Estimate threshold (USD)</label>
                   <input
                     id="budget"
+                    {...fieldProps("budget")}
                     type="number"
                     min="0.001"
                     step="0.01"
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
                   />
+                  {fieldError("budget")}
                 </div>
               </div>
               <details
@@ -505,20 +590,24 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       <label htmlFor={`key-${p.id}`}>{p.label}</label>
                       <input
                         id={`key-${p.id}`}
+                        {...fieldProps(`key-${p.id}`)}
                         type="password"
                         disabled={p.transport === "relay"}
                         autoComplete="off"
                         spellCheck={false}
                         placeholder="Paste your API key"
                         value={keys[p.id as Provider]}
-                        onChange={(e) =>
-                          setKeys({ ...keys, [p.id]: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setKeys({ ...keys, [p.id]: e.target.value });
+                          setFieldErrors((errors) => ({ ...errors, [`key-${p.id}`]: "" }));
+                          setError("");
+                        }}
                       />
+                      {fieldError(`key-${p.id}`)}
                       <p className="hint">
                         {p.transport === "direct"
-                          ? "Browser → provider directly"
-                          : "Not available yet: relay awaits distributed rate limiting."}
+                          ? <>Get a key from <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">OpenRouter settings</a>, then paste it here. Sent directly to OpenRouter.</>
+                          : "Not available yet. Use OpenRouter for now."}
                       </p>
                     </div>
                   ))}
@@ -542,21 +631,17 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     </select>
                   </div>
                   <p className="hint">
-                    OpenRouter is available for testing. Vercel Gateway and
-                    TypeSafe adapters are implemented but disabled until relay
-                    protection is enabled.
+                    One OpenRouter key runs Jev and its opponent. Your provider account needs access to both models.
                   </p>
                   <p className="hint">
-                    Keys disappear on refresh. Relay keys pass through our
-                    server for this request only. Calls use your provider
-                    balance.
+                    Keys stay in this tab’s memory and disappear on refresh. Calls use your OpenRouter balance.
                   </p>
                 </div>
               </details>
               <div className="run-foot">
                 <p className="hint" style={{ marginBottom: 12 }}>
-                  Experimental adapters: contract-tested; account availability
-                  and live calls have not been verified.
+                  Experimental browser integration. Local API canaries do not
+                  verify browser access or your account’s model availability.
                 </p>
                 <div className="price-note">
                   <ShieldCheck size={14} />
@@ -725,7 +810,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     onClick={() => {
                       const original = match.challenge;
                       if (original.kind === "comparison") {
-                        setC({
+                        edit({
                           ...original,
                           id: newId(),
                           answer1: original.answer2,

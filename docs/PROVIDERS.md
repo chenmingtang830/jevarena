@@ -1,6 +1,6 @@
 # Provider contracts and relay operation
 
-Verified 2026-09-19 using public official documentation, OpenAPI and model catalog responses. **No authenticated model canary has run.** Catalog `validation: contract-only` must not be represented as measured availability, accuracy, or a successful production integration. User BYOK runs may encounter account-specific access, quota, or provider changes.
+Verified 2026-09-19 using public official documentation, OpenAPI and model catalog responses. **A four-call local OpenRouter canary passed** for Jev 1.13 and Gemini 2.5 Flash; see [scope and evidence](OPENROUTER_CANARY-2026-09-19.md). A separate Gateway canary and normalization fixes remain in [PR #1](https://github.com/chenmingtang830/jevarena/pull/1). Neither validates production-browser BYOK or the disabled relay. Catalog `validation: contract-only` remains conservative browser-integration status, not a claim that local canaries never ran. User BYOK runs may encounter account-specific access, quota, or provider changes.
 
 | Provider | Jev endpoint | Comparator | Browser route |
 | --- | --- | --- | --- |

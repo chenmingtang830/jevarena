@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { authorUrl, communityCases, postUrl } from "@/lib/community-cases";
 
 export function CommunityLibrary() {
@@ -9,12 +10,12 @@ export function CommunityLibrary() {
       .toLowerCase().includes(query.toLowerCase()),
   );
   return (
-    <section aria-labelledby="community-heading">
-      <h2 id="community-heading">From the Jev community</h2>
+    <section id="community" aria-labelledby="community-heading">
+      <h2 id="community-heading">Community case studies</h2>
       <p>
-        Public tests, demos and disagreements, with links to the people behind
-        them. These are research leads, not JevArena benchmark results. Complete
-        replay inputs are not available in these retrieved posts.
+        Explore what people report about Jev, what the sources establish, and
+        what a reproduction would need. These are editorial studies of public
+        posts, not reproduced JevArena results.
       </p>
       <div className="field">
         <label htmlFor="community-search">Find a community report or author</label>
@@ -23,26 +24,27 @@ export function CommunityLibrary() {
           onChange={(event) => setQuery(event.target.value)} />
       </div>
       <p className="hint" role="status">{items.length} community references · source checked, not reproduced</p>
-      <div className="case-grid">
+      <div className="community-list">
         {items.map((item) => (
           <article className="case-entry" key={item.id} id={item.id}>
-            <h3>{item.title}</h3>
-            <p>{item.kind} · {item.evidence}</p>
-            <p>
+            <h3><Link href={`/cases/${item.id}`}>{item.title}</Link></h3>
+            <p className="community-meta">{item.kind} · {item.evidence}</p>
+            <p className="community-meta">
               <a href={authorUrl(item)} rel="noreferrer">{item.author} (@{item.handle})</a>
               {" · "}<time dateTime={item.postedAt}>{item.postedAt.slice(0, 10)}</time>
             </p>
-            <p>{item.summary}</p>
-            <p><strong>What is missing:</strong> {item.limitation}</p>
-            <details>
-              <summary>What to test next</summary>
-              <p>{item.nextTest}</p>
-            </details>
-            <p><a href={postUrl(item)} rel="noreferrer">Read original post on X</a></p>
-            <p className="hint">
+            <p className="community-summary">{item.summary}</p>
+            <p className="study-actions">
+              <Link href={`/cases/${item.id}`}>Read case study<span className="sr-only">: {item.title}</span></Link>
+              <a href={postUrl(item)} rel="noreferrer">Original post on X</a>
+            </p>
+            <details className="community-metrics">
+              <summary>Source snapshot and engagement</summary>
+              <p className="hint">
               {item.metrics.views.toLocaleString("en-US")} views · {item.metrics.likes.toLocaleString("en-US")} likes · {item.metrics.reposts.toLocaleString("en-US")} reposts
               <br />X API snapshot: {item.checkedAt}. Popularity is not evidence of correctness.
-            </p>
+              </p>
+            </details>
           </article>
         ))}
       </div>

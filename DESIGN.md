@@ -93,7 +93,7 @@ The wordmark uses mixed weights and tracking of (-0.04em). Do not tighten it bey
 
 The workspace is capped at (1210px), with a two-column grid weighted (1.08fr / 1fr) and a (28px) gap. The form and results are separate peers. Documentation has a narrower (900px) container and prose measures around (70ch).
 
-At (850px), the workbench becomes a single column. At (500px), result cards and form rows stack, horizontal padding tightens, and secondary navigation is reduced. The main controls remain visible without a menu dependency. Completed runs focus and scroll to the result heading so mobile users do not miss the outcome below the form.
+At (850px), the workbench becomes a single column. At (500px), result cards and form rows stack and horizontal padding tightens. Navigation wraps without removing any primary destination; each link has a 44px minimum target and the current route is marked. Completed runs focus and scroll to the result heading so mobile users do not miss the outcome below the form.
 
 ## Elevation & Depth
 
@@ -113,6 +113,8 @@ Primary buttons use green, secondary buttons use surface with a line border, and
 
 The wordmark anchors a compact horizontal navigation. Cases use editorial rows with visible template labels, titles, language, and links. Search and task filters precede the list. Avoid invented metrics or community counts.
 
+The first experiment presents a compact example action and a no-key browsing link before input fields. The participation sequence is task, anonymous judgment, then vote to reveal. Cases offer early jumps between original templates and community case studies. Community summaries use a single editorial column; engagement metadata is collapsed. Study pages separate source reports, verified provenance, limitations, and proposed reproduction, with original-post and author links. They are not model-run result pages.
+
 ### Comparison results
 
 Two cards retain equal presentation. Before voting they show only the normalized choice and X/Y identity. After voting they show model, actual version or unknown, latency, cost basis, and supported probabilities. Vendor confidence remains separately labeled. Incomplete comparisons use an explanatory notice and never select a winner.
@@ -120,6 +122,8 @@ Two cards retain equal presentation. Before voting they show only the normalized
 ### State and accessibility
 
 The skip link appears on focus. A permanent polite live region announces completion. Reduced-motion preference suppresses animation and animated scrolling. Sharing uses an inline content preview and explicit checkbox; it does not interrupt the user with a modal.
+
+Each task mode retains its own in-memory draft. Loading an example over an existing draft requires an inline replace/keep choice. Field errors identify and focus the first invalid input. Keys and private drafts are never persisted by this flow, and refresh clears them.
 
 ## Do's and Don'ts
 

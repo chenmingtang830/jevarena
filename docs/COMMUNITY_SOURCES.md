@@ -32,3 +32,24 @@ Public search and third-party roundups served as discovery aids, not evidence fo
 - Browsing these references makes no X API or inference calls. All paid collection is a bounded maintainer action; no recurring collection was configured.
 
 New entries require the repository's existing review gate. This batch is submitted for owner review, not automatically merged or published to production.
+
+## Editorial case-study pages
+
+Each registry entry has a static detail page at `/cases/{id}`. The existing
+original-template routes remain playable; community routes render a separate
+editorial component and never convert the reference into a `Challenge` or
+`RunRecord`.
+
+The index provides separate Templates and Community case studies jump links.
+Community summaries retain author attribution, a dated source label, an original
+post link, and a case-study link. Engagement counts are optional disclosure, not
+a ranking or performance score.
+
+Each detail page separates the author-reported observation, source verification,
+missing evidence, and a proposed reproduction protocol. The protocol is editorial
+guidance, not the author's exact method or an executed experiment. Without the
+original permitted inputs, any new test must be labeled an independent adaptation.
+The contribution link requests evidence for review; there is no replay button for
+these incomplete references. Source rights stay distinct from the original-template
+CC-BY-4.0 license. This page expansion uses the existing bounded registry and makes
+no new X reads or model calls.
