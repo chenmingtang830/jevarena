@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CaseBrowser } from "@/components/case-browser";
 import { CommunityLibrary } from "@/components/community-library";
+import { CommunityTasks } from "@/components/community-tasks";
 export const metadata = {
   title: "Cases",
   description: "Try judgment templates or explore attributed Jev community case studies, their evidence limits, and proposed reproduction protocols.",
@@ -19,8 +20,9 @@ export default function Cases() {
       </p>
       <nav className="case-jump-nav" aria-label="Case collections">
         <Link href="#templates">Templates</Link>
-        <Link href="#community">Community case studies</Link>
+        <Link href="#community">Community reports</Link>
       </nav>
+      <CommunityTasks />
       <section id="templates" aria-labelledby="templates-heading">
         <h2 id="templates-heading">Templates</h2>
         <p>Original starter questions you can try now, not measured model results.</p>

@@ -7,8 +7,8 @@ export const REPO = "https://github.com/chenmingtang830/jevarena";
 export function SiteHeader() {
   const pathname = usePathname();
   const pages = [
-    ["/", "Try it"],
-    ["/play", "Test your own"],
+    ["/", "Ask a question"],
+    ["/try", "Try without a key"],
     ["/cases", "Examples"],
   ];
   return (

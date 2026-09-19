@@ -12,7 +12,7 @@ npm ci
 npm run dev
 ```
 
-The homepage shows two existing real canary examples, clearly labeled as recorded diagnostic runs, not a benchmark. `/play` runs your own task. OpenRouter authorization uses a popup and PKCE; the returned key exists only in the original tab's memory. Manual keys remain an advanced option. No page load or connection automatically calls a model. Other case templates remain explicitly unmeasured.
+The homepage is an editable question composer with one-click examples; `/play` remains an alias for custom tasks. `/try` shows two real recorded canary examples, clearly labeled as diagnostic runs, not a benchmark. OpenRouter authorization uses a popup and PKCE; the returned key exists only in the original tab's memory. Manual keys are a separate, mutually exclusive connection view. No page load or connection automatically calls a model. Other case templates remain explicitly unmeasured.
 
 For local Vercel AI Gateway use, start from `web` with `NEXT_PUBLIC_VERCEL_BYOK_ENABLED=true JEVARENA_RELAY_ENABLED=true npm run dev`, then choose Vercel under the manual key disclosure. The loopback server forwards to Gateway without saving the key. Do not expose this relay publicly. Public Vercel support stays disabled pending deployment security review. See `/run-locally` for the full steps.
 

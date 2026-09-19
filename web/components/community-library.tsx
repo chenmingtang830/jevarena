@@ -1,29 +1,15 @@
 "use client";
-import { Input } from "./ui/input";
-import { useState } from "react";
 import Link from "next/link";
 import { authorUrl, communityCases, postUrl } from "@/lib/community-cases";
 
 export function CommunityLibrary() {
-  const [query, setQuery] = useState("");
-  const items = communityCases.filter((item) =>
-    `${item.title} ${item.author} ${item.handle} ${item.kind} ${item.summary}`
-      .toLowerCase().includes(query.toLowerCase()),
-  );
+  const items = communityCases;
   return (
     <section id="community" aria-labelledby="community-heading">
-      <h2 id="community-heading">Community case studies</h2>
+      <h2 id="community-heading">Community reports</h2>
       <p>
-        Explore what people report about Jev, what the sources establish, and
-        what a reproduction would need. These are editorial studies of public
-        posts, not reproduced JevArena results.
+        These posts do not include complete test inputs. They are references, not runnable cases.
       </p>
-      <div className="field">
-        <label htmlFor="community-search">Find a community report or author</label>
-        <Input id="community-search" value={query}
-          placeholder="Search topics or @handles…"
-          onChange={(event) => setQuery(event.target.value)} />
-      </div>
       <p className="hint" role="status">{items.length} community references · source checked, not reproduced</p>
       <div className="community-list">
         {items.map((item) => (
@@ -49,7 +35,6 @@ export function CommunityLibrary() {
           </article>
         ))}
       </div>
-      {!items.length && <p>No matching reports. Try a topic or author handle.</p>}
       <p className="hint">
         Selected from public links, not a complete or ranked survey of X.
         Summaries are editorial paraphrases; linked sources retain their original

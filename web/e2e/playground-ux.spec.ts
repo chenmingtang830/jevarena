@@ -74,7 +74,7 @@ test("editable answers support two through ten options and drafts stay in tab me
 test("examples acknowledge loading, focus the question and protect custom answers", async ({ page }) => {
   const example = page.getByRole("button", { name: "Phishing email", exact: true });
   const question = page.getByLabel("Question and context");
-  await expect(page.getByRole("link", { name: "Browse cases without a key" })).toHaveAttribute("href", "/cases");
+  await expect(page.locator(".composer-context").getByRole("link", { name: "Try without a key" })).toHaveAttribute("href", "/try");
   await example.click();
   await expect(question).toBeFocused();
   await expect(page.getByRole("status").filter({ hasText: "Example filled in" })).toHaveCount(1);

@@ -14,7 +14,7 @@ export function OpenRouterConnect({ onConnected, disabled = false }: { onConnect
   function connect() {
     cancel.current?.();
     setBusy(true);
-    setMessage("Finish connecting in the OpenRouter window. No models will run yet.");
+    setMessage("Continue in the OpenRouter window.");
     cancel.current = connectOpenRouter(key => {
       setBusy(false);
       setMessage("Connected for this tab. Review the cost, then start judging.");
@@ -24,6 +24,6 @@ export function OpenRouterConnect({ onConnected, disabled = false }: { onConnect
   return <div className="openrouter-connect">
     <Button type="button" onClick={connect} disabled={disabled || busy}>{busy ? "Connecting…" : "Continue to OpenRouter"}</Button>
     {busy && <Button type="button" variant="ghost" onClick={() => { cancel.current?.(); setBusy(false); setMessage("Connection cancelled. Your question is unchanged."); }}>Cancel connection</Button>}
-    <p role="status" aria-live="polite">{message}</p>
+    {message && <p className="hint" role="status" aria-live="polite">{message}</p>}
   </div>;
 }

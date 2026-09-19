@@ -614,6 +614,14 @@ label {
   width: auto;
   margin-top: 4px;
 }
+.settings-dialog .check-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  flex: 0 0 16px;
+  margin: 2px 0 0;
+  padding: 0;
+}
 .prose-page {
   max-width: 900px;
   margin: 54px auto;
@@ -817,7 +825,8 @@ label {
   .composer-toolbar { gap: 2px; padding: 10px; }
   .composer-toolbar .button { padding: 8px 10px; }
   .composer-toolbar .composer-submit { width: 100%; margin-top: 8px; }
-  .starter-chips { gap: 6px; }
+  .starter-chips { gap: 6px; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; }
+  .starter-chips button { flex: 0 0 auto; }
   .starter-chips button { padding: 8px 11px; font-size: 12px; }
   .composer-context a { display: flex; justify-content: center; margin-left: 0; }
 }
