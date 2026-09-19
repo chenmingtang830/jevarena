@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discuss a challenge or learning
+    url: https://github.com/chenmingtang830/jevarena/discussions
+    about: Share questions and interpretations; reports are not automatically verified results.
+  - name: Report a security vulnerability privately
+    url: https://github.com/chenmingtang830/jevarena/security/advisories/new
+    about: Never post credentials or sensitive information in a public issue.
+  - name: Privacy or deletion request
+    url: mailto:richard@learnest.org
+    about: Contact the operator privately. Do not publish deletion receipts.

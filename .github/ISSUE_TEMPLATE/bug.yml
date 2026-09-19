@@ -1,0 +1,20 @@
+name: Website or tooling bug
+description: Report a reproducible problem with JevArena (not a model-quality claim).
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: Do not include API keys, authorization codes, deletion receipts, private conversations, or personal information. Use private vulnerability reporting for security issues.
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the page, browser/device, and sanitized steps.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true

@@ -1,5 +1,7 @@
 # Contributing to JevArena
 
+Start with a [case report](https://github.com/chenmingtang830/jevarena/issues/new?template=case.yml), [website bug](https://github.com/chenmingtang830/jevarena/issues/new?template=bug.yml), or a small PR. See our [community conduct](CODE_OF_CONDUCT.md).
+
 All code and accepted case contributions pass through a PR, successful CI, and owner review before merge. External fork workflows require maintainer approval. See [the review gate](docs/REVIEW_GATE.md) for exact enforcement and the same-account author limitation.
 
 Use GitHub Discussions for Challenges, Failures, and Learnings. Submit reproducible cases through Issues or a PR. Never include API keys, private conversations, personal data, or content you lack permission to publish.
@@ -12,4 +14,4 @@ Code contributions are under Apache-2.0. By contributing original case text, lab
 
 Community-submitted means untrusted browser data. Reproduced, reviewed, and disputed are separate evidence states assigned by maintainers after inspection. A preference vote is never a correctness label. A PR must explain any evidence-status change; self-reported browser status is not trusted.
 
-Run `uv run python -m unittest discover -s tests` and, from web, `npm ci && npm test && npm run typecheck && npm run build`. Browser tests use synthetic responses, never paid APIs.
+Run `uv run python -m unittest discover -s tests` and, from web, `npm ci && npm test && npm run build && npm run typecheck`. For the full browser suite, build with `NEXT_PUBLIC_CONTRIBUTIONS_ENABLED=true NEXT_PUBLIC_HISTORY_ENABLED=true npm run build`, then run `CI=true npm run test:e2e`. Browser tests use synthetic responses, never paid APIs. These test flags do not enable production accounts or authorize a public relay.

@@ -1,5 +1,24 @@
 # Public preview — 2026-09-19
 
+## Current launch status (supersedes historical checkpoints below)
+
+Ready for a scoped **public preview**: guest examples, browser-direct OpenRouter comparisons, and GitHub contributions. Not a verified model leaderboard, three-provider public service, or guaranteed high-traffic deployment.
+
+- Homepage, no-key experience and Examples share five attributed community tasks. The guest page also includes one English maintainer canary. Source reports remain distinct from independently run measurements.
+- All no-key entrypoints use visible buttons; confirmed runs open a separate in-memory battle view.
+- At `528982180fb34971f4b10e69202f2b102a74429c`, production deployment succeeded; 126 web unit tests and 94 desktop/mobile E2E tests passed. Provider responses in E2E are mocked.
+- On September 19, the live production research endpoint accepted one explicitly synthetic no-run task (201), returned the same receipt on duplicate submission (200), rejected a wrong withdrawal token (404), accepted withdrawal (200), and accepted repeated withdrawal (200). Expiry was October 19, 2026. No model was called. The synthetic payload was withdrawn; the minimal anti-replay tombstone remains until expiry. This tests endpoint behavior, not independent inspection of database contents, grants, backup erasure, or throughput.
+- GitHub is public, Discussions is enabled, and private vulnerability reporting is enabled. Model credentials and deletion receipts must never be posted to Issues.
+- Guest login/history and the public provider relay are not launch features. Vercel Gateway is local opt-in only; experimental opponents are explicitly labeled and excluded from automatic Arena selection.
+
+Launch messaging and contributor paths: [LAUNCH.md](LAUNCH.md). The previously pending endpoint submission/withdrawal gate is now satisfied for this synthetic workflow. Production CORS/inference evidence remains the earlier bounded canary, not a fresh inference run in this release.
+
+### Operational limits for this preview
+
+The existing intake limits and kill switch remain in place. No new infrastructure purchase, paid firewall rule, paid model call, or plan change was made for launch. Account spend alerts and a 10,000-user traffic envelope have **not** been certified. Operator monitoring is still necessary; BYOK does not eliminate hosting costs. If intake fails, users can retain JSON and contribute via GitHub. Disable collection and redeploy if abuse or capacity requires it; the browser-direct model flow is separate.
+
+The checkpoints below are historical, not the current UI inventory or remaining preview blockers.
+
 Production: https://jevarena-lab.vercel.app
 
 Repository: https://github.com/chenmingtang830/jevarena
