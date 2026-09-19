@@ -24,6 +24,20 @@ class ContractTests(unittest.TestCase):
         value = model_input(self.challenge)
         self.assertEqual(set(value), {"content", "question", "options"})
 
+    def test_human_answer_is_distinct_and_validated(self):
+        value = {"schemaVersion": 1, "id": "answer", "challenge": self.challenge,
+                 "runs": [], "license": "CC-BY-4.0", "status": "community-submitted",
+                 "humanAnswer": {"optionId": "yes", "revealedBeforeAnswer": False, "rationale": "Evidence"},
+                 "sourceAttributions": [{"url": "https://example.com/source", "author": "Author", "license": "MIT", "notice": "MIT notice"}]}
+        self.assertEqual(validate_contract("CaseContribution", value), value)
+        self.assertNotIn("vote", value)
+        with self.assertRaisesRegex(ValueError, "Human answer"):
+            validate_contract("CaseContribution", {**value, "humanAnswer": {"optionId": "missing", "revealedBeforeAnswer": False}})
+        with self.assertRaises(Exception):
+            validate_contract("CaseContribution", {**value, "humanAnswer": {"optionId": "yes", "revealedBeforeAnswer": False, "rationale": "x" * 2001}})
+        with self.assertRaises(ValueError):
+            validate_contract("CaseContribution", {**value, "sourceAttributions": [{"url": "http://example.com", "author": "Author", "license": "MIT"}]})
+
     def test_keys_rejected(self):
         with self.assertRaises(Exception):
             validate_contract("Challenge", {**self.challenge, "apiKey": "secret"})

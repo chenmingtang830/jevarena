@@ -13,9 +13,11 @@ export default function Contribute() {
         explanations. You don’t need a surprising result to contribute.
       </p>
       <section>
-        <h2>Contribute privately to research</h2>
-        <p>After a comparison, open “Share this experiment” and review the complete task, runs and vote. When research submissions are enabled, a separate, unchecked consent form lets you submit that preview for private research review under CC BY 4.0. Running a comparison does not submit it.</p>
-        <p>Only contribute material you have permission to share, after removing secrets and personal information. Research consent does not authorize publication. Pending submissions expire after 30 days; your receipt shows the exact expiration time. A public case requires a separate contributor action and permission.</p>
+        <h2>Contribute an answer</h2>
+        <p>When public contribution mode is enabled, its visible checkbox starts on before you answer an example or confirm a match. Leave it on to contribute the task, your answer and optional reason, and associated model results or preference vote for research and publication after review. Turn it off before proceeding to keep that activity out of the research database.</p>
+        <p>Submissions go to a non-public review queue, not an instant public feed. Human answers and model-preference votes are separate, unverified observations. Only contribute material you have permission to share, after removing secrets and personal information. Public mode remains deployment-gated until its checks pass.</p>
+        <p>Pending submissions expire after 30 days; your receipt shows the exact expiration time. Reviewed GitHub cases may remain longer. Withdrawing the pending payload cannot recall a published copy, fork or archive; contact the operator privately about published material.</p>
+        <p>The separate “Share this experiment” private-research form remains opt-in and does not authorize publication. Existing private submissions stay private. Neither contribution path authorizes model training or later paid provider calls.</p>
         <p>If storage or submission capacity is reached, your experiment stays in the browser. Download its JSON and use the GitHub contribution route below. Review it again before posting publicly.</p>
         <p>Download the deletion receipt after submitting and keep it private. It contains the token needed to <a href="/contributions/delete">withdraw your submission</a>. Receipts and provider keys are not saved in browser storage. If delivery is uncertain, retry the same submission from the open tab or download its recovery receipt.</p>
       </section>

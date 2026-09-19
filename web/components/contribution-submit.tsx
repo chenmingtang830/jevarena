@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type CaseContribution } from "@/lib/contracts";
 import { contributionJson } from "@/lib/sharing";
 import { Button } from "./ui/button";
@@ -26,14 +26,20 @@ function saveReceipt(receipt: Pick<ContributionReceipt, "receiptId" | "deletionT
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function ContributionSubmit({ value }: { value: CaseContribution }) {
-  const [research, setResearch] = useState(false);
-  const [rights, setRights] = useState(false);
-  const [reviewed, setReviewed] = useState(false);
+export function ContributionSubmit({ value, publicCandidate = false }: { value: CaseContribution; publicCandidate?: boolean }) {
+  const [research, setResearch] = useState(publicCandidate);
+  const [rights, setRights] = useState(publicCandidate);
+  const [reviewed, setReviewed] = useState(publicCandidate);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [receipt, setReceipt] = useState<ContributionReceipt | null>(null);
   const attempt = useRef<{ body: string; receiptId: string; deletionToken: string } | null>(null);
+  const started = useRef(false);
+  // Mounted only by an explicit answer/vote action after the public-mode notice.
+  // Never mount this automatic variant while merely browsing/importing a record.
+  useEffect(() => {
+    if (publicCandidate && !started.current) { started.current = true; void submit(); }
+  }, []);
 
   async function submit() {
     if (!research || !rights || !reviewed || busy || receipt) return;
@@ -51,7 +57,9 @@ export function ContributionSubmit({ value }: { value: CaseContribution }) {
             schemaVersion: 1,
             submissionId,
             deletionToken,
-            consent: { version: "2026-09-19", research: true, rights: true, reviewed: true, allowPublication: false },
+            consent: publicCandidate
+              ? { version: "2026-09-19-public-v1", research: true, rights: true, reviewed: true, allowPublication: true, publication: "after-review" }
+              : { version: "2026-09-19", research: true, rights: true, reviewed: true, allowPublication: false },
             contribution: JSON.parse(contributionJson(value)),
           }),
         };
@@ -90,22 +98,22 @@ export function ContributionSubmit({ value }: { value: CaseContribution }) {
     }
   }
 
-  return <section className="contribution-submit" aria-label="Contribute to research">
-    <h3>Contribute privately to research</h3>
-    <p className="hint">Send the preview above to JevArena for research and private review. This is optional and does not publish your experiment. Pending submissions expire after 30 days.</p>
+  return <section className="contribution-submit" aria-label={publicCandidate ? "Community contribution" : "Contribute to research"}>
+    <h3>{publicCandidate ? "Your community contribution" : "Contribute privately to research"}</h3>
+    {!publicCandidate && <p className="hint">Send the preview above to JevArena for research and private review. This is optional and does not publish your experiment. Pending submissions expire after 30 days.</p>}
     {receipt ? <div className="contribution-receipt" role="status">
-      <p>Received for private review. This is a community-submitted observation, not a verified result.</p>
+      <p>{publicCandidate ? "Received for review before publication. Thank you for contributing." : "Received for private review. This is a community-submitted observation, not a verified result."}</p>
       <p className="hint">Receipt: <code>{receipt.receiptId}</code></p>
       <p className="hint">Received: <time dateTime={receipt.receivedAt}>{new Date(receipt.receivedAt).toISOString()}</time><br />Expires: <time dateTime={receipt.expiresAt}>{new Date(receipt.expiresAt).toISOString()}</time></p>
       <p className="hint">Download your receipt now. It contains the deletion token needed to withdraw this submission. Changing experiments or refreshing loses this in-memory copy.</p>
       <div className="inline"><Button variant="secondary" onClick={() => saveReceipt(receipt)}>Download deletion receipt</Button><Link href="/contributions/delete">Withdraw a submission</Link></div>
     </div> : <>
-      <fieldset disabled={busy} className="contribution-consent">
+      <fieldset hidden={publicCandidate} disabled={busy} className="contribution-consent">
         <label className="check-label"><Input type="checkbox" checked={research} onChange={(event) => setResearch(event.target.checked)} />I consent to research use of this task, model runs and vote.</label>
         <label className="check-label"><Input type="checkbox" checked={rights} onChange={(event) => setRights(event.target.checked)} />I have the rights to contribute this material under CC BY 4.0.</label>
         <label className="check-label"><Input type="checkbox" checked={reviewed} onChange={(event) => setReviewed(event.target.checked)} />I reviewed the preview and removed secrets and personal information.</label>
       </fieldset>
-      <p className="hint">Publication requires a separate action and permission. Research consent does not authorize a public case page. No API key is included.</p>
+      {!publicCandidate && <p className="hint">Publication requires a separate action and permission. Research consent does not authorize a public case page. No API key is included.</p>}
       <Button disabled={!research || !rights || !reviewed || busy} onClick={submit}>{busy ? "Submitting…" : attempt.current ? "Retry research submission" : "Submit for private research"}</Button>
       {error && <p className="error" role="alert">{error}</p>}
       {error && <p className="hint">You can still download the JSON using the export controls above, then <a href={`${REPO}/issues/new/choose`} target="_blank" rel="noreferrer">contribute on GitHub</a>. GitHub contributions are public; review the contents first.</p>}

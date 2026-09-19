@@ -165,8 +165,7 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
   await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
-  await page.locator("summary").filter({ hasText: "Model settings" }).click();
-  await page.getByRole("button", { name: "Compare · pick a model" }).click();
+  await page.locator("summary").filter({ hasText: "Advanced settings" }).click();
   await page
     .getByLabel("Opponent", { exact: true })
     .selectOption("openrouter:anthropic/claude-sonnet-4.5");

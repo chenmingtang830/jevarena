@@ -91,12 +91,27 @@ export const VoteSchema = z.strictObject({
   revealedBeforeVote: z.boolean(),
 });
 export type Vote = z.infer<typeof VoteSchema>;
+export const HumanAnswerSchema = z.strictObject({
+  optionId: id,
+  revealedBeforeAnswer: z.boolean(),
+  rationale: z.string().max(2000).optional(),
+});
+export type HumanAnswer = z.infer<typeof HumanAnswerSchema>;
+export const SourceAttributionSchema = z.strictObject({
+  url: z.url().max(2000).refine((value) => value.startsWith("https://"), "HTTPS source required"),
+  author: z.string().min(1).max(200),
+  license: z.string().min(1).max(200),
+  notice: z.string().max(10000).optional(),
+});
 export const CaseContributionSchema = z.strictObject({
   schemaVersion: z.literal(1),
   id,
   challenge: ChallengeSchema,
   runs: z.array(RunRecordSchema).max(20),
   vote: VoteSchema.optional(),
+  humanAnswer: HumanAnswerSchema.optional(),
+  // The contribution license covers original additions, not imported sources.
+  sourceAttributions: z.array(SourceAttributionSchema).max(10).optional(),
   license: z.literal("CC-BY-4.0"),
   status: z.enum(["community-submitted", "reproduced", "reviewed", "disputed"]),
   notes: z.string().max(10000).optional(),

@@ -26,7 +26,7 @@ test("running requires explicit versioned consent and shortcuts never accept or 
   await openManualKey(page);
   await expect(consent).not.toBeChecked();
   await expect(start).toBeDisabled();
-  await expect(page.locator("[data-policy-version]")).toHaveAttribute("data-policy-version", "2026-09-19");
+  await expect(page.locator("[data-policy-version]")).toHaveAttribute("data-policy-version", "2026-09-19-public-v1");
   for (const [name, href] of [["Read Terms", "/terms"], ["Read Privacy", "/privacy"]]) {
     const link = page.getByRole("link", { name, exact: true });
     await expect(link).toHaveAttribute("href", href);

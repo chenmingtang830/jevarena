@@ -23,8 +23,6 @@ test("registry components preserve the quick-start and preflight boundary", asyn
   await expect(page.locator("#preflight-heading")).toBeFocused();
   await openManualKey(page);
   await page.locator("#key-openrouter").fill("test-only-not-a-real-key");
-  await expect(page.locator("#rival")).not.toBeVisible();
-  await page.locator("summary").filter({ hasText: "Model settings" }).click();
   await expect(page.locator("#rival")).toBeVisible();
   expect(paidRequests).toBe(0);
 });

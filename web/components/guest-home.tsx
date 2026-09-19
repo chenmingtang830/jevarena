@@ -5,7 +5,9 @@ import { ArrowRight } from "lucide-react";
 import evidence from "../../docs/evidence/openrouter-canary-2026-09-19.json";
 import { templates } from "@/lib/cases";
 import { communityTasks, communityTaskSource } from "@/lib/community-tasks";
-import { modelInput } from "@/lib/contracts";
+import { modelInput, type CaseContribution } from "@/lib/contracts";
+import { ContributionSubmit } from "./contribution-submit";
+import { PUBLIC_COLLECTION, PublicContributionChoice } from "./public-contribution-choice";
 import { Button } from "@/components/ui/button";
 import styles from "./guest-home.module.css";
 
@@ -16,11 +18,27 @@ export function GuestHome({ initialId }: { initialId?: string }) {
   const [guess, setGuess] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
+  const [publicMode, setPublicMode] = useState(true);
+  const [rationale, setRationale] = useState("");
+  const [submissions, setSubmissions] = useState<CaseContribution[]>([]);
+  const seenAnswers = useRef(new Set<string>());
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const input = modelInput(active);
   const community = communityTasks.find(({ challenge }) => challenge.id === active.id);
   const runs = evidence.runs.filter((run) => run.challengeId === active.id);
-  function reveal() { setRevealed(true); requestAnimationFrame(() => resultHeading.current?.focus()); }
+  function reveal(collect = true) {
+    const revealedBeforeAnswer = seenAnswers.current.has(active.id);
+    if (collect && !revealed && guess && PUBLIC_COLLECTION && publicMode) {
+      setSubmissions(current => [...current, {
+        schemaVersion: 1, id: crypto.randomUUID(), challenge: active, runs: [],
+        humanAnswer: { optionId: guess, revealedBeforeAnswer, ...(rationale.trim() ? { rationale: rationale.trim() } : {}) },
+        ...(community ? { sourceAttributions: [{ url: communityTaskSource.data, author: communityTaskSource.author, license: communityTaskSource.license, notice: "Original task from pithings/advocaat. MIT source and copyright notice: https://github.com/pithings/advocaat/blob/46ed82661a41c27efd2a1bddf34f8dc1350d9143/LICENSE" }] } : {}),
+        license: "CC-BY-4.0", status: "community-submitted",
+      }]);
+    }
+    seenAnswers.current.add(active.id);
+    setRevealed(true); requestAnimationFrame(() => resultHeading.current?.focus());
+  }
   return <main id="main" className={styles.page}>
     <header className={styles.intro}>
       <h1>Would you make the same call?</h1>
@@ -28,7 +46,7 @@ export function GuestHome({ initialId }: { initialId?: string }) {
       <p className="hint">No account. No API key. No model calls.</p>
     </header>
     <div className={styles.examples} aria-label="Choose an example">
-      {examples.map((task) => <Button key={task.id} variant="outline" aria-pressed={active.id === task.id} onClick={() => { setActive(task); setGuess(null); setRevealed(false); setShareStatus(""); }}>{task.id === "decimal-comparison" ? "Which number is larger?" : task.title}</Button>)}
+      {examples.map((task) => <Button key={task.id} variant="outline" aria-pressed={active.id === task.id} onClick={() => { setActive(task); setGuess(null); setRevealed(false); setRationale(""); setShareStatus(""); }}>{task.id === "decimal-comparison" ? "Which number is larger?" : task.title}</Button>)}
     </div>
     <section className={styles.question} aria-labelledby="guest-question" lang={active.language}>
       <h2 id="guest-question">{active.kind === "comparison" ? active.prompt : community ? active.content : active.question}</h2>
@@ -41,8 +59,12 @@ export function GuestHome({ initialId }: { initialId?: string }) {
         {input.options.map((option) => <Button variant={guess === option.id ? "primary" : "outline"} key={option.id} aria-pressed={guess === option.id} onClick={() => setGuess(option.id)}>{option.label}</Button>)}
       </fieldset>
       {!revealed && <div className={styles.revealActions}>
-        <Button onClick={reveal} disabled={!guess}>{community ? "Reveal recorded result" : "Reveal model answers"} <ArrowRight size={16} /></Button>
-        <Button variant="ghost" onClick={reveal}>Skip my guess</Button>
+        {PUBLIC_COLLECTION && <div className="full-width">
+          <details><summary>Add a reason (optional)</summary><label htmlFor="guest-reason">Why this answer?</label><textarea id="guest-reason" maxLength={2000} value={rationale} onChange={event => setRationale(event.target.value)} /></details>
+          <PublicContributionChoice checked={publicMode} onChange={setPublicMode} />
+        </div>}
+        <Button onClick={() => reveal()} disabled={!guess}>{PUBLIC_COLLECTION && publicMode ? "Submit answer & reveal" : community ? "Reveal recorded result" : "Reveal model answers"} <ArrowRight size={16} /></Button>
+        <Button variant="ghost" onClick={() => reveal(false)}>Skip my guess</Button>
       </div>}
     </section>
     {revealed && <section className={styles.results} aria-labelledby="recorded-results">
@@ -69,6 +91,7 @@ export function GuestHome({ initialId }: { initialId?: string }) {
       </div>
       <p role="status" className="hint">{shareStatus}</p>
     </section>}
+    {submissions.map(value => <ContributionSubmit key={value.id} value={value} publicCandidate />)}
     <nav className={styles.next} aria-label="More ways to explore">
       <Button asChild variant="secondary"><Link href="/">Test your own question <ArrowRight size={15} /></Link></Button>
       <Button asChild variant="secondary"><Link href="/cases">Explore examples</Link></Button>

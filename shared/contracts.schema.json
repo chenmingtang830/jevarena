@@ -406,6 +406,60 @@
       ],
       "additionalProperties": false
     },
+    "HumanAnswer": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "optionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "revealedBeforeAnswer": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "optionId",
+        "revealedBeforeAnswer"
+      ],
+      "additionalProperties": false
+    },
+    "SourceAttribution": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "maxLength": 2000,
+          "format": "uri"
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "notice": {
+          "type": "string",
+          "maxLength": 10000
+        }
+      },
+      "required": [
+        "url",
+        "author",
+        "license"
+      ],
+      "additionalProperties": false
+    },
     "CaseContribution": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
@@ -823,6 +877,62 @@
             "revealedBeforeVote"
           ],
           "additionalProperties": false
+        },
+        "humanAnswer": {
+          "type": "object",
+          "properties": {
+            "optionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "revealedBeforeAnswer": {
+              "type": "boolean"
+            },
+            "rationale": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          },
+          "required": [
+            "optionId",
+            "revealedBeforeAnswer"
+          ],
+          "additionalProperties": false
+        },
+        "sourceAttributions": {
+          "maxItems": 10,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "maxLength": 2000,
+                "format": "uri"
+              },
+              "author": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "license": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 10000
+              }
+            },
+            "required": [
+              "url",
+              "author",
+              "license"
+            ],
+            "additionalProperties": false
+          }
         },
         "license": {
           "type": "string",

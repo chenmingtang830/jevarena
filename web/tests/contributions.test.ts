@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { templates } from "../lib/cases";
 import { modelInput, type CaseContribution, type RunRecord } from "../lib/contracts";
-import { CONTRIBUTION_CONSENT_VERSION, handleContribution, handleWithdrawal, MAX_CONTRIBUTION_BYTES, sha256, validateContribution } from "../lib/contributions";
+import { CONTRIBUTION_CONSENT_VERSION, PUBLIC_CONTRIBUTION_CONSENT_VERSION, handleContribution, handleWithdrawal, MAX_CONTRIBUTION_BYTES, sha256, validateContribution } from "../lib/contributions";
 
 const submissionId = "572d5a61-38a4-4df1-8a65-64d314d32a72";
 const deletionToken = "a".repeat(43);
@@ -20,6 +20,22 @@ function accepted(duplicate = false) { return Response.json({ ok: true, duplicat
 afterEach(() => vi.useRealTimers());
 
 describe("private research contribution integrity", () => {
+  it("keeps human answers distinct from model preferences and validates option IDs", async () => {
+    const value = await contribution();
+    const answer = { optionId: modelInput(value.challenge).options[0].id, revealedBeforeAnswer: false, rationale: "My reasoning" };
+    const parsed = await validateContribution({ ...value, runs: [], vote: undefined, humanAnswer: answer });
+    expect(parsed.humanAnswer).toEqual(answer);
+    expect(parsed.vote).toBeUndefined();
+    await expect(validateContribution({ ...value, humanAnswer: { ...answer, optionId: "missing" } })).rejects.toThrow();
+    await expect(validateContribution({ ...value, humanAnswer: { ...answer, rationale: "x".repeat(2001) } })).rejects.toThrow();
+    await expect(validateContribution({ ...value, humanAnswer: { ...answer, apiKey: "secret" } })).rejects.toThrow();
+  });
+  it("preserves source attribution separately from original contribution licensing", async () => {
+    const value = await contribution();
+    const source = { url: "https://example.com/source", author: "Original author", license: "MIT", notice: "Original notice" };
+    expect((await validateContribution({ ...value, sourceAttributions: [source] })).sourceAttributions).toEqual([source]);
+    await expect(validateContribution({ ...value, sourceAttributions: [{ ...source, url: "javascript:alert(1)" }] })).rejects.toThrow();
+  });
   it("validates a linked battle and forces untrusted community evidence", async () => {
     const value = await contribution();
     const parsed = await validateContribution({ ...value, status: "reviewed" });
@@ -70,6 +86,18 @@ describe("private research contribution integrity", () => {
 });
 
 describe("contribution routes", () => {
+  it("requires a separately enabled public candidate protocol, never upgrades legacy consent", async () => {
+    const value = await submission();
+    const publicConsent = { ...consent, version: PUBLIC_CONTRIBUTION_CONSENT_VERSION, allowPublication: true, publication: "after-review" };
+    const fetcher = vi.fn().mockImplementation(() => accepted());
+    expect((await handleContribution(request({ ...value, consent: publicConsent }), env, fetcher)).status).toBe(503);
+    expect(fetcher).not.toHaveBeenCalled();
+    expect((await handleContribution(request({ ...value, consent: publicConsent }), { ...env, JEVARENA_PUBLIC_COLLECTION_ENABLED: "true" }, fetcher)).status).toBe(201);
+    const body = JSON.parse(fetcher.mock.calls[0][1].body);
+    expect(body.p_consent).toEqual(publicConsent);
+    expect(body.p_payload.status).toBe("community-submitted");
+    expect((await handleContribution(request({ ...value, consent: { ...publicConsent, publication: "immediate" } }), { ...env, JEVARENA_PUBLIC_COLLECTION_ENABLED: "true" }, fetcher)).status).toBe(400);
+  });
   it("is disabled unless fully configured on Vercel", async () => {
     const fetcher = vi.fn();
     const value = await submission();
