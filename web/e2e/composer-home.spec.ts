@@ -32,7 +32,7 @@ test("homepage starts with editable composer and examples; connection methods ne
   await expect(page.getByLabel("Question and context")).toHaveValue(/6\^3/);
   await page.getByRole("button", {name:"Start judging",exact:true}).click();
   await expect(page.getByRole("button", {name:"Continue to OpenRouter"})).toBeVisible();
-  for (const [name, href] of [["Try without connecting", "/try"], ["Run locally", "/run-locally"]]) {
+  for (const [name, href] of [["Try without a key", "/try"], ["Run locally", "/run-locally"]]) {
     const link = page.getByRole("dialog").getByRole("link", {name, exact:true});
     await expect(link).toHaveAttribute("data-slot", "button");
     await expect(link).toHaveAttribute("href", href);

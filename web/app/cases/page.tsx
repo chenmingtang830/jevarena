@@ -9,26 +9,15 @@ export const metadata = {
 export default function Cases() {
   return (
     <main id="main" className="prose-page">
-      <h1>
-        Questions worth
-        <br />a second judgment.
-      </h1>
-      <p>
-        Try a ready-to-use judgment template, or explore a community report and
-        what it would take to reproduce it. Templates open directly as editable
-        experiments. Browsing and editing are free; running models uses your own API keys.
-      </p>
-      <nav className="case-jump-nav" aria-label="Case collections">
-        <Link href="#templates">Templates</Link>
-        <Link href="#community">Community reports</Link>
-      </nav>
+      <h1>Example questions</h1>
+      <p>Guess first and reveal a recorded result, or run a fresh comparison with your own key.</p>
       <CommunityTasks />
-      <section id="templates" aria-labelledby="templates-heading">
+      <details><summary>More starter templates</summary><section id="templates" aria-labelledby="templates-heading">
         <h2 id="templates-heading">Templates</h2>
         <p>Original starter questions you can try now, not measured model results.</p>
         <CaseBrowser />
-      </section>
-      <CommunityLibrary />
+      </section></details>
+      <details><summary>Community reports and background</summary><CommunityLibrary /></details>
       <section>
         <h2>Found a surprising failure?</h2>
         <p>

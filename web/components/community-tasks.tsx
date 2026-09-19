@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { communityTasks, communityTaskSource as source } from "@/lib/community-tasks";
 
 export function CommunityTasks() {
@@ -8,7 +9,10 @@ export function CommunityTasks() {
     {communityTasks.map(({ challenge, observation, sourceId }) => <article className="case-entry" key={challenge.id}>
       <h3><Link href={`/?case=${challenge.id}`}>{challenge.title}</Link></h3>
       <p>{challenge.kind === "judgment" && challenge.content}</p>
-      <Link href={`/?case=${challenge.id}`}>Try this question →</Link>
+      <div className="connection-alternatives">
+        <Button asChild variant="secondary"><Link href={`/try?example=${challenge.id}`}>Try without a key</Link></Button>
+        <Button asChild variant="outline"><Link href={`/?case=${challenge.id}`}>Run this question</Link></Button>
+      </div>
       <details><summary>Author’s recorded result</summary>
         <p>{observation}</p>
         <p className="hint">2026-09-18 · Author-reported, not independently reproduced. Reruns use JevArena’s prompt format, not an exact replay. <a href={source.data}>Raw record: {sourceId}</a> · MIT.</p>

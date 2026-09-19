@@ -471,7 +471,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 }} />
                 <p className="hint">Set a small credit limit on OpenRouter. The authorized key stays in this tab.</p>
                 <div className="connection-alternatives" aria-label="Other ways to try JevArena">
-                  <Button asChild variant="secondary"><Link href="/try">Try without connecting <ArrowRight size={16} aria-hidden="true" /></Link></Button>
+                  <Button asChild variant="secondary"><Link href="/try">Try without a key <ArrowRight size={16} aria-hidden="true" /></Link></Button>
                   <Button asChild variant="secondary"><Link href="/run-locally">Run locally <ArrowRight size={16} aria-hidden="true" /></Link></Button>
                 </div>
               </>}
@@ -656,7 +656,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
             </div>
           </fieldset>
         </section>
-        <p className="composer-context" hidden={battleView}>Compare anonymously. Vote to reveal. <Link href="/try">Try without a key <ArrowRight size={12} /></Link></p>
+        <div className="composer-context" hidden={battleView}>Compare anonymously. Vote to reveal. <Button asChild variant="secondary"><Link href="/try">Try without a key <ArrowRight size={12} /></Link></Button></div>
         <div hidden={!battleView}>
           <Button variant="ghost" disabled={busy} onClick={editQuestion}>Edit question</Button>
           {error && <p className="error" role="alert">{error}</p>}
