@@ -22,6 +22,8 @@ PR #2 adds four attributed X community case-study pages, early examples, separat
 
 Supabase Pro and enabled Spend Cap were verified in the operator dashboard on September 19. Migration 004 is applied: 30-day receipts, 10,000/day admission ceiling, 100/IP/hour, 5 GiB active payload / 310,000 receipt limits, and a 6 GiB database-size admission stop. Every five minutes an active cron job purges expired rows. Private tables have RLS and deny anonymous/authenticated table access. Limits are safeguards, not an assurance that every maximum-size submission fits, nor an absolute hosting bill cap. See [data collection](DATA_COLLECTION.md).
 
+GitGuardian incident 37449110 was inspected and classified as a test credential: it identified only the disposable PostgreSQL CI service password, not a cloud or model credential. CI now uses a per-run disposable value. Secret scanning remains enabled. GitHub Actions passed both application tests and the real PostgreSQL integrity job at revision `43edb0f`.
+
 ## Remaining release gates
 
 - Real production-domain canary and submission/withdrawal verification before announcing public beta. A maximum of four new OpenRouter calls and $0.05 is explicitly authorized; do not exceed it or auto-retry.
