@@ -67,7 +67,7 @@ components:
 
 **Creative North Star: "The Experimental Workbench"**
 
-The user-approved, code-led Operate surface makes the task and the two judgments the visual center. Warm paper, dark ink, and a restrained green accent create a calm working environment. Editorial hierarchy supports compact forms without turning the page into a marketing hero.
+The Operate surface starts with one centered input, following the user's Arena homepage reference. Warm paper, dark ink, and a restrained green accent create a calm working environment. The initial task takes priority over configuration; equally weighted judgments appear after execution, not as empty panels on arrival.
 
 The implementation uses CSS and Lucide line icons. There are no generated raster assets. The locally generated result image is an export of experiment data, not decorative artwork.
 
@@ -91,7 +91,7 @@ The wordmark uses mixed weights and tracking of (-0.04em). Do not tighten it bey
 
 ## Layout
 
-The workspace is capped at (1210px), with a two-column grid weighted (1.08fr / 1fr) and a (28px) gap. The form and results are separate peers. Documentation has a narrower (900px) container and prose measures around (70ch).
+The homepage uses a narrow centered composer with a compact toolbar and a few starter prompts. Connection, cost review and custom task fields are progressively disclosed. There is no initial results sidebar. Documentation has a (900px) container and prose measures around (70ch).
 
 At (850px), the workbench becomes a single column. At (500px), result cards and form rows stack and horizontal padding tightens. Navigation wraps without removing any primary destination; each link has a 44px minimum target and the current route is marked. Completed runs focus and scroll to the result heading so mobile users do not miss the outcome below the form.
 
@@ -101,7 +101,7 @@ Panels use one-pixel borders instead of shadows. Tonal backgrounds distinguish n
 
 ## Shapes
 
-Controls have gently rounded corners; full panels are slightly softer. Tags use compact squared corners. The judge placeholders are plain geometric boxes labeled X and Y, indicating withheld identity rather than simulated content.
+Controls have gently rounded corners; full panels are slightly softer. Tags use compact squared corners. Active judges use X and Y labels, indicating withheld identity rather than simulated content. No judge placeholders occupy the initial homepage.
 
 ## Components
 
@@ -113,7 +113,7 @@ Primary buttons use green, secondary buttons use surface with a line border, and
 
 The wordmark anchors a compact horizontal navigation. Cases use editorial rows with visible template labels, titles, language, and links. Search and task filters precede the list. Avoid invented metrics or community counts.
 
-The first experiment presents a compact example action and a no-key browsing link before input fields. The participation sequence is task, anonymous judgment, then vote to reveal. Cases offer early jumps between original templates and community case studies. Community summaries use a single editorial column; engagement metadata is collapsed. Study pages separate source reports, verified provenance, limitations, and proposed reproduction, with original-post and author links. They are not model-run result pages.
+The first experiment presents one input and compact examples. Simple mode uses explicit Yes / No / Unsure judgments; it does not promise free-form chat. Custom choices and two-answer comparisons remain available in the advanced editor. A settings/cost review step precedes execution. The participation sequence is task, anonymous judgment, then vote to reveal. Cases offer early jumps between original templates and community case studies. Community summaries use a single editorial column; engagement metadata is collapsed. Study pages separate source reports, verified provenance, limitations, and proposed reproduction, with original-post and author links. They are not model-run result pages.
 
 ### Comparison results
 

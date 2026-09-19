@@ -396,48 +396,6 @@ label {
   color: var(--muted);
   margin-bottom: 12px;
 }
-.empty-arena {
-  padding: 46px 30px 38px;
-  min-height: 440px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-.judge-pair {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  margin: 22px 0 26px;
-}
-.judge-placeholder {
-  width: 104px;
-  height: 116px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  font-size: 45px;
-  color: #9da99b;
-  font-weight: 350;
-  background: var(--paper);
-}
-.versus {
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 11px;
-  color: var(--muted);
-}
-.empty-arena h3 {
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-.empty-arena p {
-  max-width: 280px;
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 10px;
-}
 .arena-bottom {
   padding: 17px 22px;
   border-top: 1px solid var(--line);
@@ -730,6 +688,69 @@ label {
   font-size: 13px;
   margin-top: 6px;
 }
+.simple-workspace {
+  max-width: 850px;
+  margin-top: clamp(52px, 12vh, 126px);
+  min-height: 58vh;
+}
+.composer-intro {
+  text-align: center;
+  margin-bottom: 34px;
+}
+.composer-intro h1 {
+  font-size: clamp(30px, 4vw, 44px);
+  letter-spacing: -0.03em;
+}
+.composer-intro p {
+  color: var(--muted);
+  margin-top: 14px;
+}
+.composer-flow { display: flex; flex-direction: column; gap: 18px; }
+.composer { overflow: visible; border-radius: 16px; }
+.composer .editor-body { padding: 20px; }
+.simple-input textarea {
+  border: 0;
+  border-radius: 0;
+  min-height: 152px;
+  padding: 5px 2px;
+  font-size: 16px;
+  line-height: 1.65;
+}
+.simple-input textarea[aria-invalid="true"] { outline: 1px solid var(--danger); }
+.simple-input .hint { margin: 8px 0 18px; }
+.composer-toolbar { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.composer-toolbar .button { min-height: 44px; font-size: 13px; }
+.composer-toolbar .composer-submit { margin-left: auto; }
+.advanced-task { padding-bottom: 24px; }
+.model-settings { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 24px; }
+.model-settings h2 { font-size: 21px; }
+.preflight-intro { margin-bottom: 20px; }
+.starter-chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.starter-chips button {
+  padding: 9px 15px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+}
+.starter-chips button:hover { background: var(--light); color: var(--ink); border-color: var(--green); }
+.composer-context { text-align: center; font-size: 12px; color: var(--muted); }
+.composer-context a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin-left: 8px; color: var(--green); }
+.composer-flow .arena-panel { margin-top: 16px; }
+@media (max-width: 500px) {
+  .workspace.simple-workspace { margin-top: 44px; }
+  .composer-intro { margin-bottom: 26px; }
+  .composer-intro p { font-size: 14px; max-width: 30ch; margin: 12px auto 0; }
+  .composer .editor-body { padding: 16px; }
+  .composer-toolbar { gap: 2px; }
+  .composer-toolbar .button { padding: 8px 10px; }
+  .composer-toolbar .composer-submit { width: 100%; margin-top: 8px; }
+  .starter-chips { gap: 6px; }
+  .starter-chips button { padding: 8px 11px; font-size: 12px; }
+  .composer-context a { display: flex; justify-content: center; margin-left: 0; }
+}
 .case-jump-nav a, .study-actions a {
   display: inline-flex;
   align-items: center;
@@ -774,13 +795,6 @@ label {
   }
   .intro-note {
     display: none;
-  }
-  .empty-arena {
-    min-height: 300px;
-    padding: 20px;
-  }
-  .judge-pair {
-    margin: 14px 0;
   }
   .site-footer {
     margin: 40px 26px 0;

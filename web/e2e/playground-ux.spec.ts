@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 
-test("first viewport offers a starter task before configuration", async ({ page }, testInfo) => {
-  const example = page.getByRole("button", { name: "Try an example", exact: true });
-  await expect(example).toBeInViewport();
+test("first viewport offers a single composer before configuration", async ({ page }, testInfo) => {
+  await expect(page.getByLabel("Your claim or question")).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Review & compare", exact: true })).toBeInViewport();
   await mkdir("../.impeccable/review", { recursive: true });
   await page.screenshot({ path: `../.impeccable/review/home-${testInfo.project.name}.png`, fullPage: true });
 });
@@ -19,6 +19,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("task switches preserve independent drafts only in tab memory", async ({ page }) => {
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page.getByLabel("What should the models evaluate?").fill("Private judgment draft");
   await page.getByLabel("What’s the judgment?").fill("Is the claim supported?");
   await page.getByLabel("Option 1", { exact: true }).fill("Supported");
@@ -41,10 +42,12 @@ test("task switches preserve independent drafts only in tab memory", async ({ pa
   const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));
   expect(stored).not.toContain("Private");
   await page.reload();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await expect(page.getByLabel("What should the models evaluate?")).toHaveValue("");
 });
 
 test("early examples acknowledge loading, focus content and protect existing drafts", async ({ page }) => {
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   const example = page.getByRole("button", { name: "Try an example", exact: true });
   const content = page.getByLabel("What should the models evaluate?");
   expect((await example.boundingBox())!.y).toBeLessThan((await content.boundingBox())!.y);
@@ -66,6 +69,8 @@ test("early examples acknowledge loading, focus content and protect existing dra
 });
 
 test("invalid fields are described inline and focus progresses to the missing key", async ({ page }) => {
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   const start = page.getByRole("button", { name: "Start blind comparison" });
   const content = page.getByLabel("What should the models evaluate?");
   await start.click();
@@ -93,6 +98,8 @@ test("invalid fields are described inline and focus progresses to the missing ke
 });
 
 test("comparison and length constraints remain enforced before provider calls", async ({ page }) => {
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page.getByRole("button", { name: "Compare two answers", exact: true }).click();
   const start = page.getByRole("button", { name: "Start blind comparison" });
   await start.click();

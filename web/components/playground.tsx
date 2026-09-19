@@ -2,11 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
-  ArrowUpRight,
   Check,
   KeyRound,
   LoaderCircle,
-  LockKeyhole,
   Plus,
   ShieldCheck,
   SlidersHorizontal,
@@ -46,13 +44,32 @@ const blankComparison: Challenge = {
   schemaVersion: 1, id: "custom", title: "Compare two answers", language: "en",
   kind: "comparison", prompt: "", answer1: "", answer2: "",
 };
+const simpleBlank: Extract<Challenge, { kind: "judgment" }> = {
+  ...blank,
+  question: "Is the statement supported by the provided context or established facts?",
+  options: [
+    { id: "option1", label: "Yes" },
+    { id: "option2", label: "No" },
+    { id: "option3", label: "Unsure" },
+  ],
+};
+const simpleExamples = [
+  { label: "Check a claim", text: "Claim: A 20% increase followed by a 20% decrease returns a price to its original value." },
+  { label: "Weigh the evidence", text: "Claim: The new onboarding caused higher retention.\nContext: Retention rose from 40% to 55% after the change. There was no control group, and the customer mix also changed." },
+  { label: "Spot a contradiction", text: "Claim: This refund request meets the policy.\nPolicy: Refunds are available within 30 days of purchase.\nRequest: The customer purchased the item 45 days ago." },
+];
 const money = (n: number | null) =>
   n === null ? "Unknown" : `$${n.toFixed(6)}`;
 function newId() {
   return crypto.randomUUID();
 }
 export function Playground({ initial }: { initial?: Challenge }) {
-  const [c, setC] = useState<Challenge>(initial ?? blank);
+  const [c, setC] = useState<Challenge>(initial ?? simpleBlank);
+  const [advanced, setAdvanced] = useState(Boolean(initial));
+  const simpleDraft = useRef<Challenge>(simpleBlank);
+  const advancedKind = useRef<Challenge["kind"]>(initial?.kind ?? "judgment");
+  const [settings, setSettings] = useState(false);
+  const [pendingSimple, setPendingSimple] = useState<(typeof simpleExamples)[number] | null>(null);
   const drafts = useRef<Record<Challenge["kind"], Challenge>>({
     judgment: initial?.kind === "judgment" ? initial : blank,
     comparison: initial?.kind === "comparison" ? initial : blankComparison,
@@ -85,7 +102,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       document.getElementById(focusTarget)?.focus();
       setFocusTarget(null);
     }
-  }, [focusTarget, connections, c.kind]);
+  }, [focusTarget, connections, c.kind, advanced, settings]);
   useEffect(() => {
     if (!busy && match) {
       setAnnouncement(
@@ -124,12 +141,47 @@ export function Playground({ initial }: { initial?: Challenge }) {
       Math.min(...estimates.slice(1).map((e) => e.minUsd ?? 0))
     : null;
   function edit(next: Challenge) {
-    drafts.current[next.kind] = next;
+    if (advanced) drafts.current[next.kind] = next;
+    else simpleDraft.current = next;
     setC(next);
     setMatch(null);
     setError("");
     setFieldErrors({});
     setExampleNotice("");
+  }
+  function toggleAdvanced() {
+    const next = !advanced;
+    setAdvanced(next);
+    setC(next ? drafts.current[advancedKind.current] : simpleDraft.current);
+    setMatch(null);
+    setError("");
+    setFieldErrors({});
+    setPendingExample(null);
+    setPendingSimple(null);
+    setExampleNotice("");
+  }
+  function loadSimple(example: (typeof simpleExamples)[number], confirmed = false) {
+    if (busy) return;
+    if (c.kind === "judgment" && c.content.trim() && !confirmed) {
+      setPendingSimple(example);
+      setFocusTarget("confirm-simple-example");
+      return;
+    }
+    edit({ ...simpleBlank, id: newId(), content: example.text });
+    setPendingSimple(null);
+    setExampleNotice(`Loaded “${example.label}”. Edit it or review the models and cost.`);
+    setFocusTarget("content");
+  }
+  function review() {
+    const id = c.kind === "judgment" ? "content" : "prompt";
+    const value = c.kind === "judgment" ? c.content : c.prompt;
+    if (!value.trim()) {
+      setFieldErrors({ [id]: "Enter a task or choose an example first." });
+      setFocusTarget(id);
+      return;
+    }
+    setSettings(true);
+    setFocusTarget("preflight-heading");
   }
   function load(t: Challenge, confirmed = false) {
     if (busy) return;
@@ -140,7 +192,14 @@ export function Playground({ initial }: { initial?: Challenge }) {
       setFocusTarget("confirm-example");
       return;
     }
-    edit({ ...t, id: newId() });
+    const next = { ...t, id: newId() };
+    drafts.current[t.kind] = next;
+    advancedKind.current = t.kind;
+    setAdvanced(true);
+    setC(next);
+    setMatch(null);
+    setError("");
+    setFieldErrors({});
     setPendingExample(null);
     setExampleNotice(`Loaded “${t.title}”. Review or edit the fields, then connect your key to run.`);
     setFocusTarget(t.kind === "judgment" ? "content" : "prompt");
@@ -149,6 +208,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
     if (kind === c.kind) return;
     setMatch(null);
     setC(drafts.current[kind]);
+    advancedKind.current = kind;
     setError("");
     setFieldErrors({});
     setPendingExample(null);
@@ -291,7 +351,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
         }
       : null;
   return (
-    <main id="main" className="workspace">
+    <main id="main" className="workspace simple-workspace">
       <p
         className="sr-only"
         role="status"
@@ -300,33 +360,34 @@ export function Playground({ initial }: { initial?: Challenge }) {
       >
         {announcement}
       </p>
-      <div className="intro">
-        <div>
-          <h1>
-            Good judgment.
-            <br />
-            Put it to the test.
-          </h1>
-          <p>
-            Jev meets another model. Bring your own question, compare their
-            decisions, and discover where each one shines.
-          </p>
-        </div>
-        <span className="intro-note">
-          <span className="dot" /> Open source · Your keys · Your experiments
-        </span>
+      <div className="composer-intro">
+        <h1>Put a judgment to the test.</h1>
+        <p>Jev meets another model. You decide which judgment holds up.</p>
       </div>
-      <div className="workspace-grid">
-        <section className="editor" aria-label="Set up experiment">
-          <div className="section-bar">
-            <h2>Your experiment</h2>
-            <span className="small">Text in. Judgment out.</span>
-          </div>
+      <div className="composer-flow">
+        <section className="editor composer" aria-label="Set up experiment">
           <fieldset
             disabled={busy}
             style={{ border: 0, margin: 0, minWidth: 0, padding: 0 }}
           >
             <div className="editor-body">
+              {!advanced && c.kind === "judgment" && (
+                <div className="simple-input">
+                  <label htmlFor="content" className="sr-only">Your claim or question</label>
+                  <textarea
+                    id="content"
+                    {...fieldProps("content")}
+                    aria-describedby={fieldErrors.content ? "content-error simple-task-hint" : "simple-task-hint"}
+                    rows={5}
+                    placeholder="Enter a claim to judge. Add any context the judges should consider…"
+                    value={c.content}
+                    onChange={(e) => edit({ ...c, content: e.target.value })}
+                  />
+                  {fieldError("content")}
+                  <p className="hint" id="simple-task-hint">Is the statement supported? Judges choose Yes, No, or Unsure.</p>
+                </div>
+              )}
+              {advanced && <div id="advanced-task" className="advanced-task">
               <div className="tabs" aria-label="Task type">
                 <button
                   aria-pressed={c.kind === "judgment"}
@@ -488,7 +549,27 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 />
                 {fieldError("language")}
               </div>
-              <div className="divider" />
+              </div>}
+              <div className="composer-toolbar">
+                <Button variant="ghost" aria-expanded={advanced} aria-controls="advanced-task" onClick={toggleAdvanced}>
+                  <Plus size={16} /> Advanced
+                </Button>
+                <Button variant="ghost" aria-expanded={settings} aria-controls="model-settings" onClick={() => setSettings(!settings)}>
+                  <SlidersHorizontal size={16} /> Models &amp; keys
+                </Button>
+                <Button className="composer-submit" onClick={review}>Review &amp; compare <ArrowRight size={16} /></Button>
+              </div>
+              {pendingSimple && (
+                <div className="example-confirm" role="group" aria-label="Replace draft with example">
+                  <p>Replace your text with “{pendingSimple.label}”?</p>
+                  <Button id="confirm-simple-example" variant="secondary" onClick={() => loadSimple(pendingSimple, true)}>Replace draft</Button>
+                  <Button variant="ghost" onClick={() => { setPendingSimple(null); setFocusTarget("content"); }}>Keep draft</Button>
+                </div>
+              )}
+              {!advanced && <p className={exampleNotice ? "hint" : "sr-only"} role="status">{exampleNotice}</p>}
+              {settings && <div className="model-settings" id="model-settings">
+              <h2 id="preflight-heading" tabIndex={-1}>Review models &amp; cost</h2>
+              <p className="hint preflight-intro">Two paid calls using your key. Review the estimate before starting.</p>
               <div className="tabs" aria-label="Match mode">
                 <button
                   aria-pressed={mode === "arena"}
@@ -669,11 +750,16 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   </p>
                 )}
               </div>
+              </div>}
             </div>
           </fieldset>
         </section>
+        {!advanced && !busy && !match && <div className="starter-chips" aria-label="Example tasks">
+          {simpleExamples.map((example) => <button key={example.label} onClick={() => loadSimple(example)}>{example.label}</button>)}
+        </div>}
+        <p className="composer-context">Compare anonymously. Vote to reveal. <Link href="/cases">Browse cases without a key <ArrowRight size={12} /></Link></p>
         <div>
-          <section className="arena-panel" aria-label="Comparison results">
+          {(busy || match) && <section className="arena-panel" aria-label="Comparison results">
             <div className="section-bar">
               <h2 ref={resultHeading} tabIndex={-1}>
                 The arena
@@ -810,7 +896,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     onClick={() => {
                       const original = match.challenge;
                       if (original.kind === "comparison") {
-                        edit({
+                        const swapped: Challenge = {
                           ...original,
                           id: newId(),
                           answer1: original.answer2,
@@ -821,7 +907,12 @@ export function Playground({ initial }: { initial?: Challenge }) {
                               : original.expected === "answer2"
                                 ? "answer1"
                                 : original.expected,
-                        });
+                        };
+                        drafts.current.comparison = swapped;
+                        advancedKind.current = "comparison";
+                        setAdvanced(true);
+                        setC(swapped);
+                        setFocusTarget("prompt");
                         setMatch(null);
                       }
                     }}
@@ -831,38 +922,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 )}
                 {share && <ShareTools value={share} />}
               </div>
-            ) : (
-              <div className="empty-arena">
-                <div className="judge-pair" aria-hidden="true">
-                  <div className="judge-placeholder">X</div>
-                  <span className="versus">vs</span>
-                  <div className="judge-placeholder">Y</div>
-                </div>
-                <h3>Which judgment holds up?</h3>
-                <p>
-                  One judge is always Jev. Choose the better decision before
-                  seeing the names, speed, or price.
-                </p>
-              </div>
-            )}
-            <div className="arena-bottom">
-              <LockKeyhole size={13} />
-              <span>
-                No account. No platform credits. Your API keys power the
-                experiment.
-              </span>
-            </div>
-          </section>
-          <div className="right-note">
-            <SlidersHorizontal size={16} />
-            <p>
-              A faster answer isn’t always a better judgment.
-              <br />
-              <Link href="/methodology">
-                <u>How we compare fairly</u>
-              </Link>
-            </p>
-          </div>
+            ) : null}
+          </section>}
           {history.length > 0 && (
             <details className="attempt-list">
               <summary>
@@ -885,36 +946,6 @@ export function Playground({ initial }: { initial?: Challenge }) {
           )}
         </div>
       </div>
-      <section className="examples">
-        <div className="examples-head">
-          <h2>Start with a question worth testing</h2>
-          <Link className="small inline" href="/cases">
-            All cases
-            <ArrowUpRight size={13} />
-          </Link>
-        </div>
-        <div className="example-list">
-          {templates.slice(0, 6).map((t) => (
-            <button
-              className="example-item"
-              key={t.id}
-              disabled={busy}
-              onClick={() => load(t)}
-            >
-              <span>
-                {t.title}
-                <ArrowUpRight size={14} />
-              </span>
-              <small>
-                Template ·{" "}
-                {t.kind === "comparison"
-                  ? "Compare answers"
-                  : "Make a judgment"}
-              </small>
-            </button>
-          ))}
-        </div>
-      </section>
     </main>
   );
 }

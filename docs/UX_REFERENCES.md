@@ -2,7 +2,9 @@
 
 Reference reviewed 2026-09-19: [Arena's official interaction overview](https://arena.ai/how-it-works) and [Battle Mode guide](https://help.arena.ai/articles/4489017547-how-to-use-battle-mode).
 
-The transferable interaction is simple: supply a task, compare anonymous responses, vote, then reveal identity. JevArena adopts this participation-first sequence and makes starter tasks visible before configuration. It does not copy Arena branding, assets or its current general-purpose homepage.
+The transferable interaction is simple: supply a task, compare anonymous responses, vote, then reveal identity. Following the user's reference screenshot and [Arena's homepage](https://arena.ai/), the initial JevArena surface is a centered single composer, a compact toolbar and starter prompts. Configuration is progressively disclosed, and the results area appears only after a comparison starts. Arena branding and assets are not copied.
+
+The simple composer is a yes/no/unsure judgment, not unrestricted chat. A deterministic prompt and fixed choices preserve Jev's decision interface without an extra model call to interpret the input. Custom choices and two-answer assessment remain available through the advanced editor. BYOK connection and cost review still precede paid execution.
 
 ## What remains specific to JevArena
 
