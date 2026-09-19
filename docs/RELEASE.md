@@ -12,9 +12,11 @@ Two text input modes; Arena and explicit Compare; randomized X/Y; parallel compl
 
 OpenRouter is browser-direct. TypeSafe and Vercel adapters have offline contract coverage but their relay is disabled in this deployment. All three are explicitly experimental. A [local OpenRouter canary](OPENROUTER_CANARY-2026-09-19.md) passed four calls; Gateway evidence and normalization fixes were merged in PR #1. Production-browser acceptance is tracked separately from local transport checks. Public templates contain no measured runs. Browser E2E responses are synthetic and not published as results.
 
-## Pending owner review: UX and community studies
+## Shipped UX and community studies
 
-PR #2 adds four attributed X community case-study pages, early examples, separate in-memory task drafts, inline validation/focus, and mobile navigation improvements. These changes are not production-shipped until reviewed and merged. Source-post verification is not experimental reproduction. The public OpenRouter canary receipt is diagnostic transport evidence, not a leaderboard entry.
+PR #2 was merged with all checks passing and deployed as `3f3444f`. It adds four attributed X community case-study pages, editable quick starts, a single-input homepage, separate in-memory task drafts, inline validation/focus, mobile navigation improvements, and opt-in private research intake. Source-post verification is not experimental reproduction. The public OpenRouter canary receipt is diagnostic transport evidence, not a leaderboard entry.
+
+The [production-browser canary](BROWSER_CANARY-2026-09-19.md) completed four successful calls across both task types and Arena/Compare modes, with $0.000164778 total provider-reported cost. The exported records passed Python validation and re-import into the production website. This proves the tested OpenRouter workflows, not general model quality or other provider availability. Private database submission/withdrawal remains a separate pending acceptance check.
 
 ## Verification
 
@@ -26,7 +28,7 @@ GitGuardian incident 37449110 was inspected and classified as a test credential:
 
 ## Remaining release gates
 
-- Real production-domain canary and submission/withdrawal verification before announcing public beta. A maximum of four new OpenRouter calls and $0.05 is explicitly authorized; do not exceed it or auto-retry.
+- Private database submission/withdrawal verification before announcing public beta. The four-call production inference allowance is exhausted; no further model calls without a new explicit budget.
 - Three-provider live acceptance, including billing/usage/version edge cases. Contract-only adapters are not evidence of live provider reliability.
 - Operator-approved rate limiting and a hosting spend envelope before enabling relay. Account is on an existing Pro plan; no upgrade or paid firewall feature was enabled. Remaining quota and spend-alert configuration are not independently verified.
 - Advanced selectable reasoning settings and per-case social preview images are follow-ups; v1 uses bounded provider-default reasoning and generic social metadata.
