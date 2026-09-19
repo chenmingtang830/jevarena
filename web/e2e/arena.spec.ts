@@ -174,6 +174,7 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
   await page.getByRole("button", { name: "Start judging" }).click();
   await page.getByRole("button", { name: "Cancel requests" }).click();
   await expect(page.getByText(/This match is incomplete/)).toBeVisible();
+  await page.getByRole("button", { name: "Edit question", exact: true }).click();
   await page.getByRole("button", { name: "Start judging" }).click();
   await expect(page.getByRole("dialog", { name: "Ready to compare" })).toBeVisible();
   await page.getByRole("button", { name: "Start judging" }).click();
