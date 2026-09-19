@@ -3,7 +3,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
 async function judgedExperiment(page: Page) {
-  await page.route("https://openrouter.ai/**", route => route.fulfill({ json: route.request().url().includes("/decisions")
+  await page.route("https://openrouter.ai/**", route => route.request().method() === "GET" ? route.abort() : route.fulfill({ json: route.request().url().includes("/decisions")
     ? { answers: { judgment: { choice: "option1" } }, usage: { input_tokens: 10, output_tokens: 0, cost: 0.000001 } }
     : { model: "mock-version", choices: [{ finish_reason: "stop", message: { content: '{"choice":"option2"}' } }], usage: { prompt_tokens: 10, completion_tokens: 4, cost: 0.00001 } },
   }));
@@ -66,7 +66,7 @@ test("private saving is opt-in, guest-safe and manually retryable without creden
   await expect(region.getByRole("status")).toContainText("Saved privately for 30 days");
   expect(saved).toHaveLength(2);
   expect(saved[0]).toEqual(saved[1]);
-  expect(saved[0].consent).toEqual({ version: "2026-09-19-public-v1", savePrivate: true });
+  expect(saved[0].consent).toEqual({ version: "2026-09-19-auto-review-v1", savePrivate: true });
   expect(saved[0].history.vote.value).toBe("both");
   expect(saved[0].history.runs).toHaveLength(2);
   expect(JSON.stringify(saved)).not.toContain("synthetic-history-key-not-for-storage");

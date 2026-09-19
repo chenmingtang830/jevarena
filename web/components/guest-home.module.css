@@ -21,7 +21,13 @@
 .models article { border-top: 1px solid var(--line); padding-top: 16px; min-width: 0; overflow-wrap: anywhere; }
 .models h3 { font-size: 17px; margin: 0 0 12px; font-weight: 550; }
 .modelChoice { font-size: 20px; margin: 8px 0; }
-.next { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 24px; margin-top: 28px; }
-.next a { color: var(--accent); min-height: 44px; display: inline-flex; align-items: center; gap: 6px; }
+.resultSummary { margin: 0 0 16px; }
+.resultSummary > div { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.resultSummary dt { color: var(--secondary); font-size: 14px; }
+.resultSummary dt span { font-size: 12px; }
+.resultSummary dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.sourceDetails { margin: 16px 0; font-size: 14px; }
+.sourceDetails summary { min-height: 36px; color: var(--secondary); cursor: pointer; }
+.resultActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 24px; }
 @media (max-width: 500px) { .page { padding: 36px 18px; } .question { padding: 20px; } .models { grid-template-columns: 1fr; gap: 16px; } .revealActions { gap: 8px 16px; } }
 @media (max-width: 500px) { .examples { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding-bottom: 8px; } .examples button { flex-shrink: 0; } }

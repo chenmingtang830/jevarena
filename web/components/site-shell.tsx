@@ -11,6 +11,7 @@ export function SiteHeader() {
     ["/", "Ask a question"],
     ["/try", "Try without a key"],
     ["/cases", "Examples"],
+    ["/community", "Community"],
   ];
   return (
     <header className="site-header">
@@ -48,7 +49,7 @@ export function SiteFooter() {
         {process.env.NEXT_PUBLIC_HISTORY_ENABLED==="true" && <Link href="/history">My history</Link>}
         <Link href="/terms">Terms</Link>
         <Link href="/privacy">Privacy</Link>
-        <a href={`${REPO}/discussions`}>Community</a>
+        <Link href="/community">Community</Link>
         <span>Independent, community-built.</span>
       </div>
     </footer>

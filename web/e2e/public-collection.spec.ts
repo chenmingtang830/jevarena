@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { openManualKey } from "./manual-key";
 test.skip(process.env.NEXT_PUBLIC_PUBLIC_COLLECTION_ENABLED !== "true", "Public collection is a separately gated build");
+const automatic = process.env.NEXT_PUBLIC_AUTO_REVIEW_ENABLED === "true";
+const receivedMessage = automatic ? "Submitted for AI screening. It will publish if it passes." : "Received for review before publication. Thank you for contributing.";
+const expectedConsent = automatic
+  ? {version:"2026-09-19-auto-review-v1",research:true,rights:true,reviewed:true,allowPublication:true,publication:"after-ai-review",automatedReview:true,reviewProvider:"vercel"}
+  : {version:"2026-09-19-public-v1",research:true,rights:true,reviewed:true,allowPublication:true,publication:"after-review"};
 
 test("public guest answer requires an action, preserves attribution, and returns a receipt", async ({ page }) => {
   const bodies: any[] = [];
@@ -10,13 +15,14 @@ test("public guest answer requires an action, preserves attribution, and returns
   });
   await page.goto("/try?example=community-export-limit");
   await expect(page.getByLabel("Contribute publicly", {exact:true})).toBeChecked();
+  if (automatic) await expect(page.getByText(/sends this contribution to Vercel\/Jev for screening/)).toBeVisible();
   expect(bodies).toHaveLength(0);
   await page.getByRole("button", {name:"question",exact:true}).click();
   expect(bodies).toHaveLength(0);
   await page.getByRole("button", {name:"Submit answer & reveal"}).click();
-  await expect(page.getByText("Received for review before publication. Thank you for contributing.")).toBeVisible();
+  await expect(page.getByText(receivedMessage)).toBeVisible();
   expect(bodies).toHaveLength(1);
-  expect(bodies[0].consent).toMatchObject({version:"2026-09-19-public-v1",allowPublication:true,publication:"after-review"});
+  expect(bodies[0].consent).toEqual(expectedConsent);
   expect(bodies[0].contribution.humanAnswer).toEqual({optionId:"question",revealedBeforeAnswer:false});
   expect(bodies[0].contribution.runs).toEqual([]);
   expect(bodies[0].contribution.sourceAttributions[0].license).toBe("MIT");
@@ -29,7 +35,7 @@ for (const contribute of [true, false]) test(`live voting ${contribute ? "submit
     const body = route.request().postDataJSON(); submissions.push(body);
     await route.fulfill({status:201,json:{receiptId:body.submissionId,deletionToken:body.deletionToken,status:"community-submitted",receivedAt:"2026-09-19T00:00:00Z",expiresAt:"2026-10-19T00:00:00Z"}});
   });
-  await page.route("https://openrouter.ai/**", route => route.fulfill({json: route.request().url().includes("/decisions")
+  await page.route("https://openrouter.ai/**", route => route.request().method() === "GET" ? route.abort() : route.fulfill({json: route.request().url().includes("/decisions")
     ? {answers:{judgment:{choice:"option1",probabilities:{option1:0.8,option2:0.2}}},usage:{input_tokens:10,output_tokens:0,cost:0.000001}}
     : {model:"mock-version",choices:[{finish_reason:"stop",message:{content:'{"choice":"option2"}'}}],usage:{prompt_tokens:10,completion_tokens:4,cost:0.00001}}
   }));
@@ -46,8 +52,9 @@ for (const contribute of [true, false]) test(`live voting ${contribute ? "submit
   await expect(page.getByRole("checkbox",{name:"Contribute publicly",exact:true})).toBeChecked({checked:contribute});
   await page.getByRole("button",{name:"Both good",exact:true}).click();
   if (contribute) {
-    await expect(page.getByText("Received for review before publication. Thank you for contributing.")).toBeVisible();
+    await expect(page.getByText(receivedMessage)).toBeVisible();
     expect(submissions).toHaveLength(1);
+    expect(submissions[0].consent).toEqual(expectedConsent);
     expect(submissions[0].contribution.runs).toHaveLength(2);
     expect(submissions[0].contribution.vote.revealedBeforeVote).toBe(false);
     expect(JSON.stringify(submissions)).not.toContain("test-only-not-a-real-key");

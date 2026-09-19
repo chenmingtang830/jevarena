@@ -180,12 +180,12 @@ export function normalizeResponse(
         : inputTokens !== null &&
             outputTokens !== null &&
             model.inputPerMillion !== null &&
-            model.outputPerMillion !== null
+            model.outputPerMillion !== null && model.requestUsd !== null
           ? {
               usd:
                 (inputTokens * model.inputPerMillion +
                   outputTokens * model.outputPerMillion) /
-                1e6,
+                1e6 + (model.requestUsd ?? 0),
               basis: "estimate",
             }
           : { usd: null, basis: "unknown" },

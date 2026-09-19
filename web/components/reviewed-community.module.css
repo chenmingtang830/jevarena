@@ -1,0 +1,16 @@
+.header { margin-bottom: 32px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; }
+.empty { padding: 24px 0; border-block: 1px solid var(--line, #d7dcd9); }
+.empty h2 { margin-top: 0; }
+.question { padding: 26px 0; border-top: 1px solid var(--line, #d7dcd9); }
+.question h2 { margin-top: 0; }
+.prompt { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 72ch; }
+.meta { font-size: 13px; color: var(--muted, #686f78); }
+.sources { margin-top: 36px; }
+.sourceRow { padding: 16px 0; border-top: 1px solid var(--line, #d7dcd9); }
+.sourceRow h3 { margin: 0 0 6px; }
+.sourceRow p { margin: 6px 0; }
+.sources summary { cursor: pointer; }
+@media (max-width: 500px) {
+  .actions > a, .actions > button { flex: 1 1 auto; }
+}

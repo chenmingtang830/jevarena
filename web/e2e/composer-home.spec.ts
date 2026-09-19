@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
 test("community triage examples preserve the rubric and never reveal source answers in the composer", async ({ page }) => {
   let calls = 0;
-  await page.route("https://openrouter.ai/**", (route) => { calls++; return route.abort(); });
+  await page.route("https://openrouter.ai/**", (route) => {
+    if (route.request().method() === "GET") return route.abort();
+    calls++;
+    return route.abort();
+  });
   await page.goto("/");
   await page.getByRole("button", { name: "Retry defaults", exact: true }).click();
   await expect(page.getByLabel("Question and context")).toHaveValue(/Please document the retry defaults/);

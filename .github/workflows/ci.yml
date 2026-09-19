@@ -50,8 +50,10 @@ jobs:
             --file supabase/migrations/202609190002_withdrawal_race.sql \
             --file supabase/migrations/202609190004_pro_capacity.sql \
             --file supabase/migrations/202609190006_public_candidate_consent.sql \
+            --file supabase/migrations/202609190007_automated_community.sql \
             --file supabase/tests/intake-integrity.sql \
-            --file supabase/tests/public-consent-integrity.sql
+            --file supabase/tests/public-consent-integrity.sql \
+            --file supabase/tests/automated-community-integrity.sql
       - name: Test optional account history in isolated database
         run: |
           psql --no-psqlrc --set ON_ERROR_STOP=1 \
@@ -82,7 +84,13 @@ jobs:
       - run: npm run test:e2e
         working-directory: web
       - name: Test public contribution mode separately
-        run: npm run build && npx playwright test e2e/public-collection.spec.ts
+        run: npm run build && npx playwright test e2e/public-collection.spec.ts e2e/battle-layout.spec.ts
         working-directory: web
         env:
           NEXT_PUBLIC_PUBLIC_COLLECTION_ENABLED: 'true'
+      - name: Test automated public contribution mode separately
+        run: npm run build && npx playwright test e2e/community-submit.spec.ts e2e/public-collection.spec.ts e2e/community-feed.spec.ts
+        working-directory: web
+        env:
+          NEXT_PUBLIC_PUBLIC_COLLECTION_ENABLED: 'true'
+          NEXT_PUBLIC_AUTO_REVIEW_ENABLED: 'true'

@@ -9,6 +9,7 @@ test.beforeEach(async ({ page }) => {
   // Only local static pages/assets are allowed. None of these tests may infer or collect.
   await page.route("**/*", (route) => {
     const url = new URL(route.request().url());
+    if (route.request().method() === "GET" && url.hostname === "openrouter.ai" && url.pathname === "/api/v1/models") return route.fulfill({ json: { data: [] } });
     if (url.hostname !== "127.0.0.1" || url.pathname.startsWith("/api/")) {
       requests.push(url.href);
       return route.abort();

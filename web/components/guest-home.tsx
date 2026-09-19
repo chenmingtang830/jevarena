@@ -26,6 +26,7 @@ export function GuestHome({ initialId }: { initialId?: string }) {
   const input = modelInput(active);
   const community = communityTasks.find(({ challenge }) => challenge.id === active.id);
   const runs = evidence.runs.filter((run) => run.challengeId === active.id);
+  function chooseExample(task: typeof active) { setActive(task); setGuess(null); setRevealed(false); setRationale(""); setShareStatus(""); }
   function reveal(collect = true) {
     const revealedBeforeAnswer = seenAnswers.current.has(active.id);
     if (collect && !revealed && guess && PUBLIC_COLLECTION && publicMode) {
@@ -46,7 +47,7 @@ export function GuestHome({ initialId }: { initialId?: string }) {
       <p className="hint">No account. No API key. No model calls.</p>
     </header>
     <div className={styles.examples} aria-label="Choose an example">
-      {examples.map((task) => <Button key={task.id} variant="outline" aria-pressed={active.id === task.id} onClick={() => { setActive(task); setGuess(null); setRevealed(false); setRationale(""); setShareStatus(""); }}>{task.id === "decimal-comparison" ? "Which number is larger?" : task.title}</Button>)}
+      {examples.map((task) => <Button key={task.id} variant="outline" aria-pressed={active.id === task.id} onClick={() => chooseExample(task)}>{task.id === "decimal-comparison" ? "Which number is larger?" : task.title}</Button>)}
     </div>
     <section className={styles.question} aria-labelledby="guest-question" lang={active.language}>
       <h2 id="guest-question">{active.kind === "comparison" ? active.prompt : community ? active.content : active.question}</h2>
@@ -68,34 +69,36 @@ export function GuestHome({ initialId }: { initialId?: string }) {
       </div>}
     </section>
     {revealed && <section className={styles.results} aria-labelledby="recorded-results">
-      <h2 id="recorded-results" tabIndex={-1} ref={resultHeading}>{community ? "The author’s recorded result" : "Here’s what the models chose"}</h2>
+      <h2 id="recorded-results" tabIndex={-1} ref={resultHeading}>{community ? community.result.disputed ? "No single correct answer" : `Correct answer: ${community.result.reference}` : "Here’s what the models chose"}</h2>
       {community ? <>
-        {guess && <p>Your answer: {input.options.find((option) => option.id === guess)?.label}.</p>}
-        <p>{community.observation}</p>
-        <p className="hint">Author-reported, not independently reproduced. <a href={communityTaskSource.post}>@_pi0_ on X</a> · <a href={communityTaskSource.data}>Source record: {community.sourceId}</a>. Live reruns use JevArena’s judging format.</p>
+        <dl className={styles.resultSummary}>
+          <div><dt>Your answer</dt><dd>{guess ? input.options.find((option) => option.id === guess)?.label : "Skipped"}</dd></div>
+          <div><dt>Jev chose <span>(author’s run)</span></dt><dd>{community.result.jevChoice}</dd></div>
+          <div><dt>{community.result.disputed ? "Author’s answer · disputed" : "Correct answer"}</dt><dd>{community.result.reference}</dd></div>
+        </dl>
+        <p>{community.result.explanation}</p>
+        <details className={styles.sourceDetails}><summary>Source & run details</summary>
+          <p>{community.observation}</p>
+          <p className="hint">Author-reported, not independently reproduced. <a href={communityTaskSource.post}>@_pi0_ on X</a> · <a href={communityTaskSource.data}>Source record: {community.sourceId}</a>. Live reruns use JevArena’s judging format.</p>
+        </details>
       </> : <>
       <p>{guess ? `Your answer: ${input.options.find((option) => option.id === guess)?.label}. ` : ""}Reference answer: {input.options.find((option) => option.id === active.expected)?.label}.</p>
-      <p>{active.basis}</p>
+      <details className={styles.sourceDetails}><summary>Why this answer?</summary><p>{active.basis}</p></details>
       <div className={styles.models}>{runs.map((run) => <article key={run.id}>
         <h3>{run.model.startsWith("typesafe/") ? "Jev" : "Gemini 2.5 Flash"}</h3>
         <p className={styles.modelChoice}>{input.options.find((option) => option.id === run.choice)?.label}</p>
         <p className="hint">{(run.latencyMs / 1000).toFixed(2)} s · ${run.cost.usd.toFixed(6)} · provider-reported cost</p>
         <p className="hint">Version: {run.resolvedModel ?? "unknown (requested google/gemini-2.5-flash)"}</p>
       </article>)}</div>
-      <p className="hint">Recorded September 19, 2026. Local, sequential OpenRouter calls—not a live match or a benchmark. Two examples do not establish which model is better. <a href={source} target="_blank" rel="noreferrer">Inspect the run records</a>.</p>
+      <details className={styles.sourceDetails}><summary>Source & run details</summary><p className="hint">Recorded September 19, 2026. Local, sequential OpenRouter calls—not a live match or a benchmark. Two examples do not establish which model is better. <a href={source} target="_blank" rel="noreferrer">Inspect the run records</a>.</p></details>
       </>}
-      <div className={styles.revealActions}>
-        <Button variant="outline" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/try?example=${encodeURIComponent(active.id)}`); setShareStatus("Example link copied. Your guess is not included."); } catch { setShareStatus("Could not copy. Use the example link below."); } }}>Copy example link</Button>
-        <Button asChild variant="secondary"><Link href={`/try?example=${active.id}`}>Example link</Link></Button>
-        <Button asChild variant="secondary"><Link href={`/?case=${active.id}`}>Run this yourself <ArrowRight size={14} /></Link></Button>
+      <div className={styles.resultActions}>
+        <Button asChild><Link href={`/?case=${active.id}`}>Run this yourself <ArrowRight size={14} /></Link></Button>
+        <Button variant="outline" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/try?example=${encodeURIComponent(active.id)}`); setShareStatus("Link copied. Your answer is not included."); } catch { setShareStatus("Could not copy the link. Please try again."); } }}>Copy link</Button>
+        <Button variant="ghost" onClick={() => { chooseExample(examples[(examples.findIndex(task => task.id === active.id) + 1) % examples.length]); requestAnimationFrame(() => document.getElementById("guest-question")?.scrollIntoView({ block: "center" })); }}>Next example <ArrowRight size={14} /></Button>
       </div>
-      <p role="status" className="hint">{shareStatus}</p>
+      {shareStatus && <p role="status" className="hint">{shareStatus}</p>}
     </section>}
     {submissions.map(value => <ContributionSubmit key={value.id} value={value} publicCandidate />)}
-    <nav className={styles.next} aria-label="More ways to explore">
-      <Button asChild variant="secondary"><Link href="/">Test your own question <ArrowRight size={15} /></Link></Button>
-      <Button asChild variant="secondary"><Link href="/cases">Explore examples</Link></Button>
-      <Button asChild variant="secondary"><Link href="/run-locally">Run locally</Link></Button>
-    </nav>
   </main>;
 }

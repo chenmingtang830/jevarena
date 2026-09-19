@@ -6,6 +6,7 @@ test("visitors browse without inference and invalid fragments fail safely", asyn
 }) => {
   let calls = 0;
   await page.route("https://openrouter.ai/**", (route) => {
+    if (route.request().method() === "GET") return route.abort();
     calls++;
     return route.abort();
   });
@@ -32,6 +33,7 @@ test("synthetic battle hides metadata until vote, never stores keys", async ({
 }) => {
   const calls: unknown[] = [];
   await page.route("https://openrouter.ai/**", async (route) => {
+    if (route.request().method() === "GET") return route.abort();
     const data = route.request().postDataJSON();
     calls.push(data);
     if (route.request().url().includes("/decisions")) {
@@ -146,6 +148,7 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
 }) => {
   let count = 0;
   await page.route("https://openrouter.ai/**", async (route) => {
+    if (route.request().method() === "GET") return route.abort();
     count++;
     await new Promise((resolve) => setTimeout(resolve, 300));
     try {
@@ -188,6 +191,7 @@ test("case opens editable immediately, reference and original export never run a
 }) => {
   let calls = 0;
   await page.route("https://openrouter.ai/**", (route) => {
+    if (route.request().method() === "GET") return route.abort();
     calls++;
     return route.abort();
   });

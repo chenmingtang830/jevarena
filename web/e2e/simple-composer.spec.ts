@@ -30,6 +30,7 @@ test("question and editable answers are the only initial task controls", async (
 test("comparison reviews cost before identical deterministic judge inputs", async ({ page }, testInfo) => {
   const calls: { url: string; body: Record<string, any> }[] = [];
   await page.route("https://openrouter.ai/**", async (route) => {
+    if (route.request().method() === "GET") return route.abort();
     calls.push({ url: route.request().url(), body: route.request().postDataJSON() });
     return route.fulfill({ json: route.request().url().includes("/decisions")
       ? { answers: { judgment: { choice: "option1" } }, usage: { input_tokens: 20, output_tokens: 0, cost: 0.000001 } }

@@ -7,6 +7,7 @@ const consentName = "I agree to Terms and acknowledge Privacy";
 test("running requires explicit versioned consent and shortcuts never accept or execute", async ({ page }) => {
   const calls: string[] = [];
   await page.route("https://openrouter.ai/**", async (route) => {
+    if (route.request().method() === "GET") return route.abort();
     calls.push(route.request().url());
     await route.fulfill({ json: route.request().url().includes("/decisions")
       ? { answers: { judgment: { choice: "option1" } }, usage: { input_tokens: 12, output_tokens: 0, cost: 0.000001 } }
@@ -26,7 +27,7 @@ test("running requires explicit versioned consent and shortcuts never accept or 
   await openManualKey(page);
   await expect(consent).not.toBeChecked();
   await expect(start).toBeDisabled();
-  await expect(page.locator("[data-policy-version]")).toHaveAttribute("data-policy-version", "2026-09-19-public-v1");
+  await expect(page.locator("[data-policy-version]")).toHaveAttribute("data-policy-version", "2026-09-19-auto-review-v1");
   for (const [name, href] of [["Read Terms", "/terms"], ["Read Privacy", "/privacy"]]) {
     const link = page.getByRole("link", { name, exact: true });
     await expect(link).toHaveAttribute("href", href);
@@ -92,6 +93,7 @@ test("public cases and policy reading do not require consent or infer", async ({
   const unexpected: string[] = [];
   await page.route("**/*", (route) => {
     const url = new URL(route.request().url());
+    if (route.request().method() === "GET" && url.hostname === "openrouter.ai" && url.pathname === "/api/v1/models") return route.fulfill({ json: { data: [] } });
     if (url.hostname !== "127.0.0.1" || url.pathname.startsWith("/api/")) {
       unexpected.push(url.href);
       return route.abort();
@@ -112,6 +114,7 @@ test("model setup is a contained modal and close or Escape restores the draft wi
   const requests: string[] = [];
   await page.route("**/*", (route) => {
     const url = new URL(route.request().url());
+    if (route.request().method() === "GET" && url.hostname === "openrouter.ai" && url.pathname === "/api/v1/models") return route.fulfill({ json: { data: [] } });
     if (url.hostname !== "127.0.0.1" || url.pathname.startsWith("/api/")) {
       requests.push(url.href);
       return route.abort();
