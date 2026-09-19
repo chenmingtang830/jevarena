@@ -8,7 +8,7 @@ import { modelInput } from "@/lib/contracts";
 import { Button } from "@/components/ui/button";
 import styles from "./guest-home.module.css";
 
-const examples = templates.filter((task) => evidence.runs.some((run) => run.challengeId === task.id));
+const examples = templates.filter((task) => task.language !== "zh" && evidence.runs.some((run) => run.challengeId === task.id));
 const source = "https://github.com/chenmingtang830/jevarena/blob/main/docs/evidence/openrouter-canary-2026-09-19.json";
 export function GuestHome({ initialId }: { initialId?: string }) {
   const [active, setActive] = useState(examples.find((item) => item.id === initialId) ?? examples[0]);

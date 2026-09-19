@@ -30,6 +30,7 @@ import { Suggestion } from "./ai-elements/suggestion";
 import { ShareTools } from "./share-tools";
 import { SaveHistory } from "./save-history";
 import { OpenRouterConnect } from "./openrouter-connect";
+import { communityTasks, communityTaskSource } from "@/lib/community-tasks";
 type Provider = "openrouter" | "vercel" | "typesafe";
 type Tier = "low-cost" | "strong" | "reasoning";
 type Match = { challenge: Challenge; runs: RunRecord[]; vote?: Vote };
@@ -50,7 +51,8 @@ const simpleBlank: Extract<Challenge, { kind: "judgment" }> = {
   ...blank,
   question: "Answer the question in the provided text using one of the possible answers.",
 };
-const simpleExamples = [
+const simpleExamples: { label: string; text: string; answers: string[]; source?: string }[] = [
+  ...communityTasks.map(({ challenge }) => ({ label: challenge.title, text: challenge.kind === "judgment" ? `${challenge.question}\n\n${challenge.content}` : "", answers: challenge.kind === "judgment" ? challenge.options.map((o) => o.label) : [], source: challenge.source })),
   { label: "Phishing email", text: "Is this email likely to be phishing?\n\nFrom: security@account-verify.example\nYour account will close in one hour. Open this link and enter your password to keep access.", answers: ["Yes", "No"] },
   { label: "Math claim", text: "Is this claim correct?\n\nA 20% increase followed by a 20% decrease returns a price to its original value.", answers: ["Yes", "No"] },
   { label: "Two answers", text: "Which answer better explains why seasons occur on Earth?\n\nAnswer A: Earth's tilted axis changes the angle and duration of sunlight during its orbit.\n\nAnswer B: Earth is much closer to the Sun in summer and farther away in winter.", answers: ["Answer A", "Answer B", "Equally good"] },
@@ -192,7 +194,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       setFocusTarget("confirm-simple-example");
       return;
     }
-    edit({ ...simpleBlank, id: newId(), content: example.text, options: example.answers.map((label, i) => ({ id: `option${i + 1}`, label })) });
+    edit({ ...simpleBlank, id: newId(), source: example.source, content: example.text, options: example.answers.map((label, i) => ({ id: `option${i + 1}`, label })) });
     setSelectedExample(example);
     setPendingSimple(null);
     setExampleNotice(`Example filled in. You can edit the text.`);
@@ -400,6 +402,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 {!busy && !match && <div className="starter-chips" aria-label="Example tasks">
                   {simpleExamples.map((example) => <Suggestion className="quick-start-suggestion" key={example.label} suggestion={example.label} onClick={() => loadSimple(example)} />)}
                 </div>}
+                {c.source === communityTaskSource.post && <p className="hint">From <a href={communityTaskSource.post} target="_blank" rel="noreferrer">@_pi0_’s public test</a> · Adapted to our judging format. Not rerun here.</p>}
                 <fieldset className="simple-options">
                   <legend>Possible answers</legend>
                   {c.options.map((option, i) => <div key={option.id}>
@@ -448,16 +451,16 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 onCancel={(event) => { event.preventDefault(); setSettings(false); }}
                 onClose={(event) => { if (!event.currentTarget.open) setSettings(false); }}>
               <Button variant="ghost" className="dialog-close" aria-label="Close model setup" onClick={() => setSettings(false)}><X size={18} /></Button>
-              <h2 id="preflight-heading" tabIndex={-1}>{keys[jp].trim() ? "Ready to compare" : "Connect OpenRouter"}</h2>
-              <p className="hint preflight-intro">{keys[jp].trim() ? "Review the cost, then run both models." : "Use your own credits to run two models."}</p>
-              {!keys[jp].trim() && <>
+              <h2 id="preflight-heading" tabIndex={-1}>{keys[jp].trim() ? "Ready to compare" : connections ? "Use your API key" : "Connect OpenRouter"}</h2>
+              <p className="hint preflight-intro">{connections ? "Only kept in this tab. Cleared on refresh." : "Use your own credits to run two models."}</p>
+              {!keys[jp].trim() && !connections && <>
                 <OpenRouterConnect disabled={!settings} onConnected={(key: string) => {
                   setKeys((current) => ({ ...current, openrouter: key }));
                   setJp("openrouter"); setConnections(false); setError("");
                   setAcceptedPolicyVersion(null); setFocusTarget("preflight-heading");
                 }} />
-                <p className="hint">Authorize on OpenRouter. JevArena receives a key for this tab; refreshing clears it.</p>
-                <p className="hint"><Link href="/">Try without connecting</Link>{" · "}<Link href="/run-locally">Run locally</Link></p>
+                <p className="hint">Set a small credit limit on OpenRouter. The authorized key stays in this tab.</p>
+                <p className="hint"><Link href="/try">Try without connecting</Link>{" · "}<Link href="/run-locally">Run locally</Link></p>
               </>}
               {keys[jp].trim() && <details open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
               <summary><SlidersHorizontal size={14} /> Model settings</summary>
@@ -558,9 +561,9 @@ export function Playground({ initial }: { initial?: Challenge }) {
               >
                 <summary>
                   <KeyRound size={15} />
-                  {keys[jp].trim() ? "Manage connection" : "Use an API key instead"}
+                  {connections ? "Back to connection options" : keys[jp].trim() ? "Manage connection" : "Use an API key instead"}
                 </summary>
-                <div className="field">
+                <div className="field" hidden={process.env.NEXT_PUBLIC_VERCEL_BYOK_ENABLED !== "true"}>
                   <label htmlFor="jev-provider">API provider</label>
                   <NativeSelect id="jev-provider" value={jp} onChange={(e) => {
                     setJp(e.target.value as Provider); setOpponent(""); setTier("low-cost");
@@ -568,7 +571,6 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   }}>
                     {PROVIDERS.filter((p) => p.id !== "typesafe").map((p) => <option key={p.id} value={p.id} disabled={p.id === "vercel" && process.env.NEXT_PUBLIC_VERCEL_BYOK_ENABLED !== "true"}>{p.label}{p.id === "vercel" && process.env.NEXT_PUBLIC_VERCEL_BYOK_ENABLED !== "true" ? " · setup pending" : ""}</option>)}
                   </NativeSelect>
-                  {process.env.NEXT_PUBLIC_VERCEL_BYOK_ENABLED !== "true" && <p className="hint">Vercel’s Jev endpoint blocks a required browser header. For now, <Link href="/run-locally">use Vercel locally</Link>.</p>}
                 </div>
                 <div className="connection-grid">
                   {PROVIDERS.filter((p) => p.id === jp).map((p) => (
@@ -592,7 +594,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       {fieldError(`key-${p.id}`)}
                       <p className="hint">
                         {p.id === "openrouter"
-                          ? <>Get a key from <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">OpenRouter settings</a>. Sent directly to openrouter.ai.</>
+                          ? <><a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">Get a key</a>{" · "}<Link href="/run-locally">Use Vercel locally</Link></>
                           : <>Use an <a href="https://vercel.com/docs/ai-gateway/authentication-and-byok/api-keys" target="_blank" rel="noreferrer">AI Gateway API key</a>, not a Vercel account token. Sent through JevArena’s fixed relay to ai-gateway.vercel.sh. Our server handles your key in request memory without saving it.</>}
                       </p>
                     </div>
@@ -605,9 +607,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <span>
                     2 calls ·{" "}
                     {maximum === null
-                      ? "Connect keys to see the estimated cost range"
+                      ? "Enter a key to see estimated cost"
                       : `Estimated ${money(minimum)}–${money(maximum)}`}
-                    {" · "}Paid from your {providerLabel} balance.
                   </span>
                 </div>
                 <details><summary>Cost and key details</summary>
@@ -615,7 +616,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <p className="hint">The page can read your key while you use it. OpenRouter calls go directly to OpenRouter; keys are held in tab memory, not saved. Vercel, when enabled, requires our server relay. <Link href="/privacy" target="_blank">Privacy details</Link>.</p>
                 </details>
                 <div data-policy-version={POLICY_VERSION}>
-                  <p className="hint">Your task goes to the model providers. No automatic publication. Don’t include sensitive information.</p>
+                  <p className="hint">Sent to the model providers, not published. No sensitive data.</p>
                   <label className="check-label" htmlFor="run-consent">
                     <Input id="run-consent" type="checkbox" {...fieldProps("run-consent")}
                       checked={acceptedPolicyVersion === POLICY_VERSION}
@@ -642,7 +643,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
             </div>
           </fieldset>
         </section>
-        <p className="composer-context">Compare anonymously. Vote to reveal. <Link href="/cases">Browse cases without a key <ArrowRight size={12} /></Link></p>
+        <p className="composer-context">Compare anonymously. Vote to reveal. <Link href="/try">Try without a key <ArrowRight size={12} /></Link></p>
         <div>
           {(busy || match) && <section className="arena-panel" aria-label="Comparison results">
             <div className="section-bar">

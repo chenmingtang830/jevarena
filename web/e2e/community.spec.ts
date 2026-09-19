@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 
-test("community sources remain attributed, searchable and read-only", async ({ page }, testInfo) => {
+test("community sources remain attributed and read-only without search", async ({ page }, testInfo) => {
   const externalRequests: string[] = [];
   await page.route("**/*", (route) => {
     if (new URL(route.request().url()).hostname !== "127.0.0.1") {
@@ -11,22 +11,19 @@ test("community sources remain attributed, searchable and read-only", async ({ p
     return route.continue();
   });
   await page.goto("/cases");
-  const library = page.getByRole("region", { name: "Community case studies" });
+  const library = page.getByRole("region", { name: "Community reports" });
   await expect(library.locator("article")).toHaveCount(4);
   await expect(library.getByRole("link", { name: "Malte Ubl (@cramforce)" })).toHaveAttribute("href", "https://x.com/cramforce");
   await expect(library.getByRole("link", { name: "Original post on X", exact: true }).first()).toHaveAttribute("href", "https://x.com/cramforce/status/2100269198727602468");
-  await library.getByLabel("Find a community report or author").fill("rauchg");
-  await expect(library.locator("article")).toHaveCount(1);
+  await expect(page.getByRole("textbox")).toHaveCount(0);
+  await expect(page.getByText("Negation in Chinese", {exact:true})).toHaveCount(0);
   await expect(library.getByText(/418,197 views/)).not.toBeVisible();
-  await library.getByText("Source snapshot and engagement", { exact: true }).click();
+  await library.locator("#command-safety-rauchg").getByText("Source snapshot and engagement", { exact: true }).click();
   await expect(library.getByText(/418,197 views/)).toBeVisible();
-  await library.getByRole("link", { name: /Read case study/ }).click();
+  await library.locator("#command-safety-rauchg").getByRole("link", { name: /Read case study/ }).click();
   await expect(page).toHaveURL(/\/cases\/command-safety-rauchg$/);
   await expect(page.getByText(/Never execute the commands/)).toBeVisible();
   await page.getByRole("link", { name: "Back to community case studies" }).click();
-  await library.getByLabel("Find a community report or author").fill("no-such-source");
-  await expect(library.getByText(/No matching reports/)).toBeVisible();
-  await library.getByLabel("Find a community report or author").fill("");
   await expect(library.locator("article")).toHaveCount(4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(externalRequests).toEqual([]);

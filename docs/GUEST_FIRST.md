@@ -1,5 +1,10 @@
 # Guest-first release
 
+Update: the user's preferred composer homepage has been restored. The recorded
+guest experience now lives at `/try`; old `/?example=...` links redirect there.
+OAuth and manual key entry are mutually exclusive dialog views, not stacked forms.
+The following describes the original guest-first implementation and evidence.
+
 The homepage lets visitors guess and reveal two recorded OpenRouter canary
 examples without an account, key, inference request, or submission. Measurements
 are imported from the committed September 19 receipt. They are diagnostic local,

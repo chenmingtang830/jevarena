@@ -142,7 +142,7 @@ test("unauthenticated history remains optional and never exposes upstream diagno
   await expect(page.locator("body")).not.toContainText("SECRET_AUTH_DIAGNOSTIC");
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/login");
   await page.getByRole("link", { name: "Continue as guest", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Would you make the same call?" })).toBeVisible();
+  await expect(page.getByLabel("Question and context")).toBeEditable();
   expect(requests).toBe(1);
 });
 
