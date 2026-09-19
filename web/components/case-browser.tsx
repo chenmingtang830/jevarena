@@ -1,4 +1,6 @@
 "use client";
+import { Input } from "./ui/input";
+import { NativeSelect } from "./ui/native-select";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Search } from "lucide-react";
@@ -21,7 +23,7 @@ export function CaseBrowser() {
             <Search size={13} />
             Find a challenge
           </label>
-          <input
+          <Input
             id="case-search"
             placeholder="Search questions…"
             value={q}
@@ -30,7 +32,7 @@ export function CaseBrowser() {
         </div>
         <div>
           <label htmlFor="case-kind">Task type</label>
-          <select
+          <NativeSelect
             id="case-kind"
             value={kind}
             onChange={(e) => setKind(e.target.value)}
@@ -38,7 +40,7 @@ export function CaseBrowser() {
             <option value="all">All tasks</option>
             <option value="judgment">Make a judgment</option>
             <option value="comparison">Compare two answers</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
       <p className="hint" role="status">

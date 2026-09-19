@@ -1,6 +1,6 @@
 # Provider contracts and relay operation
 
-Verified 2026-09-19 using public official documentation, OpenAPI and model catalog responses. A [four-call local Vercel canary](CANARY-2026-09-19.md) now verifies Jev and DeepSeek V4.1 Flash through the Gateway API. This is not deployed-browser/relay acceptance; the UI catalog remains experimental. Other providers remain contract-only. User BYOK runs may encounter account-specific access, quota, or provider changes.
+Verified 2026-09-19 using public official documentation, OpenAPI and model catalog responses. A [four-call local OpenRouter canary](OPENROUTER_CANARY-2026-09-19.md) passed for Jev 1.13 and Gemini 2.5 Flash; a separate [four-call local Gateway canary](CANARY-2026-09-19.md) passed for Jev and DeepSeek V4.1 Flash. Gateway normalization fixes are merged from PR #1. Neither local canary validates production-browser BYOK or the disabled relay. Catalog `validation: contract-only` remains conservative browser-integration status. User BYOK runs may encounter account-specific access, quota, or provider changes.
 
 | Provider | Jev endpoint | Comparator | Browser route |
 | --- | --- | --- | --- |

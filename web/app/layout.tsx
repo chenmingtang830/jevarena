@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import "@fontsource-variable/geist";
+import "@fontsource-variable/dm-sans";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 import { SiteHeader, SiteFooter } from "@/components/site-shell";
 

@@ -10,7 +10,7 @@ test("visitors browse without inference and invalid fragments fail safely", asyn
   });
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Good judgment. Put it to the test." }),
+    page.getByRole("textbox", { name: "Your claim or question" }),
   ).toBeVisible();
   await page.goto("/cases");
   await expect(page.locator("main")).toBeVisible();
@@ -60,6 +60,8 @@ test("synthetic battle hides metadata until vote, never stores keys", async ({
       });
   });
   await page.goto("/");
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page
     .getByLabel("What should the models evaluate?")
     .fill("SYNTHETIC TEST ONLY: 2+2=4");
@@ -111,6 +113,8 @@ test("comparison form and incomplete paid attempts do not create a winner", asyn
     r.fulfill({ status: 401, json: { error: "SECRET_UPSTREAM_DETAIL" } }),
   );
   await page.goto("/");
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page
     .getByRole("button", { name: "Compare two answers", exact: true })
     .click();
@@ -148,6 +152,8 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
     }
   });
   await page.goto("/");
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page
     .getByLabel("What should the models evaluate?")
     .fill("Synthetic retry test");

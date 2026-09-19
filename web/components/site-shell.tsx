@@ -1,8 +1,17 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowUpRight, FlaskConical, Github } from "lucide-react";
 
 export const REPO = "https://github.com/chenmingtang830/jevarena";
 export function SiteHeader() {
+  const pathname = usePathname();
+  const pages = [
+    ["/", "Playground"],
+    ["/cases", "Cases"],
+    ["/results", "Results"],
+    ["/methodology", "Methodology"],
+  ];
   return (
     <header className="site-header">
       <Link className="wordmark" href="/" aria-label="JevArena home">
@@ -12,11 +21,13 @@ export function SiteHeader() {
         </span>
       </Link>
       <nav aria-label="Main navigation">
-        <Link href="/">Playground</Link>
-        <Link href="/cases">Cases</Link>
-        <Link href="/results">Results</Link>
-        <Link href="/methodology">Methodology</Link>
-        <a className="github-link" href={REPO} target="_blank" rel="noreferrer">
+        {pages.map(([href, title]) => (
+          <Link key={href} href={href} aria-current={
+            (href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`))
+              ? "page" : undefined
+          }>{title}</Link>
+        ))}
+        <a className="github-link" href={REPO} target="_blank" rel="noreferrer" aria-label="JevArena on GitHub (opens in a new tab)">
           <Github size={17} />
           <span>GitHub</span>
           <ArrowUpRight size={13} />

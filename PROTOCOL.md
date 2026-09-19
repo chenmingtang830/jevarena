@@ -76,8 +76,10 @@ with the same model being evaluated. Preserve both original and adjudicated labe
 
 ## Scope limits
 
-No live model result, verified weakness, architecture claim or official benchmark score has been
-produced by the initial implementation. Labels come from upstream and vary in provenance:
+Small real provider transport canaries are recorded separately in `docs/`; they do not
+establish a verified weakness, architecture claim, general model ranking, or official benchmark
+score. Community intake also remains unreviewed until independently reproduced and assessed.
+The Python research labels come from upstream and vary in provenance:
 RewardBench 2 includes verifier, model-judge, majority-vote and manual construction methods.
 No claim is made that every item is human-labelled. Public availability does not imply public-domain
 licensing. Preserve source attribution and model-output terms; keep downloads out of source control.
