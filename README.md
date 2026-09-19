@@ -21,13 +21,34 @@ npm run build
 npm run test:e2e
 ```
 
-See [contributing](CONTRIBUTING.md), [security](SECURITY.md), and [provider verification](docs/PROVIDERS.md). No paid canary or research results have been produced. Mock runs must never enter a model leaderboard.
+See [contributing](CONTRIBUTING.md), [security](SECURITY.md), and [provider verification](docs/PROVIDERS.md). Small real OpenRouter and Gateway transport canaries have passed; they are not a benchmark or evidence of general model superiority. Mock runs must never enter a model leaderboard.
+
+## Contributing data
+
+After a run, open **Share this experiment**, inspect the complete JSON, and choose
+whether to contribute privately to research. Collection is opt-in, not automatic;
+publication is a separate GitHub action and owner review. Download the deletion
+receipt if you submit: the site has no account or automatic receipt storage.
+API keys are never collected or saved by this feature.
+
+The private intake, quota, retention and withdrawal contract is documented in
+[data collection](docs/DATA_COLLECTION.md). Maintainers can validate and import a
+downloaded case offline without running a model:
+
+```sh
+uv run jevjudge community validate case.json
+uv run jevjudge community import case.json --out data/community/new-case
+```
+
+Community observations stay in a separate, unreviewed corpus. Importing a record
+does not establish correctness or admit it into a benchmark. Contributors can
+reopen its normalized JSON in `/share` and explicitly rerun it with their own key.
 
 ## Python benchmark
 
 Find where Jev fails as a judge, what other judges get right, and what those differences cost.
 
-**Status: runnable local evaluation harness, not measured model findings. No live model calls have been made.**
+**Status: runnable local evaluation harness, not measured model findings. The separate web-provider canaries are diagnostic only.**
 Independent project; not affiliated with TypeSafe, JudgeBench, RM-Bench, or Ai2.
 
 ## Quick start
@@ -74,7 +95,7 @@ Copy and complete `configs/comparison.template.json` for an OpenAI-compatible en
 Choose a budget model, a strong direct-answer judge and a reasoning judge as separate model
 config entries. Verify exact provider IDs, availability, prices and output-token parameter
 before running. Null rate fields deliberately fail validation. No baseline model has been
-selected or live-verified yet. Direct Anthropic/Gemini APIs and Vercel's experimental Jev
+selected or live-verified for this Python configuration yet. Direct Anthropic/Gemini APIs and Vercel's experimental Jev
 evaluation API are not implemented; compatible chat gateways may route comparison models.
 
 ```sh

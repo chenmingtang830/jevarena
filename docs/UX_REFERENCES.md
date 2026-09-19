@@ -15,9 +15,10 @@ model choices. No prompt was submitted during this inspection.
 
 JevArena borrows contextual disclosure, editable starters and draft-preserving
 mode changes, not Arena's data-use policy. Its notice must explain the current
-provider transmission and session-only handling; central collection is not yet
-connected. Explicit sharing/export and future opt-in contribution are separate
-from running a comparison. Never imply default public disclosure, zero provider
+provider transmission and session-only handling of keys and unsent drafts.
+Optional private research intake is separately consented and deployment-gated;
+see [the collection contract](DATA_COLLECTION.md). Explicit sharing/export and
+research contribution are separate from running a comparison. Never imply default public disclosure, zero provider
 retention, end-to-end encryption, or consent to later research calls.
 
 ## User-pinned Proofpress visual reference
@@ -47,8 +48,8 @@ no change to BYOK execution, evidence status, or collection/backend behavior.
 
 ## Backend acceptance boundary
 
-The existing [PR #1](https://github.com/chenmingtang830/jevarena/pull/1) records a real four-call local Node-to-Vercel Gateway canary on two public tasks: two Jev and two DeepSeek V4.1 Flash calls succeeded. Returned costs totaled $0.00013035; this is not a reconciled invoice or performance benchmark. The canary discovered cost/confidence/settings normalization fixes, also in that PR.
+The merged [PR #1](https://github.com/chenmingtang830/jevarena/pull/1) records a real four-call local Node-to-Vercel Gateway canary on two public tasks: two Jev and two DeepSeek V4.1 Flash calls succeeded. Returned costs totaled $0.00013035; this is not a reconciled invoice or performance benchmark. The canary discovered cost/confidence/settings normalization fixes, now merged into main.
 
-That evidence does **not** validate authenticated OpenRouter browser calls, TypeSafe direct calls, deployed browser-to-relay requests, global relay throttling, all selected models, or account billing behavior. The relay stays disabled. UI and community work does not approve or merge PR #1; it must not be described as having shipped its fixes.
+That local evidence does **not** validate authenticated OpenRouter browser calls, TypeSafe direct calls, deployed browser-to-relay requests, global relay throttling, all selected models, or account billing behavior. The relay stays disabled. A merge is not evidence that a particular deployed revision or live provider route passed acceptance; check the deployed commit and bounded test receipt separately.
 
-The user subsequently authorized a separate four-call, $0.05 OpenRouter canary. It completed successfully from local Node, with returned cost $0.000161366; see [bounded acceptance evidence](OPENROUTER_CANARY-2026-09-19.md). Both four-call approvals are now exhausted. No more model inference is authorized by this revision.
+The user subsequently authorized a separate four-call, $0.05 OpenRouter canary. It completed successfully from local Node, with returned cost $0.000161366; see [bounded acceptance evidence](OPENROUTER_CANARY-2026-09-19.md). Those two original four-call approvals are exhausted. Later browser acceptance requires its own explicit authorization and receipt; this reference document grants no inference budget.

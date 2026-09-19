@@ -31,7 +31,7 @@ Public search and third-party roundups served as discovery aids, not evidence fo
 - Keep reference metadata out of prompts, benchmark aggregates and exported original-template contributions.
 - Browsing these references makes no X API or inference calls. All paid collection is a bounded maintainer action; no recurring collection was configured.
 
-New entries require the repository's existing review gate. This batch is submitted for owner review, not automatically merged or published to production.
+New entries require the repository's existing review gate. Source collection does not automatically merge or publish a batch to production; approval, deployment, and evidence status remain separate.
 
 ## Editorial case-study pages
 

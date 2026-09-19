@@ -10,6 +10,7 @@ import {
 import { CaseContribution } from "@/lib/contracts";
 import { encodeShare, contributionJson } from "@/lib/sharing";
 import { Button } from "./ui/button";
+import { ContributionSubmit } from "./contribution-submit";
 function download(blob: Blob, name: string) {
   const u = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -142,6 +143,7 @@ export function ShareTools({ value }: { value: CaseContribution }) {
           </p>
         </>
       )}
+      {process.env.NEXT_PUBLIC_CONTRIBUTIONS_ENABLED === "true" && value.runs.length > 0 && <div hidden={!open}><ContributionSubmit key={contributionJson(value)} value={value} /></div>}
     </div>
   );
 }

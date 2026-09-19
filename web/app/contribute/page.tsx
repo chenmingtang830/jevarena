@@ -13,6 +13,13 @@ export default function Contribute() {
         explanations. You don’t need a surprising result to contribute.
       </p>
       <section>
+        <h2>Contribute privately to research</h2>
+        <p>After a comparison, open “Share this experiment” and review the complete task, runs and vote. When research submissions are enabled, a separate, unchecked consent form lets you submit that preview for private research review under CC BY 4.0. Running a comparison does not submit it.</p>
+        <p>Only contribute material you have permission to share, after removing secrets and personal information. Research consent does not authorize publication. Pending submissions expire after 30 days; your receipt shows the exact expiration time. A public case requires a separate contributor action and permission.</p>
+        <p>If storage or submission capacity is reached, your experiment stays in the browser. Download its JSON and use the GitHub contribution route below. Review it again before posting publicly.</p>
+        <p>Download the deletion receipt after submitting and keep it private. It contains the token needed to <a href="/contributions/delete">withdraw your submission</a>. Receipts and provider keys are not saved in browser storage. If delivery is uncertain, retry the same submission from the open tab or download its recovery receipt.</p>
+      </section>
+      <section>
         <h2>Share an experiment</h2>
         <ol>
           <li>

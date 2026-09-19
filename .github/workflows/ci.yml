@@ -3,8 +3,57 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
+  postgres-integrity:
+    name: PostgreSQL contribution integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: jevarena_ci
+          POSTGRES_USER: postgres
+          # Disposable, runner-local service credential; no production secrets.
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d jevarena_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: jevarena_ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure PostgreSQL client is available
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install --yes postgresql-client
+          fi
+      - name: Create isolated Supabase-compatible roles
+        run: >-
+          psql --no-psqlrc --set ON_ERROR_STOP=1
+          --command 'CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN;'
+      - name: Apply intake migrations and run real SQL assertions
+        # 003 is the hosted pg_cron installation, verified separately in Supabase.
+        # 004 skips scheduling when pg_cron is absent; assertions exercise cleanup
+        # directly. This job calls no provider/model API and uses no cloud secrets.
+        run: |
+          psql --no-psqlrc --set ON_ERROR_STOP=1 \
+            --file supabase/migrations/202609190001_private_contributions.sql \
+            --file supabase/migrations/202609190002_withdrawal_race.sql \
+            --file supabase/migrations/202609190004_pro_capacity.sql \
+            --file supabase/tests/intake-integrity.sql
   test:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_CONTRIBUTIONS_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6

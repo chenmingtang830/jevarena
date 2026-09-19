@@ -622,7 +622,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <summary>How your data is handled</summary>
                   <p>Providers receive your prompt, context and any candidate answers needed to judge the task. Their own data and retention policies apply.</p>
                   <p>Your API keys stay in this tab’s memory and disappear on refresh. OpenRouter requests go directly from your browser to OpenRouter.</p>
-                  <p>JevArena does not currently collect your task or results in a central database or publish them automatically. Exporting or sharing is a separate action you choose after reviewing the content.</p>
+                  <p>JevArena does not collect or publish your task automatically. When enabled, private research submission requires separate consent after you review the task and results. Exporting, sharing or permitting publication is a separate action you choose.</p>
                 </details>
               </section>}
               {settings && <div className="model-settings" id="model-settings">

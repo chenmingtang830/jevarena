@@ -928,3 +928,10 @@ label {
     scroll-behavior: auto !important;
   }
 }
+.contribution-submit { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 20px; }
+.contribution-submit > .hint { margin-bottom: 16px; }
+.contribution-consent { border: 0; padding: 0; margin: 16px 0; min-width: 0; }
+.contribution-consent .check-label { font-size: 13px; }
+.contribution-receipt { margin-top: 14px; }
+.contribution-receipt code { font-family: var(--font-proof); overflow-wrap: anywhere; }
+.contribution-receipt .inline { margin-top: 16px; }

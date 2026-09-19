@@ -4,6 +4,9 @@ import argparse
 import json
 from pathlib import Path
 
+from jsonschema.exceptions import ValidationError
+
+from .community import import_contribution, load_contribution, validation_receipt
 from .data import SOURCES, digest, dump, fetch_sources, load_jsonl, prepare
 from .providers import validate_config
 from .report import build_report
@@ -36,8 +39,25 @@ def main():
             p.add_argument("--max-calls", type=int, default=0)
     report = sub.add_parser("report")
     report.add_argument("directory")
+    community = sub.add_parser("community", help="Validate/import untrusted web cases offline; no model calls")
+    community_sub = community.add_subparsers(dest="community_action", required=True)
+    for action in ("validate", "import"):
+        command = community_sub.add_parser(action)
+        command.add_argument("file", help="One exported CaseContribution JSON, at most 128 KB")
+        if action == "import":
+            command.add_argument("--out", required=True, help="New isolated intake directory; never overwritten")
     args = parser.parse_args()
-    if args.command == "fetch":
+    if args.command == "community":
+        try:
+            value = load_contribution(args.file)
+            receipt = (validation_receipt(value) if args.community_action == "validate"
+                       else import_contribution(value, args.out))
+        except (OSError, ValueError, ValidationError, RecursionError) as exc:
+            # jsonschema's full message can include the entire private payload.
+            parser.error(f"Community intake failed ({type(exc).__name__}); check JSON, size, contract associations, "
+                         "and output path. No model calls were made.")
+        print(json.dumps(receipt, ensure_ascii=True, indent=2))
+    elif args.command == "fetch":
         value = fetch_sources(args.root, args.datasets)
         print(json.dumps({name: len(spec["files"]) for name, spec in value["sources"].items()}))
     elif args.command == "prepare":
@@ -56,6 +76,11 @@ def main():
         dump(str(out) + ".manifest.json", receipt)
         print(json.dumps({key: receipt[key] for key in ("pairs", "prompt_groups", "rows_sha256")}))
     elif args.command in ("plan", "run"):
+        if (Path(args.data).parent / "manifest.json").exists():
+            manifest = json.loads((Path(args.data).parent / "manifest.json").read_text())
+            if manifest.get("schema") == "jevarena-community-intake/v1":
+                parser.error("Community intake is unreviewed and cannot enter the benchmark runner. "
+                             "Reproduce and review it, then explicitly prepare a separate research corpus.")
         rows = load_jsonl(args.data)
         if not rows or len({r["id"] for r in rows}) != len(rows):
             parser.error("Empty data or duplicate IDs")
