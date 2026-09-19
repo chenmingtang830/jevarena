@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -110,7 +110,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
     input.style.height = "auto";
     input.style.height = `${Math.min(360, Math.max(148, input.scrollHeight))}px`;
   }, [c, advanced]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (focusTarget) {
       document.getElementById(focusTarget)?.focus();
       setFocusTarget(null);

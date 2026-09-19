@@ -39,6 +39,7 @@ test("quickstart editing, clear and undo work by keyboard without sending data",
   await page.getByRole("button", { name: "Clear", exact: true }).focus();
   await page.keyboard.press("Enter");
   await expect(text).toHaveValue("");
+  await expect(text).toBeFocused();
   await expect(privacy).not.toBeVisible();
   await page.getByRole("button", { name: "Undo clear", exact: true }).focus();
   await page.keyboard.press("Enter");
