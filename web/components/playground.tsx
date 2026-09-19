@@ -19,7 +19,6 @@ import {
   Vote,
   modelInput,
 } from "@/lib/contracts";
-import { templates } from "@/lib/cases";
 import { MODELS, PROVIDERS, getJevModel, estimateCost } from "@/lib/catalog";
 import { executeJudge } from "@/lib/providers";
 import { Button } from "./ui/button";
@@ -44,23 +43,14 @@ const blank: Extract<Challenge, { kind: "judgment" }> = {
     { id: "option2", label: "No" },
   ],
 };
-const blankComparison: Challenge = {
-  schemaVersion: 1, id: "custom", title: "Compare two answers", language: "en",
-  kind: "comparison", prompt: "", answer1: "", answer2: "",
-};
 const simpleBlank: Extract<Challenge, { kind: "judgment" }> = {
   ...blank,
-  question: "Is the statement supported by the provided context or established facts?",
-  options: [
-    { id: "option1", label: "Yes" },
-    { id: "option2", label: "No" },
-    { id: "option3", label: "Unsure" },
-  ],
+  question: "Answer the question in the provided text using one of the possible answers.",
 };
 const simpleExamples = [
-  { label: "Check a claim", description: "Test whether a numerical claim holds up. Edit the claim to try your own.", text: "Claim: A 20% increase followed by a 20% decrease returns a price to its original value." },
-  { label: "Weigh the evidence", description: "Ask whether the evidence supports a causal claim. Edit the claim or context.", text: "Claim: The new onboarding caused higher retention.\nContext: Retention rose from 40% to 55% after the change. There was no control group, and the customer mix also changed." },
-  { label: "Spot a contradiction", description: "Check a request against a stated policy. Edit either to test the boundary.", text: "Claim: This refund request meets the policy.\nPolicy: Refunds are available within 30 days of purchase.\nRequest: The customer purchased the item 45 days ago." },
+  { label: "Phishing email", text: "Is this email likely to be phishing?\n\nFrom: security@account-verify.example\nYour account will close in one hour. Open this link and enter your password to keep access.", answers: ["Yes", "No"] },
+  { label: "Math claim", text: "Is this claim correct?\n\nA 20% increase followed by a 20% decrease returns a price to its original value.", answers: ["Yes", "No"] },
+  { label: "Two answers", text: "Which answer better explains why seasons occur on Earth?\n\nAnswer A: Earth's tilted axis changes the angle and duration of sunlight during its orbit.\n\nAnswer B: Earth is much closer to the Sun in summer and farther away in winter.", answers: ["Answer A", "Answer B", "Equally good"] },
 ];
 const money = (n: number | null) =>
   n === null ? "Unknown" : `$${n.toFixed(6)}`;
@@ -69,19 +59,13 @@ function newId() {
 }
 export function Playground({ initial }: { initial?: Challenge }) {
   const [c, setC] = useState<Challenge>(initial ?? simpleBlank);
-  const [advanced, setAdvanced] = useState(Boolean(initial));
-  const simpleDraft = useRef<Challenge>(simpleBlank);
-  const advancedKind = useRef<Challenge["kind"]>(initial?.kind ?? "judgment");
+  const advanced = c.kind === "comparison";
+  const [modelSettings, setModelSettings] = useState(false);
   const [settings, setSettings] = useState(false);
   const [pendingSimple, setPendingSimple] = useState<(typeof simpleExamples)[number] | null>(null);
   const [selectedExample, setSelectedExample] = useState<(typeof simpleExamples)[number] | null>(null);
   const [clearedDraft, setClearedDraft] = useState<{ challenge: Challenge; example: (typeof simpleExamples)[number] | null } | null>(null);
-  const drafts = useRef<Record<Challenge["kind"], Challenge>>({
-    judgment: initial?.kind === "judgment" ? initial : blank,
-    comparison: initial?.kind === "comparison" ? initial : blankComparison,
-  });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [pendingExample, setPendingExample] = useState<Challenge | null>(null);
   const [exampleNotice, setExampleNotice] = useState("");
   const [focusTarget, setFocusTarget] = useState<string | null>(null);
   const [mode, setMode] = useState<"arena" | "compare">("arena");
@@ -108,14 +92,14 @@ export function Playground({ initial }: { initial?: Challenge }) {
     const input = document.getElementById("content") as HTMLTextAreaElement | null;
     if (!input) return;
     input.style.height = "auto";
-    input.style.height = `${Math.min(360, Math.max(148, input.scrollHeight))}px`;
+    input.style.height = `${Math.min(360, Math.max(104, input.scrollHeight))}px`;
   }, [c, advanced]);
   useLayoutEffect(() => {
     if (focusTarget) {
       document.getElementById(focusTarget)?.focus();
       setFocusTarget(null);
     }
-  }, [focusTarget, connections, c.kind, advanced, settings]);
+  }, [focusTarget, connections, c.kind, advanced, settings, modelSettings]);
   useEffect(() => {
     if (!busy && match) {
       setAnnouncement(
@@ -154,8 +138,6 @@ export function Playground({ initial }: { initial?: Challenge }) {
       Math.min(...estimates.slice(1).map((e) => e.minUsd ?? 0))
     : null;
   function edit(next: Challenge) {
-    if (advanced) drafts.current[next.kind] = next;
-    else simpleDraft.current = next;
     setC(next);
     setMatch(null);
     setError("");
@@ -179,25 +161,16 @@ export function Playground({ initial }: { initial?: Challenge }) {
     setFocusTarget("content");
     setExampleNotice("Your previous text has been restored.");
   }
-  function toggleAdvanced() {
-    const next = !advanced;
-    setAdvanced(next);
-    setC(next ? drafts.current[advancedKind.current] : simpleDraft.current);
-    setMatch(null);
-    setError("");
-    setFieldErrors({});
-    setPendingExample(null);
-    setPendingSimple(null);
-    setExampleNotice("");
-  }
   function loadSimple(example: (typeof simpleExamples)[number], confirmed = false) {
     if (busy) return;
-    if (c.kind === "judgment" && c.content.trim() && !confirmed) {
+    const unchangedExample = selectedExample && c.kind === "judgment" && c.content === selectedExample.text &&
+      c.options.length === selectedExample.answers.length && c.options.every((option, i) => option.label === selectedExample.answers[i]);
+    if (c.kind === "judgment" && (c.content.trim() || JSON.stringify(c.options) !== JSON.stringify(blank.options)) && !unchangedExample && !confirmed) {
       setPendingSimple(example);
       setFocusTarget("confirm-simple-example");
       return;
     }
-    edit({ ...simpleBlank, id: newId(), content: example.text });
+    edit({ ...simpleBlank, id: newId(), content: example.text, options: example.answers.map((label, i) => ({ id: `option${i + 1}`, label })) });
     setSelectedExample(example);
     setPendingSimple(null);
     setExampleNotice(`Example filled in. You can edit the text.`);
@@ -217,37 +190,6 @@ export function Playground({ initial }: { initial?: Challenge }) {
       setFocusTarget("key-openrouter");
     } else setFocusTarget("preflight-heading");
   }
-  function load(t: Challenge, confirmed = false) {
-    if (busy) return;
-    const draft = drafts.current[t.kind];
-    const empty = t.kind === "judgment" ? blank : blankComparison;
-    if (!confirmed && JSON.stringify(draft) !== JSON.stringify(empty)) {
-      setPendingExample(t);
-      setFocusTarget("confirm-example");
-      return;
-    }
-    const next = { ...t, id: newId() };
-    drafts.current[t.kind] = next;
-    advancedKind.current = t.kind;
-    setAdvanced(true);
-    setC(next);
-    setMatch(null);
-    setError("");
-    setFieldErrors({});
-    setPendingExample(null);
-    setExampleNotice(`Loaded “${t.title}”. Review or edit the fields, then connect your key to run.`);
-    setFocusTarget(t.kind === "judgment" ? "content" : "prompt");
-  }
-  function switchKind(kind: "judgment" | "comparison") {
-    if (kind === c.kind) return;
-    setMatch(null);
-    setC(drafts.current[kind]);
-    advancedKind.current = kind;
-    setError("");
-    setFieldErrors({});
-    setPendingExample(null);
-    setExampleNotice("");
-  }
   function fieldProps(id: string) {
     return { "aria-invalid": Boolean(fieldErrors[id]), "aria-describedby": fieldErrors[id] ? `${id}-error` : undefined };
   }
@@ -263,7 +205,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       id: newId(),
       title:
         c.title === "Untitled judgment"
-          ? (c.kind === "judgment" ? c.question : c.prompt).slice(0, 120) ||
+          ? (c.kind === "judgment" ? c.content : c.prompt).slice(0, 120) ||
             "Untitled judgment"
           : c.title,
     });
@@ -272,17 +214,20 @@ export function Playground({ initial }: { initial?: Challenge }) {
       ? [["content", c.content], ["question", c.question], ...c.options.map((o, i) => [`option-${i}`, o.label]), ["language", c.language]]
       : [["prompt", c.prompt], ["answer1", c.answer1], ["answer2", c.answer2], ["language", c.language]];
     for (const [id, value] of fields) {
-      if (!value.trim()) errors[id] = "Enter text in this field before starting.";
+      if (!value.trim()) errors[id === "question" ? "content" : id] = id === "question"
+        ? "The imported question is blank. Edit the question and context before starting."
+        : "Enter text in this field before starting.";
     }
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
-        const id = issue.path[0] === "options" ? `option-${typeof issue.path[1] === "number" ? issue.path[1] : 0}` : String(issue.path[0]);
+        const id = issue.path[0] === "options" ? `option-${typeof issue.path[1] === "number" ? issue.path[1] : 0}` : issue.path[0] === "question" ? "content" : String(issue.path[0]);
         errors[id] ??= issue.message;
       }
     }
     if (Object.keys(errors).length || !parsed.success) {
       setFieldErrors(errors);
       const first = fields.find(([id]) => errors[id]);
+      if (first?.[0] === "language") setModelSettings(true);
       setFocusTarget(first?.[0] ?? (c.kind === "judgment" ? "content" : "prompt"));
       setError(first ? "Check the highlighted fields before starting." : "This imported task has invalid metadata. Load an example or correct the original task before running.");
       return;
@@ -295,6 +240,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       return;
     }
     if (!candidates.length) {
+      setModelSettings(true);
       setConnections(true);
       setError(
         "Connect a provider that offers a model in this tier, or choose another tier.",
@@ -303,6 +249,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       return;
     }
     if (!known || maximum === null) {
+      setModelSettings(true);
       setError(
         "A price estimate is unavailable for this pairing. Choose a model with known pricing before running.",
       );
@@ -317,6 +264,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
         "The estimated upper cost exceeds your estimate threshold. Increase the threshold or choose a lower-cost tier.",
       );
       setFieldErrors({ budget: "Enter a positive threshold above the estimated upper cost, or choose a lower-cost tier." });
+      setModelSettings(true);
       setFocusTarget("budget");
       return;
     }
@@ -373,7 +321,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
   const success = match?.runs.every((r) => r.status === "success");
   const hasTaskInput = c.kind === "comparison"
     ? Boolean(c.prompt.length || c.answer1.length || c.answer2.length || c.language !== "en")
-    : Boolean(c.content.length || (advanced && (c.question.length || c.language !== "en" || JSON.stringify(c.options) !== JSON.stringify(blank.options))));
+    : Boolean(c.content.length || c.language !== "en" || JSON.stringify(c.options) !== JSON.stringify(blank.options));
   const revealed = Boolean(match?.vote) || Boolean(match && !success);
   const share: CaseContribution | null =
     match && revealed
@@ -398,8 +346,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
         {announcement}
       </p>
       <div className="composer-intro">
-        <h1>Compare Jev with another model</h1>
-        <p>Give them the same task. Compare their decisions, then reveal speed and cost.</p>
+        <h1>Ask a question.</h1>
+        <p>One question. Two model judgments.</p>
       </div>
       <div className="composer-flow">
         <section className="editor composer" aria-label="Set up experiment">
@@ -408,201 +356,44 @@ export function Playground({ initial }: { initial?: Challenge }) {
             style={{ border: 0, margin: 0, minWidth: 0, padding: 0 }}
           >
             <div className="editor-body">
-              {!advanced && c.kind === "judgment" && (
-                <div className="simple-input">
-                  <label htmlFor="content">What should Jev judge?</label>
-                  <Textarea
-                    id="content"
-                    {...fieldProps("content")}
-                    aria-describedby={fieldErrors.content ? "content-error simple-task-hint" : "simple-task-hint"}
-                    rows={5}
-                    aria-keyshortcuts="Control+Enter Meta+Enter"
-                    placeholder="Type a claim and any context here… e.g. ‘A 20% rise followed by a 20% fall cancels out.’"
-                    value={c.content}
-                    onChange={(e) => edit({ ...c, content: e.target.value })}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault();
-                        review();
-                      }
-                    }}
-                  />
-                  {fieldError("content")}
-                  <p className="hint" id="simple-task-hint">Both models answer Yes, No, or Unsure. Customize in Task options.</p>
-                </div>
-              )}
-              {advanced && <div id="advanced-task" className="advanced-task">
-              <div className="tabs" aria-label="Task type">
-                <Button variant="ghost"
-                  aria-pressed={c.kind === "judgment"}
-                  onClick={() => switchKind("judgment")}
-                >
-                  Make a judgment
-                </Button>
-                <Button variant="ghost"
-                  aria-pressed={c.kind === "comparison"}
-                  onClick={() => switchKind("comparison")}
-                >
-                  Compare two answers
-                </Button>
-              </div>
-              <div className="quick-start">
-                <Button variant="secondary" onClick={() => {
-                  const example = templates.find((t) => t.kind === c.kind);
-                  if (example) load(example);
-                }}>
-                  Try an example
-                </Button>
-                <Link href="/cases">Browse cases · no key needed</Link>
-                <p className="hint">Set a task → Compare anonymous judgments → Vote to reveal</p>
-              </div>
-              {pendingExample && (
-                <div className="example-confirm" role="group" aria-label="Replace draft with example">
-                  <p>Load “{pendingExample.title}” and replace your {pendingExample.kind === "judgment" ? "judgment" : "comparison"} draft? Your other task draft stays in this tab.</p>
-                  <Button id="confirm-example" variant="secondary" onClick={() => load(pendingExample, true)}>Replace draft</Button>
-                  <Button variant="ghost" onClick={() => setPendingExample(null)}>Keep draft</Button>
-                </div>
-              )}
-              <p className={exampleNotice ? "hint" : "sr-only"} role="status">{exampleNotice}</p>
-              {c.kind === "judgment" ? (
-                <>
-                  <div className="field">
-                    <label htmlFor="content">
-                      What should the models evaluate?
-                    </label>
-                    <Textarea
-                      id="content"
-                      {...fieldProps("content")}
-                      rows={5}
-                      placeholder="Paste an email, a claim, a policy, or any text to evaluate…"
-                      value={c.content}
-                      onChange={(e) => edit({ ...c, content: e.target.value })}
-                    />
-                    {fieldError("content")}
-                  </div>
-                  <div className="field">
-                    <label htmlFor="question">What’s the judgment?</label>
-                    <Input
-                      id="question"
-                      {...fieldProps("question")}
-                      placeholder="Does this claim follow from the evidence?"
-                      value={c.question}
-                      onChange={(e) => edit({ ...c, question: e.target.value })}
-                    />
-                    {fieldError("question")}
-                  </div>
-                  <div className="field">
-                    <label>Possible answers</label>
-                    {c.options.map((o, i) => (
-                      <div key={o.id}>
-                      <div className="option-row">
-                        <span className="option-index">{i + 1}</span>
-                        <Input
-                          id={`option-${i}`}
-                          {...fieldProps(`option-${i}`)}
-                          aria-label={`Option ${i + 1}`}
-                          value={o.label}
-                          onChange={(e) =>
-                            edit({
-                              ...c,
-                              options: c.options.map((p, j) =>
-                                j === i ? { ...p, label: e.target.value } : p,
-                              ),
-                            })
-                          }
-                        />
-                        <Button
-                          variant="ghost"
-                          aria-label={`Remove option ${i + 1}`}
-                          disabled={c.options.length <= 2}
-                          onClick={() =>
-                            edit({
-                              ...c,
-                              options: c.options.filter((_, j) => j !== i),
-                            })
-                          }
-                        >
-                          <X size={14} />
-                        </Button>
-                      </div>
-                      {fieldError(`option-${i}`)}
-                      </div>
-                    ))}
-                    <Button
-                      variant="ghost"
-                      disabled={c.options.length >= 10}
-                      onClick={() =>
-                        edit({
-                          ...c,
-                          options: [...c.options, { id: newId(), label: "" }],
-                        })
-                      }
-                    >
-                      <Plus size={13} />
-                      Add option
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="field">
-                    <label htmlFor="prompt">Original question</label>
-                    <Textarea
-                      id="prompt"
-                      {...fieldProps("prompt")}
-                      rows={3}
-                      value={c.prompt}
-                      placeholder="What were the answers responding to?"
-                      onChange={(e) => edit({ ...c, prompt: e.target.value })}
-                    />
-                    {fieldError("prompt")}
-                  </div>
-                  <div className="field">
-                    <label htmlFor="answer1">Candidate answer 1</label>
-                    <Textarea
-                      id="answer1"
-                      {...fieldProps("answer1")}
-                      rows={3}
-                      value={c.answer1}
-                      onChange={(e) => edit({ ...c, answer1: e.target.value })}
-                    />
-                    {fieldError("answer1")}
-                  </div>
-                  <div className="field">
-                    <label htmlFor="answer2">Candidate answer 2</label>
-                    <Textarea
-                      id="answer2"
-                      {...fieldProps("answer2")}
-                      rows={3}
-                      value={c.answer2}
-                      onChange={(e) => edit({ ...c, answer2: e.target.value })}
-                    />
-                    {fieldError("answer2")}
-                  </div>
-                </>
-              )}
-              <div className="field">
-                <label htmlFor="language">Task language</label>
-                <Input
-                  id="language"
-                  {...fieldProps("language")}
-                  value={c.language}
-                  placeholder="en, zh, es…"
-                  maxLength={40}
-                  onChange={(e) => edit({ ...c, language: e.target.value })}
+              {c.kind === "judgment" ? <div className="simple-input">
+                <label htmlFor="content">Question and context</label>
+                <Textarea id="content" {...fieldProps("content")} rows={3}
+                  aria-describedby={fieldErrors.content ? "content-error simple-task-hint" : "simple-task-hint"}
+                  aria-keyshortcuts="Control+Enter Meta+Enter"
+                  placeholder="Ask a question and include anything the judges need to decide…"
+                  value={c.question === simpleBlank.question ? c.content : [c.question, c.content].filter(Boolean).join("\n\n")}
+                  onChange={(e) => edit({ ...c, question: simpleBlank.question, content: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); review(); } }}
                 />
-                {fieldError("language")}
-              </div>
+                {fieldError("content")}
+                <p className="sr-only" id="simple-task-hint">Both judges choose from your possible answers below.</p>
+                {!busy && !match && <div className="starter-chips" aria-label="Example tasks">
+                  {simpleExamples.map((example) => <Suggestion className="quick-start-suggestion" key={example.label} suggestion={example.label} onClick={() => loadSimple(example)} />)}
+                </div>}
+                <fieldset className="simple-options">
+                  <legend>Possible answers</legend>
+                  {c.options.map((option, i) => <div key={option.id}>
+                    <div className="option-row">
+                      <span className="option-index">{i + 1}</span>
+                      <Input id={`option-${i}`} {...fieldProps(`option-${i}`)} aria-label={`Option ${i + 1}`} value={option.label}
+                        onChange={(e) => edit({ ...c, options: c.options.map((o, j) => i === j ? { ...o, label: e.target.value } : o) })} />
+                      <Button variant="ghost" aria-label={`Remove option ${i + 1}`} disabled={c.options.length <= 2}
+                        onClick={() => edit({ ...c, options: c.options.filter((_, j) => i !== j) })}><X size={14} /></Button>
+                    </div>
+                    {fieldError(`option-${i}`)}
+                  </div>)}
+                  <Button variant="ghost" disabled={c.options.length >= 10} onClick={() => edit({ ...c, options: [...c.options, { id: newId(), label: "" }] })}><Plus size={13} />Add option</Button>
+                </fieldset>
+              </div> : <div className="advanced-task">
+                <p className="hint">Imported answer comparison. Edit the original question or either answer.</p>
+                <div className="field"><label htmlFor="prompt">Original question</label><Textarea id="prompt" {...fieldProps("prompt")} value={c.prompt} onChange={(e) => edit({ ...c, prompt: e.target.value })} />{fieldError("prompt")}</div>
+                <div className="field"><label htmlFor="answer1">Candidate answer 1</label><Textarea id="answer1" {...fieldProps("answer1")} value={c.answer1} onChange={(e) => edit({ ...c, answer1: e.target.value })} />{fieldError("answer1")}</div>
+                <div className="field"><label htmlFor="answer2">Candidate answer 2</label><Textarea id="answer2" {...fieldProps("answer2")} value={c.answer2} onChange={(e) => edit({ ...c, answer2: e.target.value })} />{fieldError("answer2")}</div>
               </div>}
               <div className="composer-toolbar">
-                <Button variant="ghost" aria-expanded={advanced} aria-controls="advanced-task" onClick={toggleAdvanced}>
-                  <Plus size={16} /> Task options
-                </Button>
-                <Button variant="ghost" aria-expanded={settings} aria-controls="model-settings" onClick={() => setSettings(!settings)}>
-                  <SlidersHorizontal size={16} /> Models &amp; keys
-                </Button>
                 {!advanced && (hasTaskInput || selectedExample) && <Button variant="ghost" onClick={clearSimple}>Clear</Button>}
-                {!settings && <Button className="composer-submit" onClick={review}>Compare models <ArrowRight size={16} /></Button>}
+                {!settings && <Button className="composer-submit" onClick={review}>Start judging <ArrowRight size={16} /></Button>}
               </div>
               {!advanced && clearedDraft && <div className="clear-notice" role="status">
                 <span>Text cleared.</span><Button variant="ghost" onClick={undoClear}>Undo clear</Button>
@@ -627,7 +418,10 @@ export function Playground({ initial }: { initial?: Challenge }) {
               {settings && <div className="model-settings" id="model-settings">
               <h2 id="preflight-heading" tabIndex={-1}>{keys.openrouter.trim() ? "Ready to compare" : "Connect your OpenRouter key"}</h2>
               <p className="hint preflight-intro">{keys.openrouter.trim() ? "Review the cost below, then run both models." : "One key runs both models. It stays in this tab and is cleared on refresh."}</p>
-              {keys.openrouter.trim() && <><div className="tabs" aria-label="Match mode">
+              {keys.openrouter.trim() && <details open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
+              <summary><SlidersHorizontal size={14} /> Model settings</summary>
+              <div className="field"><label htmlFor="language">Task language</label><Input id="language" {...fieldProps("language")} value={c.language} maxLength={40} onChange={(e) => edit({ ...c, language: e.target.value })} />{fieldError("language")}</div>
+              <div className="tabs" aria-label="Match mode">
                 <Button variant="ghost"
                   aria-pressed={mode === "arena"}
                   onClick={() => setMode("arena")}
@@ -711,7 +505,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   {fieldError("budget")}
                 </div>
               </div>
-              </>}
+              </details>}
               <details
                 className="connection-box"
                 open={connections}
@@ -799,7 +593,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   </span>
                 </div>
                 <Button className="full-width" disabled={!keys.openrouter.trim()} onClick={run}>
-                  <span>Start blind comparison</span>
+                  <span>Start judging</span>
                   <ArrowRight size={16} />
                 </Button>
                 {error && (
@@ -812,9 +606,6 @@ export function Playground({ initial }: { initial?: Challenge }) {
             </div>
           </fieldset>
         </section>
-        {!advanced && !busy && !match && <div className="starter-chips" aria-label="Example tasks">
-          {simpleExamples.map((example) => <Suggestion className="quick-start-suggestion" key={example.label} suggestion={example.label} onClick={() => loadSimple(example)} />)}
-        </div>}
         <p className="composer-context">Compare anonymously. Vote to reveal. <Link href="/cases">Browse cases without a key <ArrowRight size={12} /></Link></p>
         <div>
           {(busy || match) && <section className="arena-panel" aria-label="Comparison results">
@@ -966,9 +757,6 @@ export function Playground({ initial }: { initial?: Challenge }) {
                                 ? "answer1"
                                 : original.expected,
                         };
-                        drafts.current.comparison = swapped;
-                        advancedKind.current = "comparison";
-                        setAdvanced(true);
                         setC(swapped);
                         setFocusTarget("prompt");
                         setMatch(null);
