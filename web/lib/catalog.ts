@@ -47,6 +47,16 @@ const make = (
 });
 export const MODELS: Model[] = [
   make(
+    "vercel",
+    "deepseek/deepseek-v4.1-flash",
+    "DeepSeek V4.1 Flash",
+    "chat",
+    "low-cost",
+    0.3,
+    1.2,
+    "https://ai-gateway.vercel.sh/v1/models",
+  ),
+  make(
     "openrouter",
     "typesafe/jev-1.13",
     "Jev 1.13",

@@ -56,6 +56,56 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 describe("fixed provider contracts", () => {
+  it("does not claim a chat-only output cap for native Jev requests", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json({ answers: { judgment: { choice: "yes" } } }),
+        ),
+    );
+    const run = await executeUpstream(args);
+    expect(run.status).toBe("success");
+    expect(run.settings?.maxOutputTokens).toBeUndefined();
+  });
+  it("preserves actual Gateway zero cost and independent TypeSafe confidence", () => {
+    const run = normalizeResponse(
+      {
+        answers: {
+          judgment: { choice: "yes", probabilities: { yes: 1, no: 0 } },
+        },
+        usage: { inputTokens: 457, outputTokens: 43 },
+        providerMetadata: {
+          gateway: { cost: "0", marketCost: "0.000019194" },
+          typesafe: { confidence: { judgment: 0.91 } },
+        },
+      },
+      { ...args, provider: "vercel", model: "typesafe-ai/jev" },
+      base,
+    );
+    expect(run.cost).toEqual({ usd: 0, basis: "provider" });
+    expect(run.confidence).toBe(0.91);
+    expect(run.probabilities?.yes).toBe(1);
+  });
+  it("does not interpret malformed Gateway money as free and preserves zero confidence", () => {
+    for (const cost of ["", "NaN", "-1", "Infinity", null]) {
+      const run = normalizeResponse(
+        {
+          answers: { judgment: { choice: "yes" } },
+          usage: { inputTokens: 10, outputTokens: 0 },
+          providerMetadata: {
+            gateway: { cost },
+            typesafe: { confidence: { judgment: 0 } },
+          },
+        },
+        { ...args, provider: "vercel", model: "typesafe-ai/jev" },
+        base,
+      );
+      expect(run.cost.basis).toBe("estimate");
+      expect(run.confidence).toBe(0);
+    }
+  });
   it("does not send labels or basis to any provider", () => {
     for (const provider of ["openrouter", "vercel", "typesafe"] as const) {
       const request = buildRequest({
