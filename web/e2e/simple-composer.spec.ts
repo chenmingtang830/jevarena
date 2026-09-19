@@ -37,6 +37,8 @@ test("simple comparison reviews cost before identical deterministic judge inputs
   await page.goto("/");
   const content = "SYNTHETIC TEST ONLY: 2 + 2 = 4.";
   await page.getByLabel("Your claim or question").fill(content);
+  await expect(page.getByRole("region", { name: "Privacy before you run" })).toBeVisible();
+  expect(calls).toHaveLength(0);
   await page.getByRole("button", { name: "Review & compare", exact: true }).click();
   await expect(page.getByLabel("Estimate threshold (USD)")).toBeVisible();
   await expect(page.getByRole("button", { name: "Start blind comparison" })).toBeVisible();
@@ -47,6 +49,7 @@ test("simple comparison reviews cost before identical deterministic judge inputs
   await expect(page.getByText(/Not a billing cap/)).toBeVisible();
   expect(calls).toHaveLength(0);
   await mkdir("../.impeccable/review", { recursive: true });
+  await expect(page.getByRole("region", { name: "Privacy before you run" })).toBeVisible();
   await page.screenshot({ path: `../.impeccable/review/cost-review-${testInfo.project.name}.png`, fullPage: true });
   await page.getByRole("button", { name: "Start blind comparison" }).click();
   await expect(page.getByText("Which judgment is better?", { exact: true })).toBeVisible();

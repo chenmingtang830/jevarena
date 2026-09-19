@@ -134,6 +134,14 @@ The skip link appears on focus. A permanent polite live region announces complet
 
 Each task mode retains its own in-memory draft. Loading an example over an existing draft requires an inline replace/keep choice. Field errors identify and focus the first invalid input. Keys and private drafts are never persisted by this flow, and refresh clears them.
 
+Selecting a quick start fills the single editable textarea and identifies its
+starting example. Edit text returns focus to the input; Clear offers an in-memory
+Undo. The textarea grows within a bounded height. Ctrl/Cmd+Enter opens cost review,
+never a paid call. Privacy guidance appears when there is task input, with native
+expandable details for provider processing, session-only keys, and deliberate
+sharing. It must remain consistent with the backend: central collection is not
+currently connected and provider retention is not controlled by JevArena.
+
 ## Do's and Don'ts
 
 - Do keep the task and decisions visually central.

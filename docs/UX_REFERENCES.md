@@ -6,6 +6,20 @@ The transferable interaction is simple: supply a task, compare anonymous respons
 
 The simple composer is a yes/no/unsure judgment, not unrestricted chat. A deterministic prompt and fixed choices preserve Jev's decision interface without an extra model call to interpret the input. Custom choices and two-answer assessment remain available through the advanced editor. BYOK connection and cost review still precede paid execution.
 
+### Browser-observed quick-start flow
+
+On 2026-09-19, an interactive visit to Arena confirmed that choosing a starter
+fills a prompt template, reveals privacy context, and offers editing and exit
+controls. Switching from Battle to Side by Side retained the draft and exposed
+model choices. No prompt was submitted during this inspection.
+
+JevArena borrows contextual disclosure, editable starters and draft-preserving
+mode changes, not Arena's data-use policy. Its notice must explain the current
+provider transmission and session-only handling; central collection is not yet
+connected. Explicit sharing/export and future opt-in contribution are separate
+from running a comparison. Never imply default public disclosure, zero provider
+retention, end-to-end encryption, or consent to later research calls.
+
 ## User-pinned Proofpress visual reference
 
 The subsequent visual direction is the local Proofpress landing implementation,

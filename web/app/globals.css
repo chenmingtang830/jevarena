@@ -737,6 +737,19 @@ label {
 }
 .simple-input textarea[aria-invalid="true"] { outline: 1px solid var(--danger); }
 .simple-input .hint { margin: 16px 0 0; color: var(--secondary); }
+.shortcut-hint { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+.selected-example { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.selected-example h2 { font-size: 15px; letter-spacing: 0; font-weight: 600; }
+.selected-example p { color: var(--secondary); font-size: 12px; line-height: 1.5; margin-top: 4px; max-width: 55ch; }
+.selected-example .button { flex-shrink: 0; min-height: 44px; }
+.clear-notice { display: flex; align-items: center; gap: 10px; padding: 8px 24px; font-size: 13px; color: var(--secondary); }
+.clear-notice .button { min-height: 44px; }
+.privacy-note { padding: 16px 24px; border-top: 1px solid var(--line); color: var(--secondary); font-size: 12px; line-height: 1.6; }
+.privacy-note > p { max-width: 75ch; }
+.privacy-note summary { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
+.privacy-note details p { max-width: 75ch; margin-top: 8px; }
+.privacy-note details p:last-child { margin-bottom: 4px; }
+.match-mode-help { margin: -10px 0 18px; }
 .composer-toolbar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--line); }
 .composer-toolbar .button { min-height: 44px; font-size: 13px; }
 .composer-toolbar .button.ghost { color: var(--secondary); font-weight: 500; padding-inline: 10px; }
@@ -768,6 +781,8 @@ label {
   .composer-intro p { font-size: 14px; max-width: 30ch; margin: 12px auto 0; }
   .composer .editor-body { padding: 0; }
   .simple-input, .advanced-task, .model-settings { padding: 18px; }
+  .privacy-note { padding: 14px 18px; }
+  .selected-example { gap: 8px; }
   .simple-input textarea { font-size: 16px; }
   .composer-toolbar { gap: 2px; padding: 10px; }
   .composer-toolbar .button { padding: 8px 10px; }

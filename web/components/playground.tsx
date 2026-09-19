@@ -27,7 +27,7 @@ import { ShareTools } from "./share-tools";
 type Provider = "openrouter" | "vercel" | "typesafe";
 type Tier = "low-cost" | "strong" | "reasoning";
 type Match = { challenge: Challenge; runs: RunRecord[]; vote?: Vote };
-const blank: Challenge = {
+const blank: Extract<Challenge, { kind: "judgment" }> = {
   schemaVersion: 1,
   id: "custom",
   title: "Untitled judgment",
@@ -54,9 +54,9 @@ const simpleBlank: Extract<Challenge, { kind: "judgment" }> = {
   ],
 };
 const simpleExamples = [
-  { label: "Check a claim", text: "Claim: A 20% increase followed by a 20% decrease returns a price to its original value." },
-  { label: "Weigh the evidence", text: "Claim: The new onboarding caused higher retention.\nContext: Retention rose from 40% to 55% after the change. There was no control group, and the customer mix also changed." },
-  { label: "Spot a contradiction", text: "Claim: This refund request meets the policy.\nPolicy: Refunds are available within 30 days of purchase.\nRequest: The customer purchased the item 45 days ago." },
+  { label: "Check a claim", description: "Test whether a numerical claim holds up. Edit the claim to try your own.", text: "Claim: A 20% increase followed by a 20% decrease returns a price to its original value." },
+  { label: "Weigh the evidence", description: "Ask whether the evidence supports a causal claim. Edit the claim or context.", text: "Claim: The new onboarding caused higher retention.\nContext: Retention rose from 40% to 55% after the change. There was no control group, and the customer mix also changed." },
+  { label: "Spot a contradiction", description: "Check a request against a stated policy. Edit either to test the boundary.", text: "Claim: This refund request meets the policy.\nPolicy: Refunds are available within 30 days of purchase.\nRequest: The customer purchased the item 45 days ago." },
 ];
 const money = (n: number | null) =>
   n === null ? "Unknown" : `$${n.toFixed(6)}`;
@@ -70,6 +70,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
   const advancedKind = useRef<Challenge["kind"]>(initial?.kind ?? "judgment");
   const [settings, setSettings] = useState(false);
   const [pendingSimple, setPendingSimple] = useState<(typeof simpleExamples)[number] | null>(null);
+  const [selectedExample, setSelectedExample] = useState<(typeof simpleExamples)[number] | null>(null);
+  const [clearedDraft, setClearedDraft] = useState<{ challenge: Challenge; example: (typeof simpleExamples)[number] | null } | null>(null);
   const drafts = useRef<Record<Challenge["kind"], Challenge>>({
     judgment: initial?.kind === "judgment" ? initial : blank,
     comparison: initial?.kind === "comparison" ? initial : blankComparison,
@@ -97,6 +99,13 @@ export function Playground({ initial }: { initial?: Challenge }) {
   const resultHeading = useRef<HTMLHeadingElement | null>(null);
   const [announcement, setAnnouncement] = useState("");
   useEffect(() => () => controller.current?.abort(), []);
+  useEffect(() => {
+    if (advanced) return;
+    const input = document.getElementById("content") as HTMLTextAreaElement | null;
+    if (!input) return;
+    input.style.height = "auto";
+    input.style.height = `${Math.min(360, Math.max(148, input.scrollHeight))}px`;
+  }, [c, advanced]);
   useEffect(() => {
     if (focusTarget) {
       document.getElementById(focusTarget)?.focus();
@@ -148,6 +157,23 @@ export function Playground({ initial }: { initial?: Challenge }) {
     setError("");
     setFieldErrors({});
     setExampleNotice("");
+    if (!advanced) setClearedDraft(null);
+  }
+  function clearSimple() {
+    const previous = { challenge: c, example: selectedExample };
+    edit({ ...simpleBlank });
+    setSelectedExample(null);
+    setClearedDraft(previous);
+    setPendingSimple(null);
+    setFocusTarget("content");
+  }
+  function undoClear() {
+    if (!clearedDraft) return;
+    edit(clearedDraft.challenge);
+    setSelectedExample(clearedDraft.example);
+    setClearedDraft(null);
+    setFocusTarget("content");
+    setExampleNotice("Your previous text has been restored.");
   }
   function toggleAdvanced() {
     const next = !advanced;
@@ -168,6 +194,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       return;
     }
     edit({ ...simpleBlank, id: newId(), content: example.text });
+    setSelectedExample(example);
     setPendingSimple(null);
     setExampleNotice(`Loaded “${example.label}”. Edit it or review the models and cost.`);
     setFocusTarget("content");
@@ -337,6 +364,9 @@ export function Playground({ initial }: { initial?: Challenge }) {
     setHistory((h) => h.map((m) => (m === match ? next : m)));
   }
   const success = match?.runs.every((r) => r.status === "success");
+  const hasTaskInput = c.kind === "comparison"
+    ? Boolean(c.prompt.length || c.answer1.length || c.answer2.length || c.language !== "en")
+    : Boolean(c.content.length || (advanced && (c.question.length || c.language !== "en" || JSON.stringify(c.options) !== JSON.stringify(blank.options))));
   const revealed = Boolean(match?.vote) || Boolean(match && !success);
   const share: CaseContribution | null =
     match && revealed
@@ -373,18 +403,29 @@ export function Playground({ initial }: { initial?: Challenge }) {
             <div className="editor-body">
               {!advanced && c.kind === "judgment" && (
                 <div className="simple-input">
+                  {selectedExample && <div className="selected-example">
+                    <div><h2>{selectedExample.label}</h2><p>{selectedExample.description}</p></div>
+                    <Button variant="ghost" onClick={() => setFocusTarget("content")}>Edit text</Button>
+                  </div>}
                   <label htmlFor="content" className="sr-only">Your claim or question</label>
                   <textarea
                     id="content"
                     {...fieldProps("content")}
                     aria-describedby={fieldErrors.content ? "content-error simple-task-hint" : "simple-task-hint"}
                     rows={5}
+                    aria-keyshortcuts="Control+Enter Meta+Enter"
                     placeholder="Enter a claim to judge. Add any context the judges should consider…"
                     value={c.content}
                     onChange={(e) => edit({ ...c, content: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        review();
+                      }
+                    }}
                   />
                   {fieldError("content")}
-                  <p className="hint" id="simple-task-hint">Is the statement supported? Judges choose Yes, No, or Unsure.</p>
+                  <p className="hint" id="simple-task-hint">Is the statement supported? Judges choose Yes, No, or Unsure. <span className="shortcut-hint">Ctrl / ⌘ + Enter to review</span></p>
                 </div>
               )}
               {advanced && <div id="advanced-task" className="advanced-task">
@@ -557,8 +598,12 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 <Button variant="ghost" aria-expanded={settings} aria-controls="model-settings" onClick={() => setSettings(!settings)}>
                   <SlidersHorizontal size={16} /> Models &amp; keys
                 </Button>
+                {!advanced && (hasTaskInput || selectedExample) && <Button variant="ghost" onClick={clearSimple}>Clear</Button>}
                 <Button className="composer-submit" onClick={review}>Review &amp; compare <ArrowRight size={16} /></Button>
               </div>
+              {!advanced && clearedDraft && <div className="clear-notice" role="status">
+                <span>Text cleared.</span><Button variant="ghost" onClick={undoClear}>Undo clear</Button>
+              </div>}
               {pendingSimple && (
                 <div className="example-confirm" role="group" aria-label="Replace draft with example">
                   <p>Replace your text with “{pendingSimple.label}”?</p>
@@ -567,6 +612,15 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 </div>
               )}
               {!advanced && <p className={exampleNotice ? "hint" : "sr-only"} role="status">{exampleNotice}</p>}
+              {hasTaskInput && <section className="privacy-note" aria-label="Privacy before you run">
+                <p>When you run, your task goes to the selected model providers. Don’t include secrets or sensitive personal information.</p>
+                <details>
+                  <summary>How your data is handled</summary>
+                  <p>Providers receive your prompt, context and any candidate answers needed to judge the task. Their own data and retention policies apply.</p>
+                  <p>Your API keys stay in this tab’s memory and disappear on refresh. OpenRouter requests go directly from your browser to OpenRouter.</p>
+                  <p>JevArena does not currently collect your task or results in a central database or publish them automatically. Exporting or sharing is a separate action you choose after reviewing the content.</p>
+                </details>
+              </section>}
               {settings && <div className="model-settings" id="model-settings">
               <h2 id="preflight-heading" tabIndex={-1}>Review models &amp; cost</h2>
               <p className="hint preflight-intro">Two paid calls using your key. Review the estimate before starting.</p>
@@ -584,6 +638,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   Compare · pick a model
                 </button>
               </div>
+              <p className="hint match-mode-help">{mode === "arena" ? "Arena picks a hidden opponent from your chosen tier." : "Compare uses the opponent you select."} In both modes, judge X and Y first; names, speed and cost appear after your vote.</p>
               <div className="field-row">
                 <div>
                   <label htmlFor="rival">
