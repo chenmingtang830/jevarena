@@ -22,6 +22,7 @@ async function connect(page: Page) {
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   await expect(page.getByLabel("OpenRouter", { exact: true })).toBeFocused();
   await page.getByLabel("OpenRouter", { exact: true }).fill("test-only-not-a-real-key");
+  await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
 }
 
 test("first viewport offers a question, possible answers and start before configuration", async ({ page }, testInfo) => {
@@ -55,6 +56,7 @@ test("editable answers support two through ten options and drafts stay in tab me
   await page.locator("summary").filter({ hasText: "Model settings" }).click();
   await page.getByLabel("Task language").fill("zh");
   await page.locator("summary").filter({ hasText: "Model settings" }).click();
+  await page.getByRole("button", { name: "Close model setup" }).click();
   await expect(question).toHaveValue("Private judgment draft");
   await expect(page.getByLabel("Option 1", { exact: true })).toHaveValue("Supported");
   const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));
@@ -98,15 +100,18 @@ test("invalid fields and hidden budget or language errors focus the actionable c
   await expect(page.locator("#content-error")).toBeVisible();
   await expect(page.locator('input[type="password"]:visible')).toHaveCount(0);
   await question.fill("Synthetic claim");
+  await page.getByLabel("Option 1", { exact: true }).fill(" ");
   await start.click();
   await expect(start).toBeDisabled();
   const key = page.getByLabel("OpenRouter", { exact: true });
   await key.fill("test-only-not-a-real-key");
-  await page.getByLabel("Option 1", { exact: true }).fill(" ");
+  await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
   await start.click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(page.getByLabel("Option 1", { exact: true })).toBeFocused();
   await expect(page.locator("#option-0-error")).toBeVisible();
   await page.getByLabel("Option 1", { exact: true }).fill("Yes");
+  await start.click();
   const settings = page.locator("summary").filter({ hasText: "Model settings" });
   await settings.click();
   await page.getByLabel("Task language").fill("e");
@@ -134,7 +139,6 @@ test("imported comparisons and answer length limits are enforced before provider
   await expect(prompt).toBeEditable();
   await expect(page.getByLabel("Candidate answer 1")).toBeEditable();
   await expect(page.getByLabel("Candidate answer 2")).toBeEditable();
-  await connect(page);
   const start = page.getByRole("button", { name: "Start judging", exact: true });
   await prompt.fill(" ");
   await start.click();
@@ -142,13 +146,14 @@ test("imported comparisons and answer length limits are enforced before provider
   await prompt.fill("Question");
   await page.getByLabel("Candidate answer 1").fill("A".repeat(40001));
   await page.getByLabel("Candidate answer 2").fill("B");
+  await connect(page);
   await start.click();
   await expect(page.getByLabel("Candidate answer 1")).toBeFocused();
   await expect(page.locator("#answer1-error")).toContainText("40000");
   await page.goto("/");
   await page.getByLabel("Question and context").fill("Claim");
-  await connect(page);
   await page.getByLabel("Option 1", { exact: true }).fill("A".repeat(2001));
+  await connect(page);
   await start.click();
   await expect(page.getByLabel("Option 1", { exact: true })).toBeFocused();
   await expect(page.locator("#option-0-error")).toContainText("2000");

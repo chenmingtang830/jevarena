@@ -21,12 +21,14 @@ import {
 } from "@/lib/contracts";
 import { MODELS, PROVIDERS, getJevModel, estimateCost } from "@/lib/catalog";
 import { executeJudge } from "@/lib/providers";
+import { POLICY_VERSION } from "@/lib/policies";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { NativeSelect } from "./ui/native-select";
 import { Suggestion } from "./ai-elements/suggestion";
 import { ShareTools } from "./share-tools";
+import { SaveHistory } from "./save-history";
 type Provider = "openrouter" | "vercel" | "typesafe";
 type Tier = "low-cost" | "strong" | "reasoning";
 type Match = { challenge: Challenge; runs: RunRecord[]; vote?: Vote };
@@ -62,6 +64,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
   const advanced = c.kind === "comparison";
   const [modelSettings, setModelSettings] = useState(false);
   const [settings, setSettings] = useState(false);
+  const settingsDialog = useRef<HTMLDialogElement | null>(null);
+  const settingsReturnFocus = useRef<HTMLElement | null>(null);
   const [pendingSimple, setPendingSimple] = useState<(typeof simpleExamples)[number] | null>(null);
   const [selectedExample, setSelectedExample] = useState<(typeof simpleExamples)[number] | null>(null);
   const [clearedDraft, setClearedDraft] = useState<{ challenge: Challenge; example: (typeof simpleExamples)[number] | null } | null>(null);
@@ -78,6 +82,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
   const [jp, setJp] = useState<Provider>("openrouter");
   const [opponent, setOpponent] = useState("");
   const [busy, setBusy] = useState(false);
+  const [acceptedPolicyVersion, setAcceptedPolicyVersion] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [match, setMatch] = useState<Match | null>(null);
   const [history, setHistory] = useState<Match[]>([]);
@@ -94,6 +99,21 @@ export function Playground({ initial }: { initial?: Challenge }) {
     input.style.height = "auto";
     input.style.height = `${Math.min(360, Math.max(104, input.scrollHeight))}px`;
   }, [c, advanced]);
+  useLayoutEffect(() => {
+    const dialog = settingsDialog.current;
+    if (!dialog) return;
+    if (settings) {
+      if (!dialog.open) dialog.showModal();
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = previousOverflow; };
+    }
+    if (dialog.open) {
+      dialog.close();
+      const previous = settingsReturnFocus.current;
+      (previous?.isConnected ? previous : document.getElementById("start-judging-open"))?.focus();
+    }
+  }, [settings]);
   useLayoutEffect(() => {
     if (focusTarget) {
       document.getElementById(focusTarget)?.focus();
@@ -184,6 +204,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       setFocusTarget(id);
       return;
     }
+    settingsReturnFocus.current = document.activeElement as HTMLElement | null;
     setSettings(true);
     if (!keys.openrouter.trim()) {
       setConnections(true);
@@ -197,9 +218,16 @@ export function Playground({ initial }: { initial?: Challenge }) {
     return fieldErrors[id] ? <p className="error field-error" id={`${id}-error`}>{fieldErrors[id]}</p> : null;
   }
   async function run() {
+    if (busy) return;
     setError("");
     setFieldErrors({});
     setAnnouncement("");
+    if (acceptedPolicyVersion !== POLICY_VERSION) {
+      setSettings(true);
+      setFieldErrors({ "run-consent": "Agree to Terms and acknowledge Privacy before running the models." });
+      setFocusTarget("run-consent");
+      return;
+    }
     const parsed = ChallengeSchema.safeParse({
       ...c,
       id: newId(),
@@ -228,6 +256,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       setFieldErrors(errors);
       const first = fields.find(([id]) => errors[id]);
       if (first?.[0] === "language") setModelSettings(true);
+      else setSettings(false);
       setFocusTarget(first?.[0] ?? (c.kind === "judgment" ? "content" : "prompt"));
       setError(first ? "Check the highlighted fields before starting." : "This imported task has invalid metadata. Load an example or correct the original task before running.");
       return;
@@ -282,6 +311,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
     ];
     if (crypto.getRandomValues(new Uint32Array(1))[0] % 2) specs.reverse();
     controller.current = new AbortController();
+    setSettings(false);
     setBusy(true);
     setMatch(null);
     try {
@@ -393,7 +423,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
               </div>}
               <div className="composer-toolbar">
                 {!advanced && (hasTaskInput || selectedExample) && <Button variant="ghost" onClick={clearSimple}>Clear</Button>}
-                {!settings && <Button className="composer-submit" onClick={review}>Start judging <ArrowRight size={16} /></Button>}
+                {!settings && <Button id="start-judging-open" className="composer-submit" onClick={review}>Start judging <ArrowRight size={16} /></Button>}
               </div>
               {!advanced && clearedDraft && <div className="clear-notice" role="status">
                 <span>Text cleared.</span><Button variant="ghost" onClick={undoClear}>Undo clear</Button>
@@ -412,10 +442,13 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <p>When you run, your task goes to the selected model providers. Don’t include secrets or sensitive personal information.</p>
                   <p>Providers receive your prompt, context and any candidate answers needed to judge the task. Their own data and retention policies apply.</p>
                   <p>Your API keys stay in this tab’s memory and disappear on refresh. OpenRouter requests go directly from your browser to OpenRouter.</p>
-                  <p>JevArena does not collect or publish your task automatically. When enabled, private research submission requires separate consent after you review the task and results. Exporting, sharing or permitting publication is a separate action you choose.</p>
+                  <p>JevArena does not upload or publish your task automatically. Saving results to your private account history is optional and requires a separate explicit action. When enabled, private research submission requires separate consent after you review the task and results. Exporting, sharing or permitting publication is a separate action you choose.</p>
                 </details>
               </section>}
-              {settings && <div className="model-settings" id="model-settings">
+              <dialog ref={settingsDialog} className="model-settings settings-dialog" id="model-settings" aria-labelledby="preflight-heading"
+                onCancel={(event) => { event.preventDefault(); setSettings(false); }}
+                onClose={() => setSettings(false)}>
+              <Button variant="ghost" className="dialog-close" aria-label="Close model setup" onClick={() => setSettings(false)}><X size={18} /></Button>
               <h2 id="preflight-heading" tabIndex={-1}>{keys.openrouter.trim() ? "Ready to compare" : "Connect your OpenRouter key"}</h2>
               <p className="hint preflight-intro">{keys.openrouter.trim() ? "Review the cost below, then run both models." : "One key runs both models. It stays in this tab and is cleared on refresh."}</p>
               {keys.openrouter.trim() && <details open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
@@ -564,17 +597,11 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       ))}
                     </NativeSelect>
                   </div>
-                  <p className="hint">
-                    One OpenRouter key runs Jev and its opponent. Your provider account needs access to both models.
-                  </p>
-                  <p className="hint">
-                    Keys stay in this tab’s memory and disappear on refresh. Calls use your OpenRouter balance.
-                  </p>
                 </div>
               </details>
               <div className="run-foot">
                 <p className="hint" style={{ marginBottom: 12 }}>
-                  Calls use your OpenRouter balance. Model access depends on your account.
+                  Calls use your OpenRouter balance.
                 </p>
                 <div className="price-note">
                   <ShieldCheck size={14} />
@@ -592,7 +619,21 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     {mode === 'compare' && selected && <> · <a href={selected.priceSource} target="_blank" rel="noreferrer" style={{textDecoration:'underline'}}>Selected model rates</a></>}
                   </span>
                 </div>
-                <Button className="full-width" disabled={!keys.openrouter.trim()} onClick={run}>
+                <div data-policy-version={POLICY_VERSION}>
+                  <p className="hint">Running sends your question and answers to the selected model providers. Do not include secrets or sensitive personal information. Nothing is published or contributed to research automatically.</p>
+                  <label className="check-label" htmlFor="run-consent">
+                    <Input id="run-consent" type="checkbox" {...fieldProps("run-consent")}
+                      checked={acceptedPolicyVersion === POLICY_VERSION}
+                      onChange={(event) => {
+                        setAcceptedPolicyVersion(event.target.checked ? POLICY_VERSION : null);
+                        setFieldErrors((current) => ({ ...current, "run-consent": "" }));
+                      }} />
+                    I agree to Terms and acknowledge Privacy
+                  </label>
+                  <p className="hint"><Link href="/terms" target="_blank" rel="noreferrer">Read Terms</Link>{" · "}<Link href="/privacy" target="_blank" rel="noreferrer">Read Privacy</Link>. Research and publication require separate opt-ins.</p>
+                  {fieldError("run-consent")}
+                </div>
+                <Button className="full-width" disabled={!keys.openrouter.trim() || acceptedPolicyVersion !== POLICY_VERSION} onClick={run}>
                   <span>Start judging</span>
                   <ArrowRight size={16} />
                 </Button>
@@ -602,7 +643,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   </p>
                 )}
               </div>
-              </div>}
+              </dialog>
             </div>
           </fieldset>
         </section>
@@ -767,6 +808,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   </Button>
                 )}
                 {share && <ShareTools value={share} />}
+                {match.vote && <SaveHistory key={match.runs.map((run) => run.id).join(":")} challenge={match.challenge} runs={match.runs} vote={match.vote} />}
               </div>
             ) : null}
           </section>}

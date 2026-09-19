@@ -1,0 +1,14 @@
+import Link from "next/link";
+import {POLICY_VERSION} from "@/lib/policies";
+import {PolicyContact} from "@/components/policy-contact";
+export const metadata={title:"Terms · JevArena"};
+export default function Terms(){return <main id="main" className="prose-page policy-page">
+  <h1>Terms of use</h1><p>Version: {POLICY_VERSION}</p><PolicyContact/>
+  <h2>The service</h2><p>JevArena is an independent experimental interface for comparing model judgments. It is not affiliated with Arena or the model providers. Browsing examples does not require an account. Using the model interface requires your own authorized provider key and agreement to these terms. Read our <Link href="/privacy">Privacy Policy</Link> before submitting content.</p>
+  <h2>Your content and responsibilities</h2><p>Use only content and credentials you have permission to use. Do not submit sensitive personal data or secrets as task content, infringe others’ rights, conduct unlawful activity, bypass access controls or abuse service limits. You must meet the age and eligibility requirements of the services you use. This service is not intended for children under 18.</p>
+  <p>You retain your rights in your content. You permit the processing needed to execute your requested comparison and any private save or sharing action you explicitly choose. Running an experiment does not grant blanket permission to publish it or use it for research. Separate contributions are governed by their displayed permissions and licenses; third-party data retains its own license.</p>
+  <h2>Provider billing</h2><p>You are responsible for charges incurred through your provider account, including unsuccessful or cancelled requests already processed upstream. Estimates are informational, not billing caps. No automatic paid retries are made by this interface. Prices, access and provider behavior can change.</p>
+  <h2>Experimental results</h2><p>Models may be wrong, biased or inappropriate. Verify important outputs independently. Results are not professional advice. Community votes express preference, not proven correctness, and browser submissions are not trusted benchmark evidence. We do not promise availability, accuracy or fitness for a particular purpose.</p>
+  <h2>Accounts, retention and availability</h2><p>Optional accounts are for explicitly saved private history. Protect your email account and do not share login links or sessions. Export important records: history has a 30-day retention window and capacity limits, and is not a permanent archive. We may restrict abusive use or temporarily suspend features for security and capacity reasons.</p>
+  <h2>Changes and your rights</h2><p>Updated terms will carry a new version. Materially different data uses require an appropriate new notice or choice. Nothing here excludes rights or liabilities that cannot lawfully be excluded. Contact the operator above for questions, privacy requests or account deletion.</p>
+</main>;}

@@ -93,6 +93,10 @@ test("composer keyboard shortcuts open review without executing a comparison", a
     await expect(page.getByRole("heading", { name: "Connect your OpenRouter key" })).toBeVisible();
     await expect(page.locator("#key-openrouter")).toBeFocused();
     await expect(page.getByRole("button", { name: "Start judging", exact: true })).toBeDisabled();
+    await expect(page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true })).not.toBeChecked();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await expect(composer).toBeFocused();
     await expect(page.getByRole("region", { name: "Privacy before you run" })).toBeVisible();
     await expect(composer).toHaveValue("Synthetic keyboard review only");
     expect(requests).toEqual([]);

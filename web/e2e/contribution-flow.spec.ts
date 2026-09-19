@@ -13,6 +13,7 @@ async function experiment(page: Page) {
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   await expect(page.locator("#key-openrouter")).toBeFocused();
   await page.getByLabel("OpenRouter", { exact: true }).fill("test-only-never-collect-key");
+  await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   await page.getByRole("button", { name: "Both good", exact: true }).click();
   await page.getByRole("button", { name: "Share this experiment" }).click();
@@ -76,6 +77,8 @@ test("editing the experiment resets research consent and submission identity", a
   await page.getByRole("button", { name: "Submit for private research" }).click();
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
   await page.getByRole("textbox", { name: "Question and context" }).fill("A different synthetic task for a new submission.");
+  await page.getByRole("button", { name: "Start judging", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Ready to compare" })).toBeVisible();
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   await page.getByRole("button", { name: "Both good", exact: true }).click();
   await page.getByRole("button", { name: "Share this experiment" }).click();

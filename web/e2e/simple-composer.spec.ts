@@ -59,6 +59,10 @@ test("comparison reviews cost before identical deterministic judge inputs", asyn
   await expect(settings.locator("..")).not.toHaveAttribute("open", "");
   await expect(page.getByLabel("Estimate threshold (USD)")).not.toBeVisible();
   await expect(page.getByLabel("Opponent tier")).not.toBeVisible();
+  await expect(start).toBeDisabled();
+  const consent = page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true });
+  await expect(consent).not.toBeChecked();
+  await consent.check();
   await expect(start).toBeEnabled();
   await expect(page.getByText(/Not a billing cap/)).toBeVisible();
   await expect(page.locator(".price-note")).toContainText(/2 calls.*Estimated/);
