@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CaseBrowser } from "@/components/case-browser";
+import { CommunityLibrary } from "@/components/community-library";
 export const metadata = { title: "Cases · JevArena" };
 export default function Cases() {
   return (
@@ -13,6 +14,7 @@ export default function Cases() {
         models. These starter cases are templates, not measured model results.
       </p>
       <CaseBrowser />
+      <CommunityLibrary />
       <section>
         <h2>Found a surprising failure?</h2>
         <p>
