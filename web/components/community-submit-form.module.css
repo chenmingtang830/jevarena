@@ -1,0 +1,5 @@
+.fields { border: 0; padding: 0; margin: 24px 0; display: grid; gap: 12px; }
+.fields textarea { width: 100%; resize: vertical; }
+.fields p { margin: 0; }
+.fields button { justify-self: start; }
+.fields label:not(:first-child) { margin-top: 12px; }

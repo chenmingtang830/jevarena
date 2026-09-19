@@ -698,6 +698,14 @@ label {
 .guess-options button {
   justify-content: flex-start;
 }
+input[data-slot="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
 .file-input {
   padding: 12px;
   max-width: 100%;
@@ -801,7 +809,19 @@ label {
 .fixed-judge span { font-size: 13px; font-weight: 400; color: var(--secondary); }
 .connected-matchup > div { flex: 1; min-width: 0; }
 .connected-matchup select { width: 100%; }
+.connected-matchup input { margin-bottom: 4px; }
+.catalog-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; }
+.catalog-status button { min-height: 32px; height: 32px; padding: 4px 8px; font-size: 12px; }
+.model-price { margin: 8px 0 0; }
+.receipt-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.battle-question { margin: 12px 0 24px; }
+.battle-question h2 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.battle-question p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.battle-question ul { display: flex; flex-wrap: wrap; gap: 8px 20px; padding-left: 20px; margin: 12px 0; }
+.battle-question li { overflow-wrap: anywhere; max-width: 100%; }
 .public-contribution-choice { margin: 16px 0; padding: 12px 0; border-top: 1px solid var(--line); }
+.public-contribution-choice > label,
+label:has(> input[data-slot="checkbox"]) { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 400; }
 .public-contribution-choice p { margin: 6px 0; }
 .public-contribution-choice summary { font-size: 12px; color: var(--secondary); }
 .settings-dialog > details > summary { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--secondary); }
@@ -834,15 +854,15 @@ label {
   .workspace.simple-workspace { margin-top: 16px; }
   .composer-intro { margin-bottom: 16px; }
   .composer-intro h1 { font-size: 28px; }
-  .composer-intro p { font-size: 14px; max-width: 30ch; margin: 12px auto 0; }
+  .composer-intro p { font-size: 14px; max-width: 30ch; margin: 8px auto 0; }
   .composer .editor-body { padding: 0; }
   .simple-input, .advanced-task, .model-settings { padding: 14px; }
   .privacy-note { padding: 14px 18px; }
-  .simple-input textarea { font-size: 16px; }
+  .simple-input textarea { font-size: 16px; min-height: 88px; height: 88px; padding: 12px; line-height: 1.5; }
   .simple-options { margin-top: 14px; }
   .composer-toolbar { gap: 2px; padding: 10px; }
   .composer-toolbar .button { padding: 8px 10px; }
-  .composer-toolbar .composer-submit { width: 100%; margin-top: 8px; }
+  .composer-toolbar .composer-submit { width: 100%; margin-top: 0; }
   .starter-chips { gap: 6px; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; }
   .starter-chips button { flex: 0 0 auto; }
   .starter-chips button { padding: 8px 11px; font-size: 12px; }
@@ -920,7 +940,10 @@ label {
     gap: 0 6px;
     font-size: 12px;
     width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
+  .site-header nav a { flex-shrink: 0; }
   .github-link span,
   .github-link svg:last-child {
     display: none;

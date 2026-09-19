@@ -7,6 +7,7 @@ import { contributionJson } from "@/lib/sharing";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { REPO } from "./site-shell";
+import { AUTO_REVIEW } from "./public-contribution-choice";
 
 export type ContributionReceipt = {
   receiptId: string;
@@ -58,7 +59,9 @@ export function ContributionSubmit({ value, publicCandidate = false }: { value: 
             submissionId,
             deletionToken,
             consent: publicCandidate
-              ? { version: "2026-09-19-public-v1", research: true, rights: true, reviewed: true, allowPublication: true, publication: "after-review" }
+              ? AUTO_REVIEW
+                ? { version: "2026-09-19-auto-review-v1", research: true, rights: true, reviewed: true, allowPublication: true, publication: "after-ai-review", automatedReview: true, reviewProvider: "vercel" }
+                : { version: "2026-09-19-public-v1", research: true, rights: true, reviewed: true, allowPublication: true, publication: "after-review" }
               : { version: "2026-09-19", research: true, rights: true, reviewed: true, allowPublication: false },
             contribution: JSON.parse(contributionJson(value)),
           }),
@@ -102,11 +105,10 @@ export function ContributionSubmit({ value, publicCandidate = false }: { value: 
     <h3>{publicCandidate ? "Your community contribution" : "Contribute privately to research"}</h3>
     {!publicCandidate && <p className="hint">Send the preview above to JevArena for research and private review. This is optional and does not publish your experiment. Pending submissions expire after 30 days.</p>}
     {receipt ? <div className="contribution-receipt" role="status">
-      <p>{publicCandidate ? "Received for review before publication. Thank you for contributing." : "Received for private review. This is a community-submitted observation, not a verified result."}</p>
-      <p className="hint">Receipt: <code>{receipt.receiptId}</code></p>
-      <p className="hint">Received: <time dateTime={receipt.receivedAt}>{new Date(receipt.receivedAt).toISOString()}</time><br />Expires: <time dateTime={receipt.expiresAt}>{new Date(receipt.expiresAt).toISOString()}</time></p>
-      <p className="hint">Download your receipt now. It contains the deletion token needed to withdraw this submission. Changing experiments or refreshing loses this in-memory copy.</p>
-      <div className="inline"><Button variant="secondary" onClick={() => saveReceipt(receipt)}>Download deletion receipt</Button><Link href="/contributions/delete">Withdraw a submission</Link></div>
+      <p>{publicCandidate ? AUTO_REVIEW ? "Submitted for AI screening. It will publish if it passes." : "Received for review before publication. Thank you for contributing." : "Received for private review. This is a community-submitted observation, not a verified result."}</p>
+      <p className="hint">Save your receipt to withdraw later. Refreshing clears this copy.</p>
+      <div className="receipt-actions"><Button variant="secondary" onClick={() => saveReceipt(receipt)}>Download deletion receipt</Button><Button asChild variant="ghost"><Link href="/contributions/delete">Withdraw a submission</Link></Button></div>
+      <details><summary>Receipt details</summary><p className="hint">Receipt: <code>{receipt.receiptId}</code><br />Received: <time dateTime={receipt.receivedAt}>{new Date(receipt.receivedAt).toISOString()}</time><br />Expires: <time dateTime={receipt.expiresAt}>{new Date(receipt.expiresAt).toISOString()}</time></p></details>
     </div> : <>
       <fieldset hidden={publicCandidate} disabled={busy} className="contribution-consent">
         <label className="check-label"><Input type="checkbox" checked={research} onChange={(event) => setResearch(event.target.checked)} />I consent to research use of this task, model runs and vote.</label>

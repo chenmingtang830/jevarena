@@ -19,7 +19,8 @@ import {
   Vote,
   modelInput,
 } from "@/lib/contracts";
-import { MODELS, PROVIDERS, getJevModel, estimateCost } from "@/lib/catalog";
+import { MODELS, PROVIDERS, getJevModel, estimateCost, type Model } from "@/lib/catalog";
+import { fetchOpenRouterCatalog } from "@/lib/openrouter-catalog";
 import { executeJudge } from "@/lib/providers";
 import { POLICY_VERSION } from "@/lib/policies";
 import { Button } from "./ui/button";
@@ -90,6 +91,22 @@ export function Playground({ initial }: { initial?: Challenge }) {
   });
   const [jp, setJp] = useState<Provider>("openrouter");
   const [opponent, setOpponent] = useState("");
+  const [catalog, setCatalog] = useState<Model[]>([]);
+  const [catalogState, setCatalogState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [modelSearch, setModelSearch] = useState("");
+  const [catalogRefresh, setCatalogRefresh] = useState(0);
+  const connectedOpenRouter = jp === "openrouter" && Boolean(keys.openrouter.trim());
+  useEffect(() => {
+    if (!settings || !connectedOpenRouter) return;
+    const abort = new AbortController();
+    const timeout = setTimeout(() => abort.abort(), 10000);
+    let active = true;
+    setCatalogState("loading");
+    fetchOpenRouterCatalog(abort.signal).then(models => {
+      if (active) { setCatalog(models); setCatalogState("ready"); }
+    }).catch(() => { if (active) setCatalogState("error"); }).finally(() => clearTimeout(timeout));
+    return () => { active = false; clearTimeout(timeout); abort.abort(); };
+  }, [settings, connectedOpenRouter, catalogRefresh]);
   const [busy, setBusy] = useState(false);
   const [acceptedPolicyVersion, setAcceptedPolicyVersion] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -139,7 +156,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
           : "This comparison is incomplete. Review the results; no winner was selected.",
       );
       resultHeading.current?.focus({ preventScroll: true });
-      resultHeading.current?.scrollIntoView({
+      (document.querySelector(".battle-question") ?? resultHeading.current)?.scrollIntoView({
         behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
           ? "instant"
           : "smooth",
@@ -147,13 +164,15 @@ export function Playground({ initial }: { initial?: Challenge }) {
       });
     }
   }, [busy, match?.runs[0]?.id]);
-  const available = MODELS.filter(
+  const presets = MODELS.filter(
     (m) => m.kind === "chat" && m.provider === jp && keys[jp].trim(),
   );
+  const available = jp === "openrouter" && catalog.length ? catalog : presets;
   const providerLabel = PROVIDERS.find((p) => p.id === jp)!.label;
-  const pool = available.filter((m) => m.tier === tier && !m.compareOnly);
+  const pool = presets.filter((m) => m.tier === tier && !m.compareOnly).map(m => available.find(live => live.id === m.id) ?? m);
   const selected =
-    available.find((m) => `${m.provider}:${m.id}` === opponent) ?? available.find((m) => !m.compareOnly);
+    opponent ? available.find((m) => `${m.provider}:${m.id}` === opponent) : available.find((m) => m.id === "google/gemini-2.5-flash") ?? available[0];
+  const matchingModels = available.filter(m => `${m.label} ${m.id}`.toLowerCase().includes(modelSearch.trim().toLowerCase()));
   const candidates = mode === "arena" ? pool : selected ? [selected] : [];
   const jev = getJevModel(jp);
   const estimates = jev
@@ -374,6 +393,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
     ? Boolean(c.prompt.length || c.answer1.length || c.answer2.length || c.language !== "en")
     : Boolean(c.content.length || c.language !== "en" || JSON.stringify(c.options) !== JSON.stringify(blank.options));
   const revealed = Boolean(match?.vote) || Boolean(match && !success);
+  const battleChallenge = match?.challenge ?? c;
   const share: CaseContribution | null =
     match && revealed
       ? {
@@ -488,19 +508,26 @@ export function Playground({ initial }: { initial?: Challenge }) {
               {keys[jp].trim() && <div className="connected-matchup">
                 <span className="fixed-judge">Jev <span>vs</span></span>
                 <div><label htmlFor="rival">Opponent</label>
+                  {jp === "openrouter" && <>
+                    <Input aria-label="Search models or paste model ID" placeholder="Search models or paste model ID" value={modelSearch} maxLength={160} onChange={event => setModelSearch(event.target.value)} />
+                    <p className="hint catalog-status" role="status">{catalogState === "loading" ? "Loading OpenRouter models…" : catalogState === "error" ? "Couldn’t refresh. Showing the last available list." : catalogState === "ready" ? `${matchingModels.length} text models · Newest listed first` : "Saved model list"} <Button variant="ghost" disabled={catalogState === "loading"} onClick={() => setCatalogRefresh(value => value + 1)}>Refresh</Button></p>
+                  </>}
                   <NativeSelect id="rival" value={mode === "arena" ? `auto:${tier}` : selected ? `${selected.provider}:${selected.id}` : ""}
                     onChange={(event) => {
                       const value = event.target.value;
                       if (value.startsWith("auto:")) { setMode("arena"); setTier(value.slice(5) as Tier); }
                       else { setMode("compare"); setOpponent(value); }
                     }}>
-                    <optgroup label="Let Arena choose">
-                      {(["low-cost", "strong", "reasoning"] as Tier[]).map((value) => <option key={value} value={`auto:${value}`} disabled={!available.some((m) => m.tier === value && !m.compareOnly)}>Random · {value === "low-cost" ? "low cost" : value === "strong" ? "strong generalist" : "reasoning"}</option>)}
+                    {selected && !matchingModels.some(m => m.id === selected.id) && <option value={`${selected.provider}:${selected.id}`}>Selected: {selected.label}</option>}
+                    <optgroup label={jp === "openrouter" && catalog.length ? "OpenRouter · newest listed first" : "Saved models"}>
+                      {matchingModels.map((m) => <option key={`${m.provider}:${m.id}`} value={`${m.provider}:${m.id}`}>{m.label} — {m.id}</option>)}
                     </optgroup>
-                    <optgroup label="Pick a model">
-                      {available.map((m) => <option key={`${m.provider}:${m.id}`} value={`${m.provider}:${m.id}`}>{m.label}{m.compareOnly ? " · Experimental (not live-tested)" : ""}</option>)}
-                    </optgroup>
+                    {!modelSearch && <optgroup label="Let Arena choose · curated pool">
+                      {(["low-cost", "strong", "reasoning"] as Tier[]).map((value) => <option key={value} value={`auto:${value}`} disabled={!presets.some((m) => m.tier === value && !m.compareOnly)}>Random · {value === "low-cost" ? "low cost" : value === "strong" ? "strong generalist" : "reasoning"}</option>)}
+                    </optgroup>}
                   </NativeSelect>
+                  {modelSearch && !matchingModels.length && <p className="hint">No match. Check the provider/model ID or refresh the list. Your selection has not changed.</p>}
+                  {mode === "compare" && selected && <p className="hint model-price">{selected.inputPerMillion === null || selected.outputPerMillion === null ? "Price unavailable — cannot run" : `$${selected.inputPerMillion.toLocaleString("en-US")} input / $${selected.outputPerMillion.toLocaleString("en-US")} output per 1M tokens`}{selected.compareOnly ? " · Not live-tested here" : ""}</p>}
                 </div>
               </div>}
               {keys[jp].trim() && <details className="advanced-model-settings" open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
@@ -619,7 +646,11 @@ export function Playground({ initial }: { initial?: Challenge }) {
         <div hidden={!battleView}>
           <Button variant="ghost" disabled={busy} onClick={editQuestion}>Edit question</Button>
           {error && <p className="error" role="alert">{error}</p>}
-          <details><summary>Your question</summary><p style={{ whiteSpace: "pre-wrap" }}>{c.kind === "judgment" ? c.content : c.prompt}</p></details>
+          <section className="battle-question" aria-label="Your question">
+            <h2>Your question</h2>
+            <p>{battleChallenge.kind === "judgment" ? battleChallenge.content : battleChallenge.prompt}</p>
+            <ul aria-label="Possible answers">{(battleChallenge.kind === "judgment" ? battleChallenge.options : [{id:"answer1",label:battleChallenge.answer1},{id:"answer2",label:battleChallenge.answer2}]).map(option => <li key={option.id}>{option.label}</li>)}</ul>
+          </section>
           {(busy || match) && <section className="arena-panel" aria-label="Comparison results">
             <div className="section-bar">
               <h2 ref={resultHeading} tabIndex={-1}>
@@ -699,10 +730,10 @@ export function Playground({ initial }: { initial?: Challenge }) {
                               </dd>
                             </div>
                             {r.probabilities &&
-                              Object.entries(r.probabilities).map(([k, v]) => (
-                                <div key={k}>
-                                  <dt>{k} probability</dt>
-                                  <dd>{(v * 100).toFixed(1)}%</dd>
+                              modelInput(match.challenge).options.map(option => (
+                                <div key={option.id}>
+                                  <dt>{option.label} probability</dt>
+                                  <dd>{((r.probabilities![option.id] ?? 0) * 100).toFixed(1)}%</dd>
                                 </div>
                               ))}
                             {r.confidence !== undefined && <div><dt>Vendor confidence</dt><dd>{(r.confidence * 100).toFixed(1)}%</dd></div>}

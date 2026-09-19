@@ -34,6 +34,7 @@ export default function Methodology() {
       </section>
       <section>
         <h2>Research and community data</h2>
+        <p>When enabled, automated community screening sends only newly authorized contributions to Jev through Vercel. Passing submissions publish automatically. This checks publication risk, not answer correctness: AI-screened is not human-reviewed or independently reproduced. Screening categories are shown as categories, not invented explanations from Jev. Older private or review-only submissions are not enrolled automatically.</p>
         <p>
           Community votes are preferences, not ground truth. Community-submitted
           runs are unverified until reproduced. Reproduced runs and reviewed

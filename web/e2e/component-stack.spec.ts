@@ -5,6 +5,7 @@ test("registry components preserve the quick-start and preflight boundary", asyn
   let paidRequests = 0;
   await page.route("**/*", route => {
     const url = new URL(route.request().url());
+    if (route.request().method() === "GET" && url.hostname === "openrouter.ai" && url.pathname === "/api/v1/models") return route.fulfill({ json: { data: [] } });
     if (url.hostname !== "127.0.0.1" || url.pathname.startsWith("/api/")) {
       paidRequests++;
       return route.abort();

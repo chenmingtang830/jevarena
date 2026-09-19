@@ -4,6 +4,7 @@ import { mkdir, readFile } from "node:fs/promises";
 
 async function experiment(page: Page) {
   await page.route("https://openrouter.ai/**", async (route) => {
+    if (route.request().method() === "GET") return route.abort();
     await route.fulfill({ json: route.request().url().includes("/decisions")
       ? { answers: { judgment: { choice: "option1", probabilities: { option1: 0.8, option2: 0.2 } } }, usage: { input_tokens: 10, output_tokens: 0, cost: 0.000001 } }
       : { model: "mock-version", choices: [{ finish_reason: "stop", message: { content: '{"choice":"option1"}' } }], usage: { prompt_tokens: 10, completion_tokens: 4, cost: 0.00001 } },

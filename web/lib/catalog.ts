@@ -23,6 +23,17 @@ export interface Model {
   verifiedAt: string;
   validation: "contract-only";
   compareOnly?: boolean;
+  created?: number;
+  requestUsd?: number | null;
+}
+// Browser-session catalog only. Server relays never populate this registry.
+const discovered = new Map<string, Model>();
+export function registerOpenRouterModels(models: Model[]) {
+  for (const model of models) {
+    if (model.provider === "openrouter" && model.kind === "chat" && model.compareOnly &&
+        /^[a-zA-Z0-9][a-zA-Z0-9._-]*\/[a-zA-Z0-9][a-zA-Z0-9._:+-]*$/.test(model.id) && model.id.length <= 160)
+      discovered.set(model.id, model);
+  }
 }
 const date = "2026-09-19";
 const make = (
@@ -137,7 +148,7 @@ export const getModels = (provider: Provider) =>
 export const getJevModel = (provider: Provider) =>
   MODELS.find((m) => m.provider === provider && m.kind === "jev")!;
 export function lookupModel(provider: Provider, id: string): Model {
-  const model = MODELS.find((m) => m.provider === provider && m.id === id);
+  const model = (provider === "openrouter" ? discovered.get(id) : undefined) ?? MODELS.find((m) => m.provider === provider && m.id === id);
   if (!model) throw new Error("Unsupported provider or model.");
   return model;
 }
@@ -145,7 +156,7 @@ export function estimateCost(
   model: Model,
   challenge: Challenge,
 ): { minUsd: number | null; maxUsd: number | null; basis: string } {
-  if (model.inputPerMillion === null || model.outputPerMillion === null)
+  if (model.inputPerMillion === null || model.outputPerMillion === null || model.requestUsd === null)
     return {
       minUsd: null,
       maxUsd: null,
@@ -155,9 +166,9 @@ export function estimateCost(
   const bytes =
     new TextEncoder().encode(JSON.stringify(challenge)).length + 1500;
   return {
-    minUsd: ((bytes / 6) * model.inputPerMillion) / 1e6,
+    minUsd: ((bytes / 6) * model.inputPerMillion) / 1e6 + (model.requestUsd ?? 0),
     maxUsd:
-      (bytes * model.inputPerMillion + 4096 * model.outputPerMillion) / 1e6,
-    basis: `Illustrative range, not a spending cap. Public standard rates checked ${date}; routing, caching, and tokenization can change billed cost.`,
+      (bytes * model.inputPerMillion + 4096 * model.outputPerMillion) / 1e6 + (model.requestUsd ?? 0),
+    basis: `Illustrative range, not a spending cap. Public standard rates checked ${model.verifiedAt}; routing, caching, and tokenization can change billed cost.`,
   };
 }

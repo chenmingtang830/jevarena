@@ -25,6 +25,9 @@ export const ContributionSubmissionSchema = z.strictObject({
     reviewed: z.literal(true),
     allowPublication: z.literal(true),
     publication: z.literal("after-review"),
+  }), z.strictObject({
+    version: z.literal("2026-09-19-auto-review-v1"), research:z.literal(true),rights:z.literal(true),reviewed:z.literal(true),
+    allowPublication:z.literal(true),publication:z.literal("after-ai-review"),automatedReview:z.literal(true),reviewProvider:z.literal("vercel"),
   })]),
   contribution: CaseContributionSchema,
 });

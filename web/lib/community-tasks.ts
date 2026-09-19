@@ -19,9 +19,10 @@ question: Someone asking for information or help using the project as it is.
 docs: The documentation, README, guide or changelog is wrong, missing, outdated or unclear.`;
 const triageOptions = ["bug", "feature", "question", "docs"].map((label) => ({ id: label, label }));
 
-export const communityTasks: { challenge: Challenge; observation: string; sourceId: string }[] = [
+export const communityTasks: { challenge: Challenge; observation: string; sourceId: string; result: { jevChoice: string; reference: string; disputed: boolean; explanation: string } }[] = [
   {
     sourceId: "ambiguous-5",
+    result: { jevChoice: "question", reference: "bug", disputed: true, explanation: "We don’t know whether the 1,000-row limit is intentional." },
     challenge: {
       schemaVersion: 1, id: "community-export-limit", title: "Export limit", language: "en", kind: "judgment",
       content: "The export stops at 1000 rows. Is that a limit I can raise, or is it broken?",
@@ -31,6 +32,7 @@ export const communityTasks: { challenge: Challenge; observation: string; source
   },
   {
     sourceId: "ambiguous-23",
+    result: { jevChoice: "feature", reference: "docs", disputed: true, explanation: "The request asks for both documentation and a new setting." },
     challenge: {
       schemaVersion: 1, id: "community-retry-defaults", title: "Retry defaults", language: "en", kind: "judgment",
       content: "Please document the retry defaults, or else make them configurable.",
@@ -40,6 +42,7 @@ export const communityTasks: { challenge: Challenge; observation: string; source
   },
   {
     sourceId: "ambiguous-26",
+    result: { jevChoice: "bug", reference: "question", disputed: true, explanation: "The report asks a question but also hints at a possible bug." },
     challenge: {
       schemaVersion: 1, id: "community-safari-login", title: "Safari login", language: "en", kind: "judgment",
       content: "Does login work in Safari? A few of my users mention something odd there.",
@@ -49,6 +52,7 @@ export const communityTasks: { challenge: Challenge; observation: string; source
   },
   {
     sourceId: "modexp-1",
+    result: { jevChoice: "53", reference: "38", disputed: false, explanation: "6³ = 216; 216 − 2 × 89 = 38." },
     challenge: {
       schemaVersion: 1, id: "community-remainder-6", title: "A surprising remainder", language: "en", kind: "judgment",
       content: "What is 6^3 mod 89?", question: "Which option is the correct value?",
@@ -59,6 +63,7 @@ export const communityTasks: { challenge: Challenge; observation: string; source
   },
   {
     sourceId: "modexp-6",
+    result: { jevChoice: "6", reference: "6", disputed: false, explanation: "19 ≡ 5 (mod 7), and 5³ ≡ 6. So 19⁹ ≡ 6³ ≡ 6 (mod 7)." },
     challenge: {
       schemaVersion: 1, id: "community-remainder-19", title: "A bigger power", language: "en", kind: "judgment",
       content: "What is 19^9 mod 7?", question: "Which option is the correct value?",

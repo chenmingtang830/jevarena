@@ -62,13 +62,24 @@ submits the task, human answer and optional reason, and associated runs or
 preference vote. Page loads and provider connections never submit contributions.
 Human answers and preference votes are distinct, unverified observations.
 
-Submissions enter a non-public review queue, not an instant public feed. Original
-additions use CC BY 4.0; third-party inputs retain their source license and
-attribution. Pending payloads expire after 30 days. Reviewed GitHub cases may
-persist longer, and forks or other copies cannot be recalled. Download the
-deletion receipt to withdraw a pending payload; it is not automatically stored.
-API keys are never included. This permission does not authorize model training
-or later paid provider calls.
+When automated review is enabled, the notice explicitly authorizes a Vercel/Jev
+screening call. Passing contributions publish automatically to `/community`,
+which shows the newest 20 eligible public records. Failed or uncertain screening
+stays unpublished. This is an AI safety screen, not fact-checking or human review:
+Jev chooses a risk category and the site displays its mapped description, not a
+fabricated free-text explanation. Records remain unverified community submissions.
+
+Original additions use CC BY 4.0; third-party inputs retain their source license
+and attribution. Withdrawal and the 30-day expiry exclude a record from the feed.
+Download your deletion receipt; it is not automatically stored. External copies
+cannot be recalled. API keys are never included or used for screening.
+
+Automated review uses consent `2026-09-19-auto-review-v1`, separate from older
+private and public-review consent. Older records cannot be replayed to a provider
+or automatically published under the new policy. The operator-funded screening
+budget reserves $0.01 per attempt against a $50 lifetime ceiling (at most 5,000
+attempts). It does not reset daily or refund failures. Deployment gates must pass
+before enabling this mode; no contribution consent permits model training.
 
 The separate **Share this experiment** private-research form remains opt-in.
 Existing private submissions stay private and are never silently upgraded to

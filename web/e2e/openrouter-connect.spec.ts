@@ -5,6 +5,7 @@ test("OpenRouter popup returns a tab-only key without running models", async ({ 
   let exchangeBody: Record<string, string> | undefined;
   await context.route("https://openrouter.ai/**", async route => {
     const url = new URL(route.request().url());
+    if (url.pathname === "/api/v1/models" && route.request().method() === "GET") return route.abort();
     requests.push(url.pathname);
     if (url.pathname === "/auth") {
       expect(url.searchParams.get("code_challenge_method")).toBe("S256");

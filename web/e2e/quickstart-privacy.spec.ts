@@ -64,7 +64,11 @@ test("quickstart editing, clear and undo work by keyboard without sending data",
 
 test("privacy is contextual and replacing an edited draft needs confirmation", async ({ page }) => {
   const requests: string[] = [];
-  await page.route("https://openrouter.ai/**", (route) => { requests.push(route.request().url()); return route.abort(); });
+  await page.route("https://openrouter.ai/**", (route) => {
+    if (route.request().method() === "GET") return route.abort();
+    requests.push(route.request().url());
+    return route.abort();
+  });
   await page.goto("/play");
   const privacy = page.getByRole("region", { name: "Privacy before you run" });
   const simple = page.getByLabel("Question and context");
@@ -84,7 +88,11 @@ test("privacy is contextual and replacing an edited draft needs confirmation", a
 
 test("composer keyboard shortcuts open review without executing a comparison", async ({ page }) => {
   const requests: string[] = [];
-  await page.route("https://openrouter.ai/**", (route) => { requests.push(route.request().url()); return route.abort(); });
+  await page.route("https://openrouter.ai/**", (route) => {
+    if (route.request().method() === "GET") return route.abort();
+    requests.push(route.request().url());
+    return route.abort();
+  });
   for (const shortcut of ["Control+Enter", "Meta+Enter"]) {
     await page.goto("/play");
     const composer = page.getByLabel("Question and context");
