@@ -1,3 +1,4 @@
+import { openManualKey } from "./manual-key";
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -6,9 +7,10 @@ async function judgedExperiment(page: Page) {
     ? { answers: { judgment: { choice: "option1" } }, usage: { input_tokens: 10, output_tokens: 0, cost: 0.000001 } }
     : { model: "mock-version", choices: [{ finish_reason: "stop", message: { content: '{"choice":"option2"}' } }], usage: { prompt_tokens: 10, completion_tokens: 4, cost: 0.00001 } },
   }));
-  await page.goto("/");
+  await page.goto("/play");
   await page.getByLabel("Question and context").fill("Synthetic private history: is 2 + 2 equal to 4?");
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
+  await openManualKey(page);
   await page.getByLabel("OpenRouter", { exact: true }).fill("synthetic-history-key-not-for-storage");
   await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
@@ -52,7 +54,7 @@ test("private saving is opt-in, guest-safe and manually retryable without creden
   await expect(login).toHaveAttribute("target", "_blank");
   expect(sessionRequests).toBe(1);
   expect(saved).toEqual([]);
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL("/play");
   await expect(page.getByLabel("Question and context")).toHaveValue("Synthetic private history: is 2 + 2 equal to 4?");
   // A later explicit click after a mock login is necessary: there is no polling or autosave.
   authenticated = true;
@@ -140,7 +142,7 @@ test("unauthenticated history remains optional and never exposes upstream diagno
   await expect(page.locator("body")).not.toContainText("SECRET_AUTH_DIAGNOSTIC");
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/login");
   await page.getByRole("link", { name: "Continue as guest", exact: true }).click();
-  await expect(page.getByLabel("Question and context")).toBeEditable();
+  await expect(page.getByRole("heading", { name: "Would you make the same call?" })).toBeVisible();
   expect(requests).toBe(1);
 });
 

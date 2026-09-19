@@ -38,7 +38,7 @@ test("email login is optional and requires explicit policy consent before one in
   expect(forms).toEqual([{ email: "synthetic-login@example.invalid", policy: "2026-09-19" }]);
   await expect(page.locator("main")).not.toContainText("synthetic-login@example.invalid");
   await page.getByRole("link", { name: "Continue without an account" }).click();
-  await expect(page.getByLabel("Question and context")).toBeEditable();
+  await expect(page.getByRole("heading", { name: "Would you make the same call?" })).toBeVisible();
   expect(external).toEqual([]);
 });
 

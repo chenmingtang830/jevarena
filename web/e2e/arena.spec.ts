@@ -1,3 +1,4 @@
+import { openManualKey } from "./manual-key";
 import { test, expect } from "@playwright/test";
 
 test("visitors browse without inference and invalid fragments fail safely", async ({
@@ -8,7 +9,7 @@ test("visitors browse without inference and invalid fragments fail safely", asyn
     calls++;
     return route.abort();
   });
-  await page.goto("/");
+  await page.goto("/play");
   await expect(
     page.getByRole("textbox", { name: "Question and context" }),
   ).toBeVisible();
@@ -59,14 +60,14 @@ test("synthetic battle hides metadata until vote, never stores keys", async ({
         },
       });
   });
-  await page.goto("/");
+  await page.goto("/play");
   await page
     .getByLabel("Question and context")
     .fill("Is this correct? SYNTHETIC TEST ONLY: 2+2=4");
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   expect(calls).toHaveLength(0);
   if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
-    await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
+    await openManualKey(page);
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
@@ -116,7 +117,7 @@ test("comparison form and incomplete paid attempts do not create a winner", asyn
   await page.getByLabel("Candidate answer 2").fill("5");
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
-    await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
+    await openManualKey(page);
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
@@ -144,13 +145,13 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
       /* cancelled request */
     }
   });
-  await page.goto("/");
+  await page.goto("/play");
   await page
     .getByLabel("Question and context")
     .fill("Is this synthetic retry test correct?");
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
   if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
-    await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
+    await openManualKey(page);
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");

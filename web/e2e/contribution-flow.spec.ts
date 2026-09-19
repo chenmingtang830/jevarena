@@ -1,3 +1,4 @@
+import { openManualKey } from "./manual-key";
 import { test, expect, type Page } from "@playwright/test";
 import { mkdir, readFile } from "node:fs/promises";
 
@@ -8,10 +9,11 @@ async function experiment(page: Page) {
       : { model: "mock-version", choices: [{ finish_reason: "stop", message: { content: '{"choice":"option1"}' } }], usage: { prompt_tokens: 10, completion_tokens: 4, cost: 0.00001 } },
     });
   });
-  await page.goto("/");
+  await page.goto("/play");
   await page.getByRole("textbox", { name: "Question and context" }).fill("Synthetic research fixture: two plus two equals four.");
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
-  await expect(page.locator("#key-openrouter")).toBeFocused();
+  await expect(page.locator("#preflight-heading")).toBeFocused();
+  await openManualKey(page);
   await page.getByLabel("OpenRouter", { exact: true }).fill("test-only-never-collect-key");
   await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
   await page.getByRole("button", { name: "Start judging", exact: true }).click();

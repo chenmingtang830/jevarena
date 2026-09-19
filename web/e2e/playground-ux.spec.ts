@@ -1,3 +1,4 @@
+import { openManualKey } from "./manual-key";
 import { test, expect, type Page } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 
@@ -14,13 +15,14 @@ test.beforeEach(async ({ page }) => {
     }
     return route.continue();
   });
-  await page.goto("/");
+  await page.goto("/play");
 });
 test.afterEach(async ({ page }) => expect(blockedRequests.get(page)).toEqual([]));
 
 async function connect(page: Page) {
   await page.getByRole("button", { name: "Start judging", exact: true }).click();
-  await expect(page.getByLabel("OpenRouter", { exact: true })).toBeFocused();
+  await expect(page.locator("#preflight-heading")).toBeFocused();
+  await openManualKey(page);
   await page.getByLabel("OpenRouter", { exact: true }).fill("test-only-not-a-real-key");
   await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
 }
@@ -102,6 +104,8 @@ test("invalid fields and hidden budget or language errors focus the actionable c
   await question.fill("Synthetic claim");
   await page.getByLabel("Option 1", { exact: true }).fill(" ");
   await start.click();
+  await expect(start).toHaveCount(0);
+  await openManualKey(page);
   await expect(start).toBeDisabled();
   const key = page.getByLabel("OpenRouter", { exact: true });
   await key.fill("test-only-not-a-real-key");
@@ -150,7 +154,7 @@ test("imported comparisons and answer length limits are enforced before provider
   await start.click();
   await expect(page.getByLabel("Candidate answer 1")).toBeFocused();
   await expect(page.locator("#answer1-error")).toContainText("40000");
-  await page.goto("/");
+  await page.goto("/play");
   await page.getByLabel("Question and context").fill("Claim");
   await page.getByLabel("Option 1", { exact: true }).fill("A".repeat(2001));
   await connect(page);
