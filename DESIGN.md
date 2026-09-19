@@ -124,7 +124,7 @@ Primary buttons use teal, secondary buttons use white with a line border, and gh
 
 The wordmark anchors a compact horizontal navigation. Cases use editorial rows with visible template labels, titles, language, and links. Search and task filters precede the list. Avoid invented metrics or community counts.
 
-The first experiment presents one input and compact examples. Simple mode uses explicit Yes / No / Unsure judgments; it does not promise free-form chat. Custom choices and two-answer comparisons remain available in the advanced editor. A settings/cost review step precedes execution. The participation sequence is task, anonymous judgment, then vote to reveal. Cases offer early jumps between original templates and community case studies. Community summaries use a single editorial column; engagement metadata is collapsed. Study pages separate source reports, verified provenance, limitations, and proposed reproduction, with original-post and author links. They are not model-run result pages.
+The first experiment presents one question/context input, editable possible answers (Yes / No by default), and three complete examples. There is no task-type or simple/advanced mode switch. The answer-comparison example puts both candidate answers in the question and fills A / B / Equally good choices. Historical structured comparison records retain their original fields for reproduction. Starting first reveals the key field; an explicit start action follows the cost estimate. Optional model and budget controls stay collapsed. The participation sequence is task, anonymous judgment, then vote to reveal. Community summaries use a single editorial column; engagement metadata is collapsed. Study pages separate source reports, verified provenance, limitations, and proposed reproduction, with original-post and author links. They are not model-run result pages.
 
 ### Comparison results
 
@@ -134,15 +134,15 @@ Two cards retain equal presentation. Before voting they show only the normalized
 
 The skip link appears on focus. A permanent polite live region announces completion. Reduced-motion preference suppresses animation and animated scrolling. Sharing uses an inline content preview and explicit checkbox; it does not interrupt the user with a modal.
 
-Each task mode retains its own in-memory draft. Loading an example over an existing draft requires an inline replace/keep choice. Field errors identify and focus the first invalid input. Keys and private drafts are never persisted by this flow, and refresh clears them.
+The editor retains its draft in memory. Loading an example over a user-edited draft requires an inline replace/keep choice; switching between untouched examples is immediate. Field errors identify and focus the first invalid input. Keys and private drafts are never persisted by this flow, and refresh clears them.
 
-Selecting a quick start fills the single editable textarea and identifies its
-starting example. Edit text returns focus to the input; Clear offers an in-memory
-Undo. The textarea grows within a bounded height. Ctrl/Cmd+Enter opens cost review,
+Selecting a quick start fills the editable question and all possible answers,
+then focuses the question. Clear offers an in-memory
+Undo. The textarea grows within a bounded height. Ctrl/Cmd+Enter opens key setup,
 never a paid call. Privacy guidance appears when there is task input, with native
 expandable details for provider processing, session-only keys, and deliberate
-sharing. It must remain consistent with the backend: central collection is not
-currently connected and provider retention is not controlled by JevArena.
+sharing. Research submission remains separate and deployment-gated; provider
+retention is not controlled by JevArena.
 
 ## Do's and Don'ts
 

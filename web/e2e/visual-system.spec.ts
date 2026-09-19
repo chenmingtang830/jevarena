@@ -39,7 +39,6 @@ test("pinned typography loads real font faces across the composer and reading ro
     await page.screenshot({ path: `../.impeccable/review/${name}-${testInfo.project.name}.png`, fullPage: true });
   }
   await page.goto("/");
-  await page.getByRole("button", { name: "Task options", exact: true }).click();
   await page.locator(".option-index").first().waitFor();
   await page.evaluate(() => document.fonts.ready);
   const monoFamily = await page.locator(".option-index").first().evaluate((node) => getComputedStyle(node).fontFamily);

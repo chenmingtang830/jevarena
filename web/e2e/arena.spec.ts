@@ -10,7 +10,7 @@ test("visitors browse without inference and invalid fragments fail safely", asyn
   });
   await page.goto("/");
   await expect(
-    page.getByRole("textbox", { name: "What should Jev judge?" }),
+    page.getByRole("textbox", { name: "Question and context" }),
   ).toBeVisible();
   await page.goto("/cases");
   await expect(page.locator("main")).toBeVisible();
@@ -60,18 +60,17 @@ test("synthetic battle hides metadata until vote, never stores keys", async ({
       });
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Task options", exact: true }).click();
-  await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page
-    .getByLabel("What should the models evaluate?")
-    .fill("SYNTHETIC TEST ONLY: 2+2=4");
-  await page.getByLabel("What’s the judgment?").fill("Is this correct?");
+    .getByLabel("Question and context")
+    .fill("Is this correct? SYNTHETIC TEST ONLY: 2+2=4");
+  await page.getByRole("button", { name: "Start judging", exact: true }).click();
+  expect(calls).toHaveLength(0);
   if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
     await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
-  await page.getByRole("button", { name: "Start blind comparison" }).click();
+  await page.getByRole("button", { name: "Start judging" }).click();
   await expect(
     page.getByText("Which judgment is better?", { exact: true }),
   ).toBeVisible();
@@ -110,21 +109,17 @@ test("comparison form and incomplete paid attempts do not create a winner", asyn
   await page.route("https://openrouter.ai/**", (r) =>
     r.fulfill({ status: 401, json: { error: "SECRET_UPSTREAM_DETAIL" } }),
   );
-  await page.goto("/");
-  await page.getByRole("button", { name: "Task options", exact: true }).click();
-  await page.getByRole("button", { name: "Models & keys", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Compare two answers", exact: true })
-    .click();
+  await page.goto("/cases/decimal-comparison");
   await page.getByLabel("Original question").fill("What is 2+2?");
   await page.getByLabel("Candidate answer 1").fill("4");
   await page.getByLabel("Candidate answer 2").fill("5");
+  await page.getByRole("button", { name: "Start judging", exact: true }).click();
   if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
     await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
-  await page.getByRole("button", { name: "Start blind comparison" }).click();
+  await page.getByRole("button", { name: "Start judging" }).click();
   await expect(page.getByText(/This match is incomplete/)).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Both good", exact: true }),
@@ -148,26 +143,25 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
     }
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Task options", exact: true }).click();
-  await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page
-    .getByLabel("What should the models evaluate?")
-    .fill("Synthetic retry test");
-  await page.getByLabel("What’s the judgment?").fill("Correct?");
+    .getByLabel("Question and context")
+    .fill("Is this synthetic retry test correct?");
+  await page.getByRole("button", { name: "Start judging", exact: true }).click();
   if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
     await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
+  await page.locator("summary").filter({ hasText: "Model settings" }).click();
   await page.getByRole("button", { name: "Compare · pick a model" }).click();
   await page
     .getByLabel("Opponent", { exact: true })
     .selectOption("openrouter:anthropic/claude-sonnet-4.5");
   await page.getByLabel("Estimate threshold (USD)").fill("1");
-  await page.getByRole("button", { name: "Start blind comparison" }).click();
+  await page.getByRole("button", { name: "Start judging" }).click();
   await page.getByRole("button", { name: "Cancel requests" }).click();
   await expect(page.getByText(/This match is incomplete/)).toBeVisible();
-  await page.getByRole("button", { name: "Start blind comparison" }).click();
+  await page.getByRole("button", { name: "Start judging" }).click();
   await expect(
     page.locator("summary").filter({ hasText: "2 attempts in this session" }),
   ).toBeVisible();
@@ -183,7 +177,7 @@ test("case opens editable immediately, reference and original export never run a
     return route.abort();
   });
   await page.goto("/cases/phishing-email");
-  const content = page.getByLabel("What should the models evaluate?");
+  const content = page.getByLabel("Question and context");
   await expect(content).toBeEditable();
   const original = await content.inputValue();
   expect(original.length).toBeGreaterThan(0);
@@ -197,7 +191,9 @@ test("case opens editable immediately, reference and original export never run a
   await page.getByRole("button", { name: "Share this example" }).click();
   const json = await page.locator(".share-preview").textContent();
   expect(json).toBeTruthy();
-  expect(JSON.parse(json!).challenge.content).toBe(original);
+  const originalChallenge = JSON.parse(json!).challenge;
+  expect(`${originalChallenge.question}\n\n${originalChallenge.content}`).toBe(original);
+  expect(originalChallenge.content).not.toBe("A changed draft, not a new model result.");
   await page.goto("/share");
   await page
     .locator("input[type=file]")
@@ -209,7 +205,7 @@ test("case opens editable immediately, reference and original export never run a
   await expect(
     page.getByText("Community submitted · unverified", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByLabel("What should the models evaluate?")).toHaveValue(original);
+  await expect(page.getByLabel("Question and context")).toHaveValue(original);
   const withHistory = JSON.parse(json!);
   withHistory.runs = [{
     schemaVersion: 1, id: "synthetic-imported-run", challengeId: withHistory.challenge.id,
@@ -222,7 +218,7 @@ test("case opens editable immediately, reference and original export never run a
   await page.locator("input[type=file]").setInputFiles({ name: "history.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(withHistory)) });
   await expect(page.getByRole("heading", { name: "Imported observations · unverified" })).toBeVisible();
   await expect(page.getByText("synthetic/imported-model", { exact: true })).toBeVisible();
-  await expect(page.getByLabel("What should the models evaluate?")).toHaveValue(original);
+  await expect(page.getByLabel("Question and context")).toHaveValue(original);
   await expect(page.getByRole("heading", { name: "Your judgment first" })).toHaveCount(0);
   expect(calls).toBe(0);
 });
