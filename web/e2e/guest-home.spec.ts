@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("guest can guess and inspect recorded results without a key or provider request", async ({ page }) => {
   const calls: string[] = [];
   page.on("request", (request) => { if (/openrouter\.ai|ai-gateway|api\/judge|api\/contributions/.test(request.url())) calls.push(request.url()); });
-  await page.goto("/try");
+  await page.goto("/try?example=decimal-comparison");
   await expect(page.getByRole("heading", { name: "Would you make the same call?" })).toBeVisible();
   await expect(page.getByPlaceholder("Paste your API key")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Reveal model answers" })).toBeDisabled();
@@ -23,6 +23,24 @@ test("shared guest examples do not reveal until requested; rerun opens editable 
   await expect(page.getByRole("heading", { name: "Jev", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Skip my guess" }).click();
   await page.getByRole("link", { name: "Run this yourself" }).click();
-  await expect(page).toHaveURL(/\/play\?case=decimal-comparison/);
+  await expect(page).toHaveURL(/\/\?case=decimal-comparison/);
   await expect(page.getByRole("button", { name: "Start judging", exact: true })).toBeVisible();
+});
+
+test("every community example offers a no-key reveal and a separate live rerun", async ({ page }) => {
+  const calls: string[] = [];
+  page.on("request", request => { if (/openrouter\.ai|ai-gateway|api\/judge|api\/contributions/.test(request.url())) calls.push(request.url()); });
+  for (const id of ["community-export-limit", "community-retry-defaults", "community-safari-login", "community-remainder-6", "community-remainder-19"]) {
+    await page.goto("/cases");
+    const entry = page.locator("article").filter({ has: page.locator(`a[href="/try?example=${id}"]`) });
+    await entry.getByRole("link", { name: "Try without a key" }).click();
+    await expect(page.getByRole("heading", { name: "The author’s recorded result" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Skip my guess" }).click();
+    await expect(page.getByRole("heading", { name: "The author’s recorded result" })).toBeFocused();
+    await expect(page.getByText(/Author-reported, not independently reproduced/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Gemini 2.5 Flash" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Run this yourself" })).toHaveAttribute("href", `/?case=${id}`);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+  expect(calls).toEqual([]);
 });

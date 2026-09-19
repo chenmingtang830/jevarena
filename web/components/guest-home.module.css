@@ -14,7 +14,7 @@
 .choices:disabled button { opacity: 1; }
 .choices button { white-space: normal; text-align: left; }
 .revealActions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
-.revealActions a { color: var(--accent); display: inline-flex; align-items: center; gap: 6px; min-height: 44px; text-decoration: underline; }
+.revealActions a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; text-decoration: none; }
 .results { margin-top: 36px; }
 .results > p { max-width: 72ch; }
 .models { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0 16px; }
@@ -24,3 +24,4 @@
 .next { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 24px; margin-top: 28px; }
 .next a { color: var(--accent); min-height: 44px; display: inline-flex; align-items: center; gap: 6px; }
 @media (max-width: 500px) { .page { padding: 36px 18px; } .question { padding: 20px; } .models { grid-template-columns: 1fr; gap: 16px; } .revealActions { gap: 8px 16px; } }
+@media (max-width: 500px) { .examples { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding-bottom: 8px; } .examples button { flex-shrink: 0; } }

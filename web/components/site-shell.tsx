@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, FlaskConical, Github } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 
 export const REPO = "https://github.com/chenmingtang830/jevarena";
 export function SiteHeader() {
@@ -21,7 +22,7 @@ export function SiteHeader() {
       </Link>
       <nav aria-label="Main navigation">
         {pages.map(([href, title]) => (
-          <Link key={href} href={href} aria-current={
+          <Link key={href} href={href} className={href === "/try" ? buttonVariants({ variant: "secondary" }) : undefined} aria-current={
             (href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`))
               ? "page" : undefined
           }>{title}</Link>

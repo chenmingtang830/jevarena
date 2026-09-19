@@ -11,6 +11,7 @@ test("community sources remain attributed and read-only without search", async (
     return route.continue();
   });
   await page.goto("/cases");
+  await page.getByText("Community reports and background", { exact: true }).click();
   const library = page.getByRole("region", { name: "Community reports" });
   await expect(library.locator("article")).toHaveCount(4);
   await expect(library.getByRole("link", { name: "Malte Ubl (@cramforce)" })).toHaveAttribute("href", "https://x.com/cramforce");
@@ -24,6 +25,7 @@ test("community sources remain attributed and read-only without search", async (
   await expect(page).toHaveURL(/\/cases\/command-safety-rauchg$/);
   await expect(page.getByText(/Never execute the commands/)).toBeVisible();
   await page.getByRole("link", { name: "Back to community case studies" }).click();
+  await page.getByText("Community reports and background", { exact: true }).click();
   await expect(library.locator("article")).toHaveCount(4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(externalRequests).toEqual([]);

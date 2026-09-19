@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 export const metadata = { title: "Run locally · JevArena" };
 export default function RunLocally() {
   return <main id="main" className="prose-page">
@@ -16,6 +17,6 @@ export default function RunLocally() {
     <p>In the connection dialog, expand “Use an API key instead” and select Vercel AI Gateway. Use an AI Gateway key, not a Vercel account token. Your local server forwards the request to Vercel; the key is not saved. Starting the server does not call a model. Clicking Start judging uses your credits.</p>
     <p>This command binds to your computer only. Do not expose or deploy this relay publicly; public deployment needs separate shared rate limiting and operational review. See the <a href="https://github.com/chenmingtang830/jevarena/blob/main/docs/PROVIDERS.md">provider setup</a>.</p>
     <p>Use a separate low-limit key, revoke it after testing, and never commit it. Research submission and public sharing are separate, optional actions.</p>
-    <p><a href="https://github.com/chenmingtang830/jevarena">Inspect the source</a> · <Link href="/">Try examples without a key</Link></p>
+    <div className="connection-alternatives"><Button asChild variant="secondary"><a href="https://github.com/chenmingtang830/jevarena">Inspect the source</a></Button><Button asChild variant="secondary"><Link href="/try">Try without a key</Link></Button></div>
   </main>;
 }
