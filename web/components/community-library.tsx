@@ -1,4 +1,5 @@
 "use client";
+import { Input } from "./ui/input";
 import { useState } from "react";
 import Link from "next/link";
 import { authorUrl, communityCases, postUrl } from "@/lib/community-cases";
@@ -19,7 +20,7 @@ export function CommunityLibrary() {
       </p>
       <div className="field">
         <label htmlFor="community-search">Find a community report or author</label>
-        <input id="community-search" value={query}
+        <Input id="community-search" value={query}
           placeholder="Search topics or @handles…"
           onChange={(event) => setQuery(event.target.value)} />
       </div>

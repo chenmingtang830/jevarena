@@ -1,4 +1,22 @@
 @import "tailwindcss";
+/* shadcn semantic utilities use the existing Proofpress visual tokens. */
+@theme inline {
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--white);
+  --color-secondary: var(--warm-paper);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--warm-paper);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--light);
+  --color-accent-foreground: var(--accent-strong);
+  --color-input: var(--line);
+  --color-border: var(--line);
+  --color-ring: var(--accent);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--white);
+}
 :root {
   --font-ui: "DM Sans Variable", "DM Sans", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-proof: "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, monospace;

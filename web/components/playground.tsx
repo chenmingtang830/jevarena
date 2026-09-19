@@ -23,6 +23,10 @@ import { templates } from "@/lib/cases";
 import { MODELS, PROVIDERS, getJevModel, estimateCost } from "@/lib/catalog";
 import { executeJudge } from "@/lib/providers";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { NativeSelect } from "./ui/native-select";
+import { Suggestion } from "./ai-elements/suggestion";
 import { ShareTools } from "./share-tools";
 type Provider = "openrouter" | "vercel" | "typesafe";
 type Tier = "low-cost" | "strong" | "reasoning";
@@ -408,7 +412,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     <Button variant="ghost" onClick={() => setFocusTarget("content")}>Edit text</Button>
                   </div>}
                   <label htmlFor="content" className="sr-only">Your claim or question</label>
-                  <textarea
+                  <Textarea
                     id="content"
                     {...fieldProps("content")}
                     aria-describedby={fieldErrors.content ? "content-error simple-task-hint" : "simple-task-hint"}
@@ -430,18 +434,18 @@ export function Playground({ initial }: { initial?: Challenge }) {
               )}
               {advanced && <div id="advanced-task" className="advanced-task">
               <div className="tabs" aria-label="Task type">
-                <button
+                <Button variant="ghost"
                   aria-pressed={c.kind === "judgment"}
                   onClick={() => switchKind("judgment")}
                 >
                   Make a judgment
-                </button>
-                <button
+                </Button>
+                <Button variant="ghost"
                   aria-pressed={c.kind === "comparison"}
                   onClick={() => switchKind("comparison")}
                 >
                   Compare two answers
-                </button>
+                </Button>
               </div>
               <div className="quick-start">
                 <Button variant="secondary" onClick={() => {
@@ -467,7 +471,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     <label htmlFor="content">
                       What should the models evaluate?
                     </label>
-                    <textarea
+                    <Textarea
                       id="content"
                       {...fieldProps("content")}
                       rows={5}
@@ -479,7 +483,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   </div>
                   <div className="field">
                     <label htmlFor="question">What’s the judgment?</label>
-                    <input
+                    <Input
                       id="question"
                       {...fieldProps("question")}
                       placeholder="Does this claim follow from the evidence?"
@@ -494,7 +498,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       <div key={o.id}>
                       <div className="option-row">
                         <span className="option-index">{i + 1}</span>
-                        <input
+                        <Input
                           id={`option-${i}`}
                           {...fieldProps(`option-${i}`)}
                           aria-label={`Option ${i + 1}`}
@@ -544,7 +548,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 <>
                   <div className="field">
                     <label htmlFor="prompt">Original question</label>
-                    <textarea
+                    <Textarea
                       id="prompt"
                       {...fieldProps("prompt")}
                       rows={3}
@@ -556,7 +560,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   </div>
                   <div className="field">
                     <label htmlFor="answer1">Candidate answer 1</label>
-                    <textarea
+                    <Textarea
                       id="answer1"
                       {...fieldProps("answer1")}
                       rows={3}
@@ -567,7 +571,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   </div>
                   <div className="field">
                     <label htmlFor="answer2">Candidate answer 2</label>
-                    <textarea
+                    <Textarea
                       id="answer2"
                       {...fieldProps("answer2")}
                       rows={3}
@@ -580,7 +584,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
               )}
               <div className="field">
                 <label htmlFor="language">Task language</label>
-                <input
+                <Input
                   id="language"
                   {...fieldProps("language")}
                   value={c.language}
@@ -625,18 +629,18 @@ export function Playground({ initial }: { initial?: Challenge }) {
               <h2 id="preflight-heading" tabIndex={-1}>Review models &amp; cost</h2>
               <p className="hint preflight-intro">Two paid calls using your key. Review the estimate before starting.</p>
               <div className="tabs" aria-label="Match mode">
-                <button
+                <Button variant="ghost"
                   aria-pressed={mode === "arena"}
                   onClick={() => setMode("arena")}
                 >
                   Arena · hidden opponent
-                </button>
-                <button
+                </Button>
+                <Button variant="ghost"
                   aria-pressed={mode === "compare"}
                   onClick={() => setMode("compare")}
                 >
                   Compare · pick a model
-                </button>
+                </Button>
               </div>
               <p className="hint match-mode-help">{mode === "arena" ? "Arena picks a hidden opponent from your chosen tier." : "Compare uses the opponent you select."} In both modes, judge X and Y first; names, speed and cost appear after your vote.</p>
               <div className="field-row">
@@ -645,7 +649,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     {mode === "arena" ? "Opponent tier" : "Opponent"}
                   </label>
                   {mode === "arena" ? (
-                    <select
+                    <NativeSelect
                       id="rival"
                       value={tier}
                       onChange={(e) => setTier(e.target.value as Tier)}
@@ -671,9 +675,9 @@ export function Playground({ initial }: { initial?: Challenge }) {
                           ? " · connect key"
                           : ""}
                       </option>
-                    </select>
+                    </NativeSelect>
                   ) : (
-                    <select
+                    <NativeSelect
                       id="rival"
                       value={
                         selected ? `${selected.provider}:${selected.id}` : ""
@@ -691,12 +695,12 @@ export function Playground({ initial }: { initial?: Challenge }) {
                           {m.label} · {m.provider}
                         </option>
                       ))}
-                    </select>
+                    </NativeSelect>
                   )}
                 </div>
                 <div>
                   <label htmlFor="budget">Estimate threshold (USD)</label>
-                  <input
+                  <Input
                     id="budget"
                     {...fieldProps("budget")}
                     type="number"
@@ -724,7 +728,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   {PROVIDERS.map((p) => (
                     <div key={p.id}>
                       <label htmlFor={`key-${p.id}`}>{p.label}</label>
-                      <input
+                      <Input
                         id={`key-${p.id}`}
                         {...fieldProps(`key-${p.id}`)}
                         type="password"
@@ -749,7 +753,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   ))}
                   <div>
                     <label htmlFor="jev-provider">Use Jev through</label>
-                    <select
+                    <NativeSelect
                       id="jev-provider"
                       value={jp}
                       onChange={(e) => setJp(e.target.value as Provider)}
@@ -764,7 +768,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                           {p.transport === "relay" ? " · coming soon" : ""}
                         </option>
                       ))}
-                    </select>
+                    </NativeSelect>
                   </div>
                   <p className="hint">
                     One OpenRouter key runs Jev and its opponent. Your provider account needs access to both models.
@@ -810,7 +814,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
           </fieldset>
         </section>
         {!advanced && !busy && !match && <div className="starter-chips" aria-label="Example tasks">
-          {simpleExamples.map((example) => <button key={example.label} onClick={() => loadSimple(example)}>{example.label}</button>)}
+          {simpleExamples.map((example) => <Suggestion className="quick-start-suggestion" key={example.label} suggestion={example.label} onClick={() => loadSimple(example)} />)}
         </div>}
         <p className="composer-context">Compare anonymously. Vote to reveal. <Link href="/cases">Browse cases without a key <ArrowRight size={12} /></Link></p>
         <div>

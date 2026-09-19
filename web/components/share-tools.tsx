@@ -1,4 +1,5 @@
 "use client";
+import { Input } from "./ui/input";
 import { useState } from "react";
 import {
   Download,
@@ -99,7 +100,7 @@ export function ShareTools({ value }: { value: CaseContribution }) {
           </p>
           <pre className="share-preview">{contributionJson(value)}</pre>
           <label className="check-label">
-            <input
+            <Input
               type="checkbox"
               checked={confirmed}
               onChange={(e) => setConfirmed(e.target.checked)}
