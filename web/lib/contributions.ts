@@ -3,6 +3,7 @@ import { CaseContributionSchema, modelInput, type CaseContribution } from "./con
 import { MAX_SHARE_BYTES } from "./sharing";
 
 export const CONTRIBUTION_CONSENT_VERSION = "2026-09-19";
+export const PUBLIC_CONTRIBUTION_CONSENT_VERSION = "2026-09-19-public-v1";
 export const MAX_CONTRIBUTION_BYTES = 128 * 1024;
 const REQUEST_TIMEOUT_MS = 10_000;
 const SUPABASE_TIMEOUT_MS = 8_000;
@@ -11,13 +12,20 @@ export const ContributionSubmissionSchema = z.strictObject({
   schemaVersion: z.literal(1),
   submissionId: z.uuid(),
   deletionToken: token,
-  consent: z.strictObject({
+  consent: z.union([z.strictObject({
     version: z.literal(CONTRIBUTION_CONSENT_VERSION),
     research: z.literal(true),
     rights: z.literal(true),
     reviewed: z.literal(true),
     allowPublication: z.literal(false),
-  }),
+  }), z.strictObject({
+    version: z.literal(PUBLIC_CONTRIBUTION_CONSENT_VERSION),
+    research: z.literal(true),
+    rights: z.literal(true),
+    reviewed: z.literal(true),
+    allowPublication: z.literal(true),
+    publication: z.literal("after-review"),
+  })]),
   contribution: CaseContributionSchema,
 });
 const WithdrawalSchema = z.strictObject({ receiptId: z.uuid(), deletionToken: token });
@@ -55,6 +63,7 @@ export async function validateContribution(value: unknown): Promise<CaseContribu
   const hash = await sha256(JSON.stringify(input));
   const ids = new Set<string>();
   if (contribution.challenge.expected !== undefined && !options.has(contribution.challenge.expected)) throw invalid();
+  if (contribution.humanAnswer && !options.has(contribution.humanAnswer.optionId)) throw invalid();
   for (const run of contribution.runs) {
     if (ids.has(run.id) || run.challengeId !== contribution.challenge.id || run.challengeHash !== hash) throw invalid();
     ids.add(run.id);
@@ -163,6 +172,8 @@ export async function handleContribution(request: Request, env: Environment = pr
     const parsed = ContributionSubmissionSchema.safeParse(await readBounded(request.body, MAX_CONTRIBUTION_BYTES, REQUEST_TIMEOUT_MS));
     if (!parsed.success) throw invalid();
     const { submissionId, deletionToken, consent } = parsed.data;
+    // Enable only after the database accepts the separately versioned consent.
+    if (consent.allowPublication && env.JEVARENA_PUBLIC_COLLECTION_ENABLED !== "true") throw unavailable();
     const contribution = await validateContribution(parsed.data.contribution);
     // This deployment is Vercel-only: never trust arbitrary forwarded headers on
     // a directly reachable local/custom server. No plaintext IP reaches Supabase.

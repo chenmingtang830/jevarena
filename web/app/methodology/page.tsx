@@ -83,7 +83,10 @@ export default function Methodology() {
           against your account.
         </p>
         <p>
-          Tasks are not automatically published. Sharing requires a content
+          When enabled, public contribution starts on. Uncheck it before answering
+          or voting to opt out. Submitted tasks, answers and results enter review
+          before publication; API keys are excluded. Existing private submissions
+          remain private. Separately creating a share link requires a content
           preview and confirmation. A shared fragment link is readable by anyone
           who receives it. Opening an imported case never starts paid requests.
         </p>

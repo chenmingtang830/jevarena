@@ -55,9 +55,9 @@ test("editable answers support two through ten options and drafts stay in tab me
   await expect(page.getByRole("textbox", { name: /^Option \d+$/ })).toHaveCount(2);
   await expect(page.getByRole("button", { name: "Remove option 2", exact: true })).toBeDisabled();
   await connect(page);
-  await page.locator("summary").filter({ hasText: "Model settings" }).click();
+  await page.locator("summary").filter({ hasText: "Advanced settings" }).click();
   await page.getByLabel("Task language").fill("zh");
-  await page.locator("summary").filter({ hasText: "Model settings" }).click();
+  await page.locator("summary").filter({ hasText: "Advanced settings" }).click();
   await page.getByRole("button", { name: "Close model setup" }).click();
   await expect(question).toHaveValue("Private judgment draft");
   await expect(page.getByLabel("Option 1", { exact: true })).toHaveValue("Supported");
@@ -116,7 +116,7 @@ test("invalid fields and hidden budget or language errors focus the actionable c
   await expect(page.locator("#option-0-error")).toBeVisible();
   await page.getByLabel("Option 1", { exact: true }).fill("Yes");
   await start.click();
-  const settings = page.locator("summary").filter({ hasText: "Model settings" });
+  const settings = page.locator("summary").filter({ hasText: "Advanced settings" });
   await settings.click();
   await page.getByLabel("Task language").fill("e");
   await settings.click();

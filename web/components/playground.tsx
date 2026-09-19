@@ -7,7 +7,6 @@ import {
   LoaderCircle,
   Plus,
   ShieldCheck,
-  SlidersHorizontal,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -31,6 +30,8 @@ import { Suggestion } from "./ai-elements/suggestion";
 import { ShareTools } from "./share-tools";
 import { SaveHistory } from "./save-history";
 import { OpenRouterConnect } from "./openrouter-connect";
+import { ContributionSubmit } from "./contribution-submit";
+import { PUBLIC_COLLECTION, PublicContributionChoice } from "./public-contribution-choice";
 import { communityTasks, communityTaskSource } from "@/lib/community-tasks";
 type Provider = "openrouter" | "vercel" | "typesafe";
 type Tier = "low-cost" | "strong" | "reasoning";
@@ -80,7 +81,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [exampleNotice, setExampleNotice] = useState("");
   const [focusTarget, setFocusTarget] = useState<string | null>(null);
-  const [mode, setMode] = useState<"arena" | "compare">("arena");
+  const [mode, setMode] = useState<"arena" | "compare">("compare");
   const [tier, setTier] = useState<Tier>("low-cost");
   const [keys, setKeys] = useState<Record<Provider, string>>({
     openrouter: "",
@@ -94,6 +95,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
   const [error, setError] = useState("");
   const [match, setMatch] = useState<Match | null>(null);
   const [history, setHistory] = useState<Match[]>([]);
+  const [publicMode, setPublicMode] = useState(true);
+  const [publicSubmissions, setPublicSubmissions] = useState<CaseContribution[]>([]);
   const [budget, setBudget] = useState("0.05");
   const [connections, setConnections] = useState(false);
   const controller = useRef<AbortController | null>(null);
@@ -347,7 +350,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
     }
   }
   function vote(value: Vote["value"]) {
-    if (!match) return;
+    if (!match || match.vote) return;
     const next = {
       ...match,
       vote: {
@@ -357,6 +360,13 @@ export function Playground({ initial }: { initial?: Challenge }) {
       },
     };
     setMatch(next);
+    if (PUBLIC_COLLECTION && publicMode && value !== "skip") {
+      setPublicSubmissions(current => [...current, {
+        schemaVersion: 1, id: crypto.randomUUID(), challenge: next.challenge, runs: next.runs,
+        vote: next.vote, license: "CC-BY-4.0", status: "community-submitted",
+        ...(next.challenge.source === communityTaskSource.post ? { sourceAttributions: [{url: communityTaskSource.data, author: communityTaskSource.author, license: communityTaskSource.license, notice: "Original task from pithings/advocaat; MIT source copyright notice retained at https://github.com/pithings/advocaat/blob/46ed82661a41c27efd2a1bddf34f8dc1350d9143/LICENSE"}] } : {}),
+      }]);
+    }
     setHistory((h) => h.map((m) => (m === match ? next : m)));
   }
   const success = match?.runs.every((r) => r.status === "success");
@@ -454,7 +464,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <p>When you run, your task goes to the selected model providers. Don’t include secrets or sensitive personal information.</p>
                   <p>Providers receive your prompt, context and any candidate answers needed to judge the task. Their own data and retention policies apply.</p>
                   <p>Your API keys stay in this tab’s memory and disappear on refresh. OpenRouter requests go directly to OpenRouter. When enabled, Vercel AI Gateway requests pass through our fixed server relay; the key is used in request memory, not saved.</p>
-                  <p>JevArena does not upload or publish your task automatically. Saving results to your private account history is optional and requires a separate explicit action. When enabled, private research submission requires separate consent after you review the task and results. Exporting, sharing or permitting publication is a separate action you choose.</p>
+                  <p>{PUBLIC_COLLECTION ? "Public contribution is on by default: voting submits your task, results and vote for research and publication after review. Uncheck Contribute publicly before voting to keep them in this tab. API keys are never included." : "JevArena does not upload or publish your task automatically. Research submission requires a separate action and consent."} Saving private account history, when available, is a separate action.</p>
                 </details>
               </section>}
               <dialog ref={settingsDialog} className="model-settings settings-dialog" id="model-settings" aria-labelledby="preflight-heading"
@@ -462,7 +472,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 onClose={(event) => { if (!event.currentTarget.open) setSettings(false); }}>
               <Button variant="ghost" className="dialog-close" aria-label="Close model setup" onClick={() => setSettings(false)}><X size={18} /></Button>
               <h2 id="preflight-heading" tabIndex={-1}>{keys[jp].trim() ? "Ready to compare" : connections ? "Use your API key" : "Connect OpenRouter"}</h2>
-              <p className="hint preflight-intro">We do not save your API key. It stays in this tab and clears on refresh.</p>
+              <p className="hint preflight-intro">{keys[jp].trim() ? "Connected · Key stays in this tab only." : "We do not save your API key. It stays in this tab and clears on refresh."}</p>
               {!keys[jp].trim() && !connections && <>
                 <OpenRouterConnect disabled={!settings} onConnected={(key: string) => {
                   setKeys((current) => ({ ...current, openrouter: key }));
@@ -475,79 +485,30 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <Button asChild variant="secondary"><Link href="/run-locally">Run locally <ArrowRight size={16} aria-hidden="true" /></Link></Button>
                 </div>
               </>}
-              {keys[jp].trim() && <details open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
-              <summary><SlidersHorizontal size={14} /> Model settings</summary>
-              <div className="field"><label htmlFor="language">Task language</label><Input id="language" {...fieldProps("language")} value={c.language} maxLength={40} onChange={(e) => edit({ ...c, language: e.target.value })} />{fieldError("language")}</div>
-              <div className="tabs" aria-label="Match mode">
-                <Button variant="ghost"
-                  aria-pressed={mode === "arena"}
-                  onClick={() => setMode("arena")}
-                >
-                  Arena · hidden opponent
-                </Button>
-                <Button variant="ghost"
-                  aria-pressed={mode === "compare"}
-                  onClick={() => setMode("compare")}
-                >
-                  Compare · pick a model
-                </Button>
-              </div>
-              <p className="hint match-mode-help">{mode === "arena" ? "Arena picks a hidden opponent from your chosen tier." : "Compare uses the opponent you select."} In both modes, judge X and Y first; names, speed and cost appear after your vote.</p>
-              <div className="field-row">
-                <div>
-                  <label htmlFor="rival">
-                    {mode === "arena" ? "Opponent tier" : "Opponent"}
-                  </label>
-                  {mode === "arena" ? (
-                    <NativeSelect
-                      id="rival"
-                      value={tier}
-                      onChange={(e) => setTier(e.target.value as Tier)}
-                    >
-                      <option value="low-cost">Low cost</option>
-                      <option
-                        value="strong"
-                        disabled={!available.some((m) => m.tier === "strong")}
-                      >
-                        Strong generalist
-                        {!available.some((m) => m.tier === "strong")
-                          ? " · connect key"
-                          : ""}
-                      </option>
-                      <option
-                        value="reasoning"
-                        disabled={
-                          !available.some((m) => m.tier === "reasoning")
-                        }
-                      >
-                        Reasoning
-                        {!available.some((m) => m.tier === "reasoning")
-                          ? " · connect key"
-                          : ""}
-                      </option>
-                    </NativeSelect>
-                  ) : (
-                    <NativeSelect
-                      id="rival"
-                      value={
-                        selected ? `${selected.provider}:${selected.id}` : ""
-                      }
-                      onChange={(e) => setOpponent(e.target.value)}
-                    >
-                      {!available.length && (
-                        <option value="">Connect a provider first</option>
-                      )}
-                      {available.map((m) => (
-                        <option
-                          key={`${m.provider}:${m.id}`}
-                          value={`${m.provider}:${m.id}`}
-                        >
-                          {m.label} · {m.provider}{m.compareOnly ? " · Experimental (not live-tested)" : ""}
-                        </option>
-                      ))}
-                    </NativeSelect>
-                  )}
+              {keys[jp].trim() && <div className="connected-matchup">
+                <span className="fixed-judge">Jev <span>vs</span></span>
+                <div><label htmlFor="rival">Opponent</label>
+                  <NativeSelect id="rival" value={mode === "arena" ? `auto:${tier}` : selected ? `${selected.provider}:${selected.id}` : ""}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (value.startsWith("auto:")) { setMode("arena"); setTier(value.slice(5) as Tier); }
+                      else { setMode("compare"); setOpponent(value); }
+                    }}>
+                    <optgroup label="Let Arena choose">
+                      {(["low-cost", "strong", "reasoning"] as Tier[]).map((value) => <option key={value} value={`auto:${value}`} disabled={!available.some((m) => m.tier === value && !m.compareOnly)}>Random · {value === "low-cost" ? "low cost" : value === "strong" ? "strong generalist" : "reasoning"}</option>)}
+                    </optgroup>
+                    <optgroup label="Pick a model">
+                      {available.map((m) => <option key={`${m.provider}:${m.id}`} value={`${m.provider}:${m.id}`}>{m.label}{m.compareOnly ? " · Experimental (not live-tested)" : ""}</option>)}
+                    </optgroup>
+                  </NativeSelect>
                 </div>
+              </div>}
+              {keys[jp].trim() && <details className="advanced-model-settings" open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
+              <summary>Advanced settings</summary>
+              <p className="hint">Judge X and Y first. Names, speed and cost appear after your vote.</p>
+              <p className="hint">Cost estimates are not billing caps. <a href={jev.priceSource} target="_blank" rel="noreferrer">Price source</a> · rates checked {jev.verifiedAt}. Use a limited-budget key. The page can read your key while you use it; it clears on refresh. <Link href="/privacy" target="_blank">Privacy details</Link>.</p>
+              <div className="field"><label htmlFor="language">Task language</label><Input id="language" {...fieldProps("language")} value={c.language} maxLength={40} onChange={(e) => edit({ ...c, language: e.target.value })} />{fieldError("language")}</div>
+              <div className="field-row">
                 <div>
                   <label htmlFor="budget">Estimate threshold (USD)</label>
                   <Input
@@ -562,13 +523,14 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   {fieldError("budget")}
                 </div>
               </div>
-              </details>}
               {keys[jp].trim() && <Button variant="ghost" onClick={() => {
                 setKeys((current) => ({ ...current, [jp]: "" }));
                 setAcceptedPolicyVersion(null); setConnections(false);
               }}>Disconnect this tab</Button>}
+              </details>}
               <details
                 className="connection-box"
+                hidden={Boolean(keys[jp].trim()) && !connections}
                 open={connections}
                 onToggle={(e) => setConnections(e.currentTarget.open)}
               >
@@ -624,12 +586,8 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       : `Estimated ${money(minimum)}–${money(maximum)}`}
                   </span>
                 </div>
-                <details><summary>Cost and key details</summary>
-                  <p className="hint">Estimate, not a billing cap. Rates checked {jev.verifiedAt}. <a href={jev.priceSource} target="_blank" rel="noreferrer">Price source</a>. Use a dedicated, limited-budget key and revoke it when finished.</p>
-                  <p className="hint">The page can read your key while you use it. OpenRouter calls go directly to OpenRouter; keys are held in tab memory, not saved. Vercel, when enabled, requires our server relay. <Link href="/privacy" target="_blank">Privacy details</Link>.</p>
-                </details>
                 <div data-policy-version={POLICY_VERSION}>
-                  <p className="hint">Sent to the model providers, not published. No sensitive data.</p>
+                  <p className="hint">Running sends your task to the model providers. Do not include sensitive data.</p>
                   <label className="check-label" htmlFor="run-consent">
                     <Input id="run-consent" type="checkbox" {...fieldProps("run-consent")}
                       checked={acceptedPolicyVersion === POLICY_VERSION}
@@ -642,6 +600,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <p className="hint"><Link href="/terms" target="_blank" rel="noreferrer">Read Terms</Link>{" · "}<Link href="/privacy" target="_blank" rel="noreferrer">Read Privacy</Link></p>
                   {fieldError("run-consent")}
                 </div>
+                <PublicContributionChoice checked={publicMode} onChange={setPublicMode} live />
                 <Button className="full-width" disabled={!keys[jp].trim() || acceptedPolicyVersion !== POLICY_VERSION} onClick={run}>
                   <span>Start judging</span>
                   <ArrowRight size={16} />
@@ -761,6 +720,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     <p className="hint">
                       Judge the decision first. We’ll reveal the tradeoffs next.
                     </p>
+                    <PublicContributionChoice checked={publicMode} onChange={setPublicMode} live />
                     <div className="vote-buttons">
                       {(
                         [
@@ -788,8 +748,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       size={13}
                       style={{ display: "inline", marginRight: 6 }}
                     />
-                    One experiment, not a leaderboard. Your vote stays in this
-                    tab unless you share it.
+                    One experiment, not a leaderboard. A community vote is a preference, not a verified correctness label.
                   </p>
                 )}
                 {revealed && match.challenge.kind === "comparison" && (
@@ -825,6 +784,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
               </div>
             ) : null}
           </section>}
+          {publicSubmissions.map(value => <ContributionSubmit key={value.id} value={value} publicCandidate />)}
           {history.length > 0 && (
             <details className="attempt-list">
               <summary>

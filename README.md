@@ -14,9 +14,12 @@ Want to help with code? Start with the [contribution guide](CONTRIBUTING.md). Wa
 
 Maintained by [Richard Tang (@richardt830)](https://x.com/richardt830).
 The source code is Apache-2.0 licensed; third-party examples retain their own licenses.
-Normal guest runs do not save your API key or conversation to JevArena's database.
-Keys live only in the current tab's memory. Explicit research submissions are an
-exception: they save the data you preview and consent to contribute. Providers and
+**We do not save your model API key.** Keys live only in the current tab's memory.
+When public contribution mode is enabled, a visible checkbox starts on before
+answering or confirming a match. Leave it on to contribute the displayed task,
+answer and associated results for research and publication after review; turn it
+off before proceeding to prevent that contribution upload. This mode remains
+deployment-gated, not assumed live merely because the code exists. Providers and
 hosting services may retain operational data under their own policies. This is
 not a zero-logging or zero-risk service. Use a limited-budget key or run locally.
 Send private privacy/deletion requests to richard@learnest.org, not public issues.
@@ -53,13 +56,26 @@ See [contributing](CONTRIBUTING.md), [security](SECURITY.md), and [provider veri
 
 ## Contributing data
 
-After a run, open **Share this experiment**, inspect the complete JSON, and choose
-whether to contribute privately to research. Collection is opt-in, not automatic;
-publication is a separate GitHub action and owner review. Download the deletion
-receipt if you submit: the site has no account or automatic receipt storage.
-API keys are never collected or saved by this feature.
+When enabled, public contribution mode is on by default with a visible opt-out
+before a guest answer or paid match. Completing an answer or vote while it is on
+submits the task, human answer and optional reason, and associated runs or
+preference vote. Page loads and provider connections never submit contributions.
+Human answers and preference votes are distinct, unverified observations.
 
-The private intake, quota, retention and withdrawal contract is documented in
+Submissions enter a non-public review queue, not an instant public feed. Original
+additions use CC BY 4.0; third-party inputs retain their source license and
+attribution. Pending payloads expire after 30 days. Reviewed GitHub cases may
+persist longer, and forks or other copies cannot be recalled. Download the
+deletion receipt to withdraw a pending payload; it is not automatically stored.
+API keys are never included. This permission does not authorize model training
+or later paid provider calls.
+
+The separate **Share this experiment** private-research form remains opt-in.
+Existing private submissions stay private and are never silently upgraded to
+publication permission. Public collection requires its own migration and both
+UI/server deployment gates to be verified before enabling it.
+
+The intake, quota, retention and withdrawal contracts are documented in
 [data collection](docs/DATA_COLLECTION.md). Maintainers can validate and import a
 downloaded case offline without running a model:
 

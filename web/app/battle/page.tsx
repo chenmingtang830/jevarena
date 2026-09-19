@@ -7,7 +7,7 @@ export const metadata = { title: "Battle · JevArena", robots: { index: false } 
 export default function Battle() {
   return <main id="main" className="prose-page">
     <h1>No active battle</h1>
-    <p>Battles stay in the tab that started them. Refreshing clears the results and your API key.</p>
+    <p>Refreshing clears this tab’s results and API key. It does not withdraw a contribution you already submitted; use your deletion receipt to do that.</p>
     <Link href="/">Start a new question</Link>
   </main>;
 }

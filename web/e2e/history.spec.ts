@@ -66,7 +66,7 @@ test("private saving is opt-in, guest-safe and manually retryable without creden
   await expect(region.getByRole("status")).toContainText("Saved privately for 30 days");
   expect(saved).toHaveLength(2);
   expect(saved[0]).toEqual(saved[1]);
-  expect(saved[0].consent).toEqual({ version: "2026-09-19", savePrivate: true });
+  expect(saved[0].consent).toEqual({ version: "2026-09-19-public-v1", savePrivate: true });
   expect(saved[0].history.vote.value).toBe("both");
   expect(saved[0].history.runs).toHaveLength(2);
   expect(JSON.stringify(saved)).not.toContain("synthetic-history-key-not-for-storage");

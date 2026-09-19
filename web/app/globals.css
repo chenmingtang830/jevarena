@@ -796,6 +796,17 @@ label {
 .model-settings h2 { font-size: 21px; }
 .settings-dialog { width: min(620px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); margin: auto; overflow-y: auto; border: 1px solid var(--line); border-radius: 12px; padding: 24px; color: var(--ink); background: var(--paper); }
 .settings-dialog::backdrop { background: rgb(24 26 32 / 45%); }
+.connected-matchup { display: flex; align-items: center; gap: 18px; margin: 24px 0 12px; }
+.fixed-judge { display: flex; align-items: center; gap: 18px; font-size: 20px; font-weight: 600; padding-top: 24px; }
+.fixed-judge span { font-size: 13px; font-weight: 400; color: var(--secondary); }
+.connected-matchup > div { flex: 1; min-width: 0; }
+.connected-matchup select { width: 100%; }
+.public-contribution-choice { margin: 16px 0; padding: 12px 0; border-top: 1px solid var(--line); }
+.public-contribution-choice p { margin: 6px 0; }
+.public-contribution-choice summary { font-size: 12px; color: var(--secondary); }
+.settings-dialog > details > summary { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--secondary); }
+.settings-dialog > details > summary::before { content: "+"; }
+.settings-dialog > details[open] > summary::before { content: "−"; }
 .settings-dialog .dialog-close { float: right; min-width: 44px; min-height: 44px; }
 .history-save { padding: 16px 0; max-width: 70ch; }
 .history-list { list-style: none; padding: 0; }

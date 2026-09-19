@@ -39,6 +39,11 @@ def validate_contract(kind: str, value: dict) -> dict:
     if kind == "CaseContribution":
         challenge = validate_contract("Challenge", value["challenge"])
         ids = set(option_ids(challenge))
+        if "humanAnswer" in value and value["humanAnswer"]["optionId"] not in ids:
+            raise ValueError("Human answer must name a challenge option")
+        for source in value.get("sourceAttributions", []):
+            if not source["url"].startswith("https://"):
+                raise ValueError("HTTPS source required")
         fingerprint = challenge_fingerprint(challenge)
         run_ids = set()
         for run in value["runs"]:

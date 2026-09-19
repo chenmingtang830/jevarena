@@ -57,7 +57,7 @@ test("comparison reviews cost before identical deterministic judge inputs", asyn
   await expect(key).toBeVisible();
   await key.fill("test-only-not-a-real-key");
   await expect(page.getByRole("heading", { name: "Ready to compare" })).toBeVisible();
-  const settings = page.locator("summary").filter({ hasText: "Model settings" });
+  const settings = page.locator("summary").filter({ hasText: "Advanced settings" });
   await expect(settings.locator("..")).not.toHaveAttribute("open", "");
   await expect(page.getByLabel("Estimate threshold (USD)")).not.toBeVisible();
   await expect(page.getByLabel("Opponent tier")).not.toBeVisible();
@@ -66,8 +66,8 @@ test("comparison reviews cost before identical deterministic judge inputs", asyn
   await expect(consent).not.toBeChecked();
   await consent.check();
   await expect(start).toBeEnabled();
-  await page.locator("summary").filter({ hasText: "Cost and key details" }).click();
-  await expect(page.getByText(/not a billing cap/i)).toBeVisible();
+  await page.locator("summary").filter({ hasText: "Advanced settings" }).click();
+  await expect(page.getByText(/not billing caps/i)).toBeVisible();
   await expect(page.locator(".price-note")).toContainText(/2 calls.*Estimated/);
   expect(calls).toHaveLength(0);
   await mkdir("../.impeccable/review", { recursive: true });
