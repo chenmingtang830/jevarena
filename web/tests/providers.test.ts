@@ -56,6 +56,19 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 describe("fixed provider contracts", () => {
+  it("does not claim a chat-only output cap for native Jev requests", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json({ answers: { judgment: { choice: "yes" } } }),
+        ),
+    );
+    const run = await executeUpstream(args);
+    expect(run.status).toBe("success");
+    expect(run.settings?.maxOutputTokens).toBeUndefined();
+  });
   it("preserves actual Gateway zero cost and independent TypeSafe confidence", () => {
     const run = normalizeResponse(
       {

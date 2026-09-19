@@ -272,7 +272,9 @@ export async function executeUpstream(args: JudgeRequest): Promise<RunRecord> {
     latencyMs: 0,
     status: "error",
     settings: {
-      maxOutputTokens: 4096,
+      ...(lookupModel(checked.provider, checked.model).kind === "chat"
+        ? { maxOutputTokens: 4096 }
+        : {}),
       transport: checked.provider === "openrouter" ? "direct" : "relay",
     },
   };

@@ -29,7 +29,10 @@ async function main() {
         : record;
     return RunRecordSchema.parse({
       ...corrected,
-      settings: { ...corrected.settings, transport: "direct" },
+      settings: {
+        ...(record.model === "typesafe-ai/jev" ? {} : corrected.settings),
+        transport: "direct",
+      },
     });
   });
   console.log(
@@ -41,7 +44,7 @@ async function main() {
         endedAt: receipt.endedAt,
         conditions: receipt.conditions,
         normalization:
-          "Offline correction from original returned metadata: preserve billed zero and vendor confidence; transport corrected to local direct. No repeat calls.",
+          "Offline correction from original returned metadata: preserve billed zero and vendor confidence; transport corrected to local direct; omit chat-only token cap from native Jev records. No repeat calls.",
         calls: receipt.calls,
         budgetUsd: receipt.budgetUsd,
         estimatedUpperUsd: receipt.estimatedUpperUsd,

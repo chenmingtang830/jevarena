@@ -4,7 +4,7 @@
   "startedAt": "2026-09-19T07:35:28.491Z",
   "endedAt": "2026-09-19T07:35:38.435Z",
   "conditions": "Local Node, sequential calls, default provider reasoning, max output 4096, no retries. Not a browser test or benchmark.",
-  "normalization": "Offline correction from original returned metadata: preserve billed zero and vendor confidence; transport corrected to local direct. No repeat calls.",
+  "normalization": "Offline correction from original returned metadata: preserve billed zero and vendor confidence; transport corrected to local direct; omit chat-only token cap from native Jev records. No repeat calls.",
   "calls": 4,
   "budgetUsd": 0.05,
   "estimatedUpperUsd": 0.011177196,
@@ -38,7 +38,6 @@
       "latencyMs": 701.311791,
       "status": "success",
       "settings": {
-        "maxOutputTokens": 4096,
         "transport": "direct"
       }
     },
@@ -96,7 +95,6 @@
       "latencyMs": 273.82950000000073,
       "status": "success",
       "settings": {
-        "maxOutputTokens": 4096,
         "transport": "direct"
       }
     },
