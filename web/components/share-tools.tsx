@@ -19,7 +19,7 @@ function download(blob: Blob, name: string) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(u), 1000);
 }
-export function ShareTools({ value }: { value: CaseContribution }) {
+export function ShareTools({ value, label = "Share this experiment" }: { value: CaseContribution; label?: string }) {
   const [open, setOpen] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [message, setMessage] = useState("");
@@ -91,7 +91,7 @@ export function ShareTools({ value }: { value: CaseContribution }) {
     <div className="share-panel">
       <Button variant="secondary" onClick={() => setOpen(!open)}>
         <Share2 size={15} />
-        Share this experiment
+        {label}
       </Button>
       {open && (
         <>

@@ -2,8 +2,8 @@ import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 
 test("first viewport offers a single composer before configuration", async ({ page }, testInfo) => {
-  await expect(page.getByLabel("Your claim or question")).toBeInViewport();
-  await expect(page.getByRole("button", { name: "Review & compare", exact: true })).toBeInViewport();
+  await expect(page.getByLabel("What should Jev judge?")).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Compare models", exact: true })).toBeInViewport();
   await mkdir("../.impeccable/review", { recursive: true });
   await page.screenshot({ path: `../.impeccable/review/home-${testInfo.project.name}.png`, fullPage: true });
 });
@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("task switches preserve independent drafts only in tab memory", async ({ page }) => {
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Task options", exact: true }).click();
   await page.getByLabel("What should the models evaluate?").fill("Private judgment draft");
   await page.getByLabel("What’s the judgment?").fill("Is the claim supported?");
   await page.getByLabel("Option 1", { exact: true }).fill("Supported");
@@ -42,12 +42,12 @@ test("task switches preserve independent drafts only in tab memory", async ({ pa
   const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));
   expect(stored).not.toContain("Private");
   await page.reload();
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Task options", exact: true }).click();
   await expect(page.getByLabel("What should the models evaluate?")).toHaveValue("");
 });
 
 test("early examples acknowledge loading, focus content and protect existing drafts", async ({ page }) => {
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Task options", exact: true }).click();
   const example = page.getByRole("button", { name: "Try an example", exact: true });
   const content = page.getByLabel("What should the models evaluate?");
   expect((await example.boundingBox())!.y).toBeLessThan((await content.boundingBox())!.y);
@@ -68,11 +68,15 @@ test("early examples acknowledge loading, focus content and protect existing dra
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test("invalid fields are described inline and focus progresses to the missing key", async ({ page }) => {
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+test("connecting a key precedes validation and invalid fields are described inline", async ({ page }) => {
+  await page.getByRole("button", { name: "Task options", exact: true }).click();
   await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   const start = page.getByRole("button", { name: "Start blind comparison" });
   const content = page.getByLabel("What should the models evaluate?");
+  await expect(start).toBeDisabled();
+  const key = page.getByLabel("OpenRouter", { exact: true });
+  if (!(await key.isVisible())) await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
+  await key.fill("test-only-not-a-real-key");
   await start.click();
   await expect(content).toBeFocused();
   await expect(content).toHaveAttribute("aria-invalid", "true");
@@ -90,16 +94,19 @@ test("invalid fields are described inline and focus progresses to the missing ke
   await start.click();
   await expect(page.getByLabel("Task language")).toBeFocused();
   await page.getByLabel("Task language").fill("en");
-  await start.click();
-  await expect(page.getByLabel("OpenRouter", { exact: true })).toBeFocused();
-  await expect(page.getByLabel("OpenRouter", { exact: true })).toHaveAttribute("aria-describedby", "key-openrouter-error");
-  await expect(page.locator("#key-vercel")).toBeDisabled();
-  await expect(page.locator("#key-typesafe")).toBeDisabled();
+  await key.fill("");
+  await expect(start).toBeDisabled();
+  await expect(page.locator("#key-vercel")).toHaveCount(0);
+  await expect(page.locator("#key-typesafe")).toHaveCount(0);
+  await expect(page.getByLabel("Use Jev through")).not.toBeVisible();
 });
 
 test("comparison and length constraints remain enforced before provider calls", async ({ page }) => {
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Task options", exact: true }).click();
   await page.getByRole("button", { name: "Models & keys", exact: true }).click();
+  const key = page.getByLabel("OpenRouter", { exact: true });
+  if (!(await key.isVisible())) await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
+  await key.fill("test-only-not-a-real-key");
   await page.getByRole("button", { name: "Compare two answers", exact: true }).click();
   const start = page.getByRole("button", { name: "Start blind comparison" });
   await start.click();

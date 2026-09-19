@@ -10,7 +10,7 @@ test("visitors browse without inference and invalid fragments fail safely", asyn
   });
   await page.goto("/");
   await expect(
-    page.getByRole("textbox", { name: "Your claim or question" }),
+    page.getByRole("textbox", { name: "What should Jev judge?" }),
   ).toBeVisible();
   await page.goto("/cases");
   await expect(page.locator("main")).toBeVisible();
@@ -60,16 +60,14 @@ test("synthetic battle hides metadata until vote, never stores keys", async ({
       });
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Task options", exact: true }).click();
   await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page
     .getByLabel("What should the models evaluate?")
     .fill("SYNTHETIC TEST ONLY: 2+2=4");
   await page.getByLabel("What’s the judgment?").fill("Is this correct?");
-  await page
-    .locator("summary")
-    .filter({ hasText: "Connect your API keys" })
-    .click();
+  if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
+    await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
@@ -113,7 +111,7 @@ test("comparison form and incomplete paid attempts do not create a winner", asyn
     r.fulfill({ status: 401, json: { error: "SECRET_UPSTREAM_DETAIL" } }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Task options", exact: true }).click();
   await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page
     .getByRole("button", { name: "Compare two answers", exact: true })
@@ -121,10 +119,8 @@ test("comparison form and incomplete paid attempts do not create a winner", asyn
   await page.getByLabel("Original question").fill("What is 2+2?");
   await page.getByLabel("Candidate answer 1").fill("4");
   await page.getByLabel("Candidate answer 2").fill("5");
-  await page
-    .locator("summary")
-    .filter({ hasText: "Connect your API keys" })
-    .click();
+  if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
+    await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
@@ -152,16 +148,14 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
     }
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Advanced", exact: true }).click();
+  await page.getByRole("button", { name: "Task options", exact: true }).click();
   await page.getByRole("button", { name: "Models & keys", exact: true }).click();
   await page
     .getByLabel("What should the models evaluate?")
     .fill("Synthetic retry test");
   await page.getByLabel("What’s the judgment?").fill("Correct?");
-  await page
-    .locator("summary")
-    .filter({ hasText: "Connect your API keys" })
-    .click();
+  if (!(await page.getByLabel("OpenRouter", { exact: true }).isVisible()))
+    await page.locator("summary").filter({ hasText: "Connect your API keys" }).click();
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
@@ -180,7 +174,7 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
   expect(count).toBeLessThanOrEqual(4);
 });
 
-test("case guess, JSON export and import never run a model", async ({
+test("case opens editable immediately, reference and original export never run a model", async ({
   page,
 }) => {
   let calls = 0;
@@ -189,16 +183,21 @@ test("case guess, JSON export and import never run a model", async ({
     return route.abort();
   });
   await page.goto("/cases/phishing-email");
-  await expect(
-    page.getByRole("heading", { name: "Your judgment first" }),
-  ).toBeVisible();
-  await page.locator(".guess-options button").first().click();
+  const content = page.getByLabel("What should the models evaluate?");
+  await expect(content).toBeEditable();
+  const original = await content.inputValue();
+  expect(original.length).toBeGreaterThan(0);
+  await content.fill("A changed draft, not a new model result.");
+  await expect(page.getByRole("heading", { name: "Your judgment first" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reproduce with your keys" })).toHaveCount(0);
+  await page.getByText("Reference answer and reasoning", { exact: true }).click();
   await expect(
     page.getByText(/Reference answers can be disputed/),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Share this experiment" }).click();
+  await page.getByRole("button", { name: "Share this example" }).click();
   const json = await page.locator(".share-preview").textContent();
   expect(json).toBeTruthy();
+  expect(JSON.parse(json!).challenge.content).toBe(original);
   await page.goto("/share");
   await page
     .locator("input[type=file]")
@@ -210,5 +209,20 @@ test("case guess, JSON export and import never run a model", async ({
   await expect(
     page.getByText("Community submitted · unverified", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByLabel("What should the models evaluate?")).toHaveValue(original);
+  const withHistory = JSON.parse(json!);
+  withHistory.runs = [{
+    schemaVersion: 1, id: "synthetic-imported-run", challengeId: withHistory.challenge.id,
+    challengeHash: "synthetic-unverified-hash", provider: "openrouter", model: "synthetic/imported-model",
+    resolvedModel: null, promptVersion: "synthetic-v1", createdAt: "2026-09-19T00:00:00Z",
+    choice: withHistory.challenge.options[0].id, usage: { inputTokens: null, outputTokens: null },
+    cost: { usd: null, basis: "unknown" }, latencyMs: 100, status: "success",
+  }];
+  await page.goto("/share");
+  await page.locator("input[type=file]").setInputFiles({ name: "history.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(withHistory)) });
+  await expect(page.getByRole("heading", { name: "Imported observations · unverified" })).toBeVisible();
+  await expect(page.getByText("synthetic/imported-model", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("What should the models evaluate?")).toHaveValue(original);
+  await expect(page.getByRole("heading", { name: "Your judgment first" })).toHaveCount(0);
   expect(calls).toBe(0);
 });

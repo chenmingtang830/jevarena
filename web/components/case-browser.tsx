@@ -3,7 +3,7 @@ import { Input } from "./ui/input";
 import { NativeSelect } from "./ui/native-select";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import { templates } from "@/lib/cases";
 export function CaseBrowser() {
   const [q, setQ] = useState("");
@@ -54,11 +54,11 @@ export function CaseBrowser() {
             <h2 style={{ marginTop: 12 }}>
               <Link href={`/cases/${t.id}`}>
                 {t.title}{" "}
-                <ArrowUpRight size={17} style={{ display: "inline" }} />
+                <ArrowRight size={17} style={{ display: "inline" }} />
               </Link>
             </h2>
             <p>{t.kind === "judgment" ? t.question : t.prompt}</p>
-            <Link href={`/cases/${t.id}`}>Try this case</Link>
+            <Link href={`/cases/${t.id}`}>Open editable template</Link>
           </article>
         ))}
       </div>
