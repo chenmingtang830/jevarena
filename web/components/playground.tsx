@@ -470,7 +470,10 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   setAcceptedPolicyVersion(null); setFocusTarget("preflight-heading");
                 }} />
                 <p className="hint">Set a small credit limit on OpenRouter. The authorized key stays in this tab.</p>
-                <p className="hint"><Link href="/try">Try without connecting</Link>{" · "}<Link href="/run-locally">Run locally</Link></p>
+                <div className="connection-alternatives" aria-label="Other ways to try JevArena">
+                  <Button asChild variant="secondary"><Link href="/try">Try without connecting <ArrowRight size={16} aria-hidden="true" /></Link></Button>
+                  <Button asChild variant="secondary"><Link href="/run-locally">Run locally <ArrowRight size={16} aria-hidden="true" /></Link></Button>
+                </div>
               </>}
               {keys[jp].trim() && <details open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
               <summary><SlidersHorizontal size={14} /> Model settings</summary>
