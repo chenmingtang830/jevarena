@@ -615,6 +615,11 @@ label {
   margin-top: 4px;
 }
 [hidden] { display: none !important; }
+.connection-alternatives { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+.connection-alternatives .button { min-height: 44px; text-decoration: none; }
+@media (max-width: 560px) {
+  .connection-alternatives .button { width: 100%; justify-content: space-between; }
+}
 .settings-dialog .check-label input[type="checkbox"] {
   width: 16px;
   height: 16px;
