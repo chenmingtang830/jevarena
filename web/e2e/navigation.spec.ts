@@ -4,7 +4,8 @@ test("navigation remains named and available on mobile and desktop", async ({ pa
   await page.goto("/cases");
   const nav = page.getByRole("navigation", { name: "Main navigation" });
   await expect(nav.getByRole("link", { name: "Examples", exact: true })).toHaveAttribute("aria-current", "page");
-  await expect(nav.getByRole("link", { name: "Compare", exact: true })).toHaveAttribute("href", "/");
+  await expect(nav.getByRole("link", { name: "Try it", exact: true })).toHaveAttribute("href", "/");
+  await expect(nav.getByRole("link", { name: "Test your own", exact: true })).toHaveAttribute("href", "/play");
   await expect(nav.getByRole("link", { name: /Results|Methodology/ })).toHaveCount(0);
   const github = nav.getByRole("link", { name: "JevArena on GitHub (opens in a new tab)", exact: true });
   await expect(github).toBeVisible();

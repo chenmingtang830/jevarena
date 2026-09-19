@@ -29,6 +29,7 @@ import { NativeSelect } from "./ui/native-select";
 import { Suggestion } from "./ai-elements/suggestion";
 import { ShareTools } from "./share-tools";
 import { SaveHistory } from "./save-history";
+import { OpenRouterConnect } from "./openrouter-connect";
 type Provider = "openrouter" | "vercel" | "typesafe";
 type Tier = "low-cost" | "strong" | "reasoning";
 type Match = { challenge: Challenge; runs: RunRecord[]; vote?: Vote };
@@ -137,8 +138,9 @@ export function Playground({ initial }: { initial?: Challenge }) {
     }
   }, [busy, match?.runs[0]?.id]);
   const available = MODELS.filter(
-    (m) => m.kind === "chat" && keys[m.provider as Provider].trim(),
+    (m) => m.kind === "chat" && m.provider === jp && keys[jp].trim(),
   );
+  const providerLabel = PROVIDERS.find((p) => p.id === jp)!.label;
   const pool = available.filter((m) => m.tier === tier);
   const selected =
     available.find((m) => `${m.provider}:${m.id}` === opponent) ?? available[0];
@@ -206,10 +208,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
     }
     settingsReturnFocus.current = document.activeElement as HTMLElement | null;
     setSettings(true);
-    if (!keys.openrouter.trim()) {
-      setConnections(true);
-      setFocusTarget("key-openrouter");
-    } else setFocusTarget("preflight-heading");
+    setFocusTarget("preflight-heading");
   }
   function fieldProps(id: string) {
     return { "aria-invalid": Boolean(fieldErrors[id]), "aria-describedby": fieldErrors[id] ? `${id}-error` : undefined };
@@ -263,9 +262,9 @@ export function Playground({ initial }: { initial?: Challenge }) {
     }
     if (!keys[jp].trim() || !jev) {
       setConnections(true);
-      setFieldErrors({ "key-openrouter": "Paste your OpenRouter API key to run both judges." });
-      setFocusTarget("key-openrouter");
-      setError("Add an OpenRouter key below, then start again. Calls use your provider balance.");
+      setFieldErrors({ [`key-${jp}`]: `Paste your ${providerLabel} API key to run both judges.` });
+      setFocusTarget(`key-${jp}`);
+      setError(`Add a ${providerLabel} key in the dialog, then start again. Calls use your provider balance.`);
       return;
     }
     if (!candidates.length) {
@@ -441,17 +440,26 @@ export function Playground({ initial }: { initial?: Challenge }) {
                   <summary>Privacy: your text goes to model providers</summary>
                   <p>When you run, your task goes to the selected model providers. Don’t include secrets or sensitive personal information.</p>
                   <p>Providers receive your prompt, context and any candidate answers needed to judge the task. Their own data and retention policies apply.</p>
-                  <p>Your API keys stay in this tab’s memory and disappear on refresh. OpenRouter requests go directly from your browser to OpenRouter.</p>
+                  <p>Your API keys stay in this tab’s memory and disappear on refresh. OpenRouter requests go directly to OpenRouter. When enabled, Vercel AI Gateway requests pass through our fixed server relay; the key is used in request memory, not saved.</p>
                   <p>JevArena does not upload or publish your task automatically. Saving results to your private account history is optional and requires a separate explicit action. When enabled, private research submission requires separate consent after you review the task and results. Exporting, sharing or permitting publication is a separate action you choose.</p>
                 </details>
               </section>}
               <dialog ref={settingsDialog} className="model-settings settings-dialog" id="model-settings" aria-labelledby="preflight-heading"
                 onCancel={(event) => { event.preventDefault(); setSettings(false); }}
-                onClose={() => setSettings(false)}>
+                onClose={(event) => { if (!event.currentTarget.open) setSettings(false); }}>
               <Button variant="ghost" className="dialog-close" aria-label="Close model setup" onClick={() => setSettings(false)}><X size={18} /></Button>
-              <h2 id="preflight-heading" tabIndex={-1}>{keys.openrouter.trim() ? "Ready to compare" : "Connect your OpenRouter key"}</h2>
-              <p className="hint preflight-intro">{keys.openrouter.trim() ? "Review the cost below, then run both models." : "One key runs both models. It stays in this tab and is cleared on refresh."}</p>
-              {keys.openrouter.trim() && <details open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
+              <h2 id="preflight-heading" tabIndex={-1}>{keys[jp].trim() ? "Ready to compare" : "Connect OpenRouter"}</h2>
+              <p className="hint preflight-intro">{keys[jp].trim() ? "Review the cost, then run both models." : "Use your own credits to run two models."}</p>
+              {!keys[jp].trim() && <>
+                <OpenRouterConnect disabled={!settings} onConnected={(key: string) => {
+                  setKeys((current) => ({ ...current, openrouter: key }));
+                  setJp("openrouter"); setConnections(false); setError("");
+                  setAcceptedPolicyVersion(null); setFocusTarget("preflight-heading");
+                }} />
+                <p className="hint">Authorize on OpenRouter. JevArena receives a key for this tab; refreshing clears it.</p>
+                <p className="hint"><Link href="/">Try without connecting</Link>{" · "}<Link href="/run-locally">Run locally</Link></p>
+              </>}
+              {keys[jp].trim() && <details open={modelSettings} onToggle={(event) => setModelSettings(event.currentTarget.open)}>
               <summary><SlidersHorizontal size={14} /> Model settings</summary>
               <div className="field"><label htmlFor="language">Task language</label><Input id="language" {...fieldProps("language")} value={c.language} maxLength={40} onChange={(e) => edit({ ...c, language: e.target.value })} />{fieldError("language")}</div>
               <div className="tabs" aria-label="Match mode">
@@ -539,6 +547,10 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 </div>
               </div>
               </details>}
+              {keys[jp].trim() && <Button variant="ghost" onClick={() => {
+                setKeys((current) => ({ ...current, [jp]: "" }));
+                setAcceptedPolicyVersion(null); setConnections(false);
+              }}>Disconnect this tab</Button>}
               <details
                 className="connection-box"
                 open={connections}
@@ -546,20 +558,27 @@ export function Playground({ initial }: { initial?: Challenge }) {
               >
                 <summary>
                   <KeyRound size={15} />
-                  {Object.values(keys).some(Boolean)
-                    ? "Manage connected keys"
-                    : "Connect your API keys"}
-                  <span className="small">Memory only</span>
+                  {keys[jp].trim() ? "Manage connection" : "Use an API key instead"}
                 </summary>
+                <div className="field">
+                  <label htmlFor="jev-provider">API provider</label>
+                  <NativeSelect id="jev-provider" value={jp} onChange={(e) => {
+                    setJp(e.target.value as Provider); setOpponent(""); setTier("low-cost");
+                    setFieldErrors({}); setError(""); setAcceptedPolicyVersion(null);
+                  }}>
+                    {PROVIDERS.filter((p) => p.id !== "typesafe").map((p) => <option key={p.id} value={p.id} disabled={p.id === "vercel" && process.env.NEXT_PUBLIC_VERCEL_BYOK_ENABLED !== "true"}>{p.label}{p.id === "vercel" && process.env.NEXT_PUBLIC_VERCEL_BYOK_ENABLED !== "true" ? " · setup pending" : ""}</option>)}
+                  </NativeSelect>
+                  {process.env.NEXT_PUBLIC_VERCEL_BYOK_ENABLED !== "true" && <p className="hint">Vercel’s Jev endpoint blocks a required browser header. For now, <Link href="/run-locally">use Vercel locally</Link>.</p>}
+                </div>
                 <div className="connection-grid">
-                  {PROVIDERS.filter((p) => p.transport === "direct").map((p) => (
+                  {PROVIDERS.filter((p) => p.id === jp).map((p) => (
                     <div key={p.id}>
                       <label htmlFor={`key-${p.id}`}>{p.label}</label>
                       <Input
                         id={`key-${p.id}`}
                         {...fieldProps(`key-${p.id}`)}
                         type="password"
-                        disabled={p.transport === "relay"}
+                        disabled={p.id === "vercel" && process.env.NEXT_PUBLIC_VERCEL_BYOK_ENABLED !== "true"}
                         autoComplete="off"
                         spellCheck={false}
                         placeholder="Paste your API key"
@@ -572,37 +591,15 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       />
                       {fieldError(`key-${p.id}`)}
                       <p className="hint">
-                        {p.transport === "direct"
-                          ? <>Get a key from <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">OpenRouter settings</a>, then paste it here. Sent directly to OpenRouter.</>
-                          : "Not available yet. Use OpenRouter for now."}
+                        {p.id === "openrouter"
+                          ? <>Get a key from <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">OpenRouter settings</a>. Sent directly to openrouter.ai.</>
+                          : <>Use an <a href="https://vercel.com/docs/ai-gateway/authentication-and-byok/api-keys" target="_blank" rel="noreferrer">AI Gateway API key</a>, not a Vercel account token. Sent through JevArena’s fixed relay to ai-gateway.vercel.sh. Our server handles your key in request memory without saving it.</>}
                       </p>
                     </div>
                   ))}
-                  <div hidden>
-                    <label htmlFor="jev-provider">Use Jev through</label>
-                    <NativeSelect
-                      id="jev-provider"
-                      value={jp}
-                      onChange={(e) => setJp(e.target.value as Provider)}
-                    >
-                      {PROVIDERS.map((p) => (
-                        <option
-                          key={p.id}
-                          value={p.id}
-                          disabled={p.transport === "relay"}
-                        >
-                          {p.label}
-                          {p.transport === "relay" ? " · coming soon" : ""}
-                        </option>
-                      ))}
-                    </NativeSelect>
-                  </div>
                 </div>
               </details>
-              <div className="run-foot">
-                <p className="hint" style={{ marginBottom: 12 }}>
-                  Calls use your OpenRouter balance.
-                </p>
+              {(keys[jp].trim() || connections) && <div className="run-foot">
                 <div className="price-note">
                   <ShieldCheck size={14} />
                   <span>
@@ -610,17 +607,15 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     {maximum === null
                       ? "Connect keys to see the estimated cost range"
                       : `Estimated ${money(minimum)}–${money(maximum)}`}
-                    <br />
-                    Estimate uses provider list prices and bounded output. Not a
-                    billing cap; actual token accounting can vary.
-                    <br />
-                    Public standard rates checked {jev.verifiedAt}.{" "}
-                    <a href="https://openrouter.ai/api/v1/models" target="_blank" rel="noreferrer" style={{textDecoration:'underline'}}>Price source</a>
-                    {mode === 'compare' && selected && <> · <a href={selected.priceSource} target="_blank" rel="noreferrer" style={{textDecoration:'underline'}}>Selected model rates</a></>}
+                    {" · "}Paid from your {providerLabel} balance.
                   </span>
                 </div>
+                <details><summary>Cost and key details</summary>
+                  <p className="hint">Estimate, not a billing cap. Rates checked {jev.verifiedAt}. <a href={jev.priceSource} target="_blank" rel="noreferrer">Price source</a>. Use a dedicated, limited-budget key and revoke it when finished.</p>
+                  <p className="hint">The page can read your key while you use it. OpenRouter calls go directly to OpenRouter; keys are held in tab memory, not saved. Vercel, when enabled, requires our server relay. <Link href="/privacy" target="_blank">Privacy details</Link>.</p>
+                </details>
                 <div data-policy-version={POLICY_VERSION}>
-                  <p className="hint">Running sends your question and answers to the selected model providers. Do not include secrets or sensitive personal information. Nothing is published or contributed to research automatically.</p>
+                  <p className="hint">Your task goes to the model providers. No automatic publication. Don’t include sensitive information.</p>
                   <label className="check-label" htmlFor="run-consent">
                     <Input id="run-consent" type="checkbox" {...fieldProps("run-consent")}
                       checked={acceptedPolicyVersion === POLICY_VERSION}
@@ -630,10 +625,10 @@ export function Playground({ initial }: { initial?: Challenge }) {
                       }} />
                     I agree to Terms and acknowledge Privacy
                   </label>
-                  <p className="hint"><Link href="/terms" target="_blank" rel="noreferrer">Read Terms</Link>{" · "}<Link href="/privacy" target="_blank" rel="noreferrer">Read Privacy</Link>. Research and publication require separate opt-ins.</p>
+                  <p className="hint"><Link href="/terms" target="_blank" rel="noreferrer">Read Terms</Link>{" · "}<Link href="/privacy" target="_blank" rel="noreferrer">Read Privacy</Link></p>
                   {fieldError("run-consent")}
                 </div>
-                <Button className="full-width" disabled={!keys.openrouter.trim() || acceptedPolicyVersion !== POLICY_VERSION} onClick={run}>
+                <Button className="full-width" disabled={!keys[jp].trim() || acceptedPolicyVersion !== POLICY_VERSION} onClick={run}>
                   <span>Start judging</span>
                   <ArrowRight size={16} />
                 </Button>
@@ -642,7 +637,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                     {error}
                   </p>
                 )}
-              </div>
+              </div>}
               </dialog>
             </div>
           </fieldset>

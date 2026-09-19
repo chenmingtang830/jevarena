@@ -7,7 +7,8 @@ export const REPO = "https://github.com/chenmingtang830/jevarena";
 export function SiteHeader() {
   const pathname = usePathname();
   const pages = [
-    ["/", "Compare"],
+    ["/", "Try it"],
+    ["/play", "Test your own"],
     ["/cases", "Examples"],
   ];
   return (
@@ -42,6 +43,7 @@ export function SiteFooter() {
         <Link href="/methodology">How it works</Link>
         <Link href="/results">Research results</Link>
         <Link href="/contribute">Contribute</Link>
+        <Link href="/run-locally">Run locally</Link>
         {process.env.NEXT_PUBLIC_HISTORY_ENABLED==="true" && <Link href="/history">My history</Link>}
         <Link href="/terms">Terms</Link>
         <Link href="/privacy">Privacy</Link>

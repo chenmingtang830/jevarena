@@ -56,6 +56,30 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 describe("fixed provider contracts", () => {
+  it.each(["typesafe-ai/jev", "deepseek/deepseek-v4.1-flash"])("routes Vercel %s through the fixed relay and keeps credentials out of the record", async (model) => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ ...base, provider: "vercel", model, choice: "yes", status: "success", settings: { transport: "relay" } }));
+    vi.stubGlobal("fetch", fetch);
+    const run = await executeJudge({ ...args, provider: "vercel", model });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [target, request] = fetch.mock.calls[0];
+    expect(target).toBe("/api/judge");
+    expect(request).toMatchObject({ method: "POST", cache: "no-store", redirect: "error" });
+    expect(new Headers(request.headers).get("Authorization")).toBeNull();
+    expect(JSON.parse(request.body)).toMatchObject({ provider: "vercel", model, apiKey: args.apiKey });
+    expect(run.status).toBe("success");
+    expect(run.settings?.transport).toBe("relay");
+    expect(JSON.stringify(run)).not.toContain(args.apiKey);
+  });
+  it("never retries or exposes credentials when the Gateway relay fails", async () => {
+    const fetch = vi.fn().mockRejectedValue(new Error(`network failure ${args.apiKey}`));
+    vi.stubGlobal("fetch", fetch);
+    const run = await executeJudge({ ...args, provider: "vercel", model: "typesafe-ai/jev" });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0][0]).toBe("/api/judge");
+    expect(run.status).toBe("error");
+    expect(run.cost.basis).toBe("unknown");
+    expect(JSON.stringify(run)).not.toContain(args.apiKey);
+  });
   it("does not claim a chat-only output cap for native Jev requests", async () => {
     vi.stubGlobal(
       "fetch",

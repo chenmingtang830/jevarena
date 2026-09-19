@@ -38,7 +38,7 @@ test("pinned typography loads real font faces across the composer and reading ro
     fontEvidence.push({ route: path, ...evidence, actualHeadingFonts });
     await page.screenshot({ path: `../.impeccable/review/${name}-${testInfo.project.name}.png`, fullPage: true });
   }
-  await page.goto("/");
+  await page.goto("/play");
   await page.locator(".option-index").first().waitFor();
   await page.evaluate(() => document.fonts.ready);
   const monoFamily = await page.locator(".option-index").first().evaluate((node) => getComputedStyle(node).fontFamily);

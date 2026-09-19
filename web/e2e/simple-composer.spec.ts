@@ -1,3 +1,4 @@
+import { openManualKey } from "./manual-key";
 import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 
@@ -11,7 +12,7 @@ test("question and editable answers are the only initial task controls", async (
     }
     return route.continue();
   });
-  await page.goto("/");
+  await page.goto("/play");
   await expect(page.locator("textarea:visible")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Ask a question.", exact: true })).toBeVisible();
   await expect(page.getByLabel("Question and context")).toBeVisible();
@@ -35,7 +36,7 @@ test("comparison reviews cost before identical deterministic judge inputs", asyn
       : { model: "synthetic-version", choices: [{ finish_reason: "stop", message: { content: '{"choice":"option2"}' } }], usage: { prompt_tokens: 20, completion_tokens: 4, cost: 0.00001 } },
     });
   });
-  await page.goto("/");
+  await page.goto("/play");
   const content = "SYNTHETIC TEST ONLY: Is 2 + 2 equal to 4?";
   await page.getByLabel("Question and context").fill(content);
   await page.getByLabel("Option 1", { exact: true }).fill("Correct");
@@ -44,15 +45,16 @@ test("comparison reviews cost before identical deterministic judge inputs", asyn
   const start = page.getByRole("button", { name: "Start judging", exact: true });
   expect(calls).toHaveLength(0);
   await start.click();
-  await expect(start).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "Connect your OpenRouter key" })).toBeVisible();
+  await expect(start).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Connect OpenRouter" })).toBeVisible();
   await expect(page.getByLabel("Estimate threshold (USD)")).not.toBeVisible();
   await expect(page.getByLabel("Opponent tier")).not.toBeVisible();
-  await expect(start).toBeDisabled();
   expect(calls).toHaveLength(0);
+  await openManualKey(page);
+  await expect(start).toHaveCount(1);
+  await expect(start).toBeDisabled();
   const key = page.getByLabel("OpenRouter", { exact: true });
   await expect(key).toBeVisible();
-  await expect(key).toBeFocused();
   await key.fill("test-only-not-a-real-key");
   await expect(page.getByRole("heading", { name: "Ready to compare" })).toBeVisible();
   const settings = page.locator("summary").filter({ hasText: "Model settings" });
@@ -64,7 +66,8 @@ test("comparison reviews cost before identical deterministic judge inputs", asyn
   await expect(consent).not.toBeChecked();
   await consent.check();
   await expect(start).toBeEnabled();
-  await expect(page.getByText(/Not a billing cap/)).toBeVisible();
+  await page.locator("summary").filter({ hasText: "Cost and key details" }).click();
+  await expect(page.getByText(/not a billing cap/i)).toBeVisible();
   await expect(page.locator(".price-note")).toContainText(/2 calls.*Estimated/);
   expect(calls).toHaveLength(0);
   await mkdir("../.impeccable/review", { recursive: true });
@@ -97,7 +100,7 @@ test("all three quick starts fill question and possible answers without calls", 
     }
     return route.continue();
   });
-  await page.goto("/");
+  await page.goto("/play");
   const examples = [
     { label: "Phishing email", question: /Is this email likely to be phishing\?/, context: /enter your password/, answers: ["Yes", "No"] },
     { label: "Math claim", question: /Is this claim correct\?/, context: /20% increase/, answers: ["Yes", "No"] },

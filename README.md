@@ -1,6 +1,6 @@
 # JevArena
 
-An independent, open-source BYOK judgment arena. Every battle includes Jev; compare judgment quality before revealing speed and cost. The Python research harness remains **JevJudge-Bench**.
+An independent, open-source judgment arena. Try recorded examples without an account or API key; connect OpenRouter or run locally to test your own questions. Every live battle includes Jev. The Python research harness remains **JevJudge-Bench**.
 
 [Play JevArena](https://jevarena-lab.vercel.app) · [Community](https://github.com/chenmingtang830/jevarena/discussions)
 
@@ -12,7 +12,9 @@ npm ci
 npm run dev
 ```
 
-Keys exist only in the current tab's memory. OpenRouter calls are browser-direct; other providers require the fixed relay, disabled until deployment security gates are met. No page load makes a model call. The six included cases are original educational templates, not measured model results.
+The homepage shows two existing real canary examples, clearly labeled as recorded diagnostic runs, not a benchmark. `/play` runs your own task. OpenRouter authorization uses a popup and PKCE; the returned key exists only in the original tab's memory. Manual keys remain an advanced option. No page load or connection automatically calls a model. Other case templates remain explicitly unmeasured.
+
+For local Vercel AI Gateway use, start from `web` with `NEXT_PUBLIC_VERCEL_BYOK_ENABLED=true JEVARENA_RELAY_ENABLED=true npm run dev`, then choose Vercel under the manual key disclosure. The loopback server forwards to Gateway without saving the key. Do not expose this relay publicly. Public Vercel support stays disabled pending deployment security review. See `/run-locally` for the full steps.
 
 ```sh
 npm run typecheck

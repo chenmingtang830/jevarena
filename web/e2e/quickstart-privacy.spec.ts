@@ -11,7 +11,7 @@ test("quickstart editing, clear and undo work by keyboard without sending data",
     }
     return route.continue();
   });
-  await page.goto("/");
+  await page.goto("/play");
   const privacy = page.getByRole("region", { name: "Privacy before you run" });
   const text = page.getByLabel("Question and context");
   await expect(privacy).not.toBeVisible();
@@ -56,7 +56,7 @@ test("quickstart editing, clear and undo work by keyboard without sending data",
   await expect(privacy).toContainText(/OpenRouter/);
   await expect(privacy).toContainText(/provider/i);
   await expect(page.locator('input[type="password"]:visible')).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Connect your OpenRouter key" })).not.toBeVisible();
+  await expect(page.getByRole("heading", { name: "Connect OpenRouter" })).not.toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(requests).toEqual([]);
   await page.screenshot({ path: `../.impeccable/review/quickstart-filled-privacy-${testInfo.project.name}.png`, fullPage: true });
@@ -65,7 +65,7 @@ test("quickstart editing, clear and undo work by keyboard without sending data",
 test("privacy is contextual and replacing an edited draft needs confirmation", async ({ page }) => {
   const requests: string[] = [];
   await page.route("https://openrouter.ai/**", (route) => { requests.push(route.request().url()); return route.abort(); });
-  await page.goto("/");
+  await page.goto("/play");
   const privacy = page.getByRole("region", { name: "Privacy before you run" });
   const simple = page.getByLabel("Question and context");
   await simple.fill(" ");
@@ -86,14 +86,14 @@ test("composer keyboard shortcuts open review without executing a comparison", a
   const requests: string[] = [];
   await page.route("https://openrouter.ai/**", (route) => { requests.push(route.request().url()); return route.abort(); });
   for (const shortcut of ["Control+Enter", "Meta+Enter"]) {
-    await page.goto("/");
+    await page.goto("/play");
     const composer = page.getByLabel("Question and context");
     await composer.fill("Synthetic keyboard review only");
     await composer.press(shortcut);
-    await expect(page.getByRole("heading", { name: "Connect your OpenRouter key" })).toBeVisible();
-    await expect(page.locator("#key-openrouter")).toBeFocused();
-    await expect(page.getByRole("button", { name: "Start judging", exact: true })).toBeDisabled();
-    await expect(page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true })).not.toBeChecked();
+    await expect(page.getByRole("heading", { name: "Connect OpenRouter" })).toBeVisible();
+    await expect(page.locator("#preflight-heading")).toBeFocused();
+    await expect(page.getByRole("button", { name: "Start judging", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true })).toHaveCount(0);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).not.toBeVisible();
     await expect(composer).toBeFocused();

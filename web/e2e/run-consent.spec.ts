@@ -1,3 +1,4 @@
+import { openManualKey } from "./manual-key";
 import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 
@@ -12,14 +13,17 @@ test("running requires explicit versioned consent and shortcuts never accept or 
       : { model: "synthetic-version", choices: [{ finish_reason: "stop", message: { content: '{"choice":"option2"}' } }], usage: { prompt_tokens: 12, completion_tokens: 4, cost: 0.00001 } },
     });
   });
-  await page.goto("/");
+  await page.goto("/play");
   const question = page.getByLabel("Question and context");
   const consent = page.getByRole("checkbox", { name: consentName, exact: true });
   const start = page.getByRole("button", { name: "Start judging", exact: true });
   await expect(consent).toHaveCount(0);
   await question.fill("Synthetic consent test: is 2 + 2 equal to 4?");
   await question.press("Control+Enter");
-  await expect(page.getByLabel("OpenRouter", { exact: true })).toBeFocused();
+  await expect(page.locator("#preflight-heading")).toBeFocused();
+  await expect(consent).toHaveCount(0);
+  expect(calls).toEqual([]);
+  await openManualKey(page);
   await expect(consent).not.toBeChecked();
   await expect(start).toBeDisabled();
   await expect(page.locator("[data-policy-version]")).toHaveAttribute("data-policy-version", "2026-09-19");
@@ -28,6 +32,7 @@ test("running requires explicit versioned consent and shortcuts never accept or 
     await expect(link).toHaveAttribute("href", href);
     await expect(link).toHaveAttribute("target", "_blank");
   }
+  await openManualKey(page);
   await page.getByLabel("OpenRouter", { exact: true }).fill("synthetic-key-never-stored");
   await expect(start).toBeDisabled();
   await page.getByLabel("OpenRouter", { exact: true }).press("Enter");
@@ -72,6 +77,8 @@ test("running requires explicit versioned consent and shortcuts never accept or 
   await page.reload();
   await question.fill("Fresh tab-memory consent check");
   await start.click();
+  await expect(consent).toHaveCount(0);
+  await openManualKey(page);
   await expect(consent).not.toBeChecked();
   await expect(page.getByLabel("OpenRouter", { exact: true })).toHaveValue("");
   await expect(start).toBeDisabled();
@@ -108,7 +115,7 @@ test("model setup is a contained modal and close or Escape restores the draft wi
     }
     return route.continue();
   });
-  await page.goto("/");
+  await page.goto("/play");
   const question = page.getByLabel("Question and context");
   const start = page.getByRole("button", { name: "Start judging", exact: true });
   await question.fill("Synthetic modal draft");
@@ -116,7 +123,7 @@ test("model setup is a contained modal and close or Escape restores the draft wi
   await start.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
-  await expect(page.getByLabel("OpenRouter", { exact: true })).toBeFocused();
+  await expect(page.locator("#preflight-heading")).toBeFocused();
   const bounds = await dialog.boundingBox();
   const viewport = page.viewportSize()!;
   expect(bounds!.x).toBeGreaterThanOrEqual(0);
@@ -126,6 +133,7 @@ test("model setup is a contained modal and close or Escape restores the draft wi
   expect(await page.evaluate(() => document.body.style.overflow)).toBe("hidden");
   await mkdir("../.impeccable/review", { recursive: true });
   await page.screenshot({ path: `../.impeccable/review/model-setup-${testInfo.project.name}.png` });
+  await openManualKey(page);
   await page.getByLabel("OpenRouter", { exact: true }).fill("synthetic-modal-key");
   await page.getByRole("checkbox", { name: consentName, exact: true }).check();
   await page.getByRole("button", { name: "Close model setup", exact: true }).click();
