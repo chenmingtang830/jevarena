@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Challenge,
   ChallengeSchema,
@@ -53,9 +54,6 @@ const simpleBlank: Extract<Challenge, { kind: "judgment" }> = {
 };
 const simpleExamples: { label: string; text: string; answers: string[]; source?: string }[] = [
   ...communityTasks.map(({ challenge }) => ({ label: challenge.title, text: challenge.kind === "judgment" ? `${challenge.question}\n\n${challenge.content}` : "", answers: challenge.kind === "judgment" ? challenge.options.map((o) => o.label) : [], source: challenge.source })),
-  { label: "Phishing email", text: "Is this email likely to be phishing?\n\nFrom: security@account-verify.example\nYour account will close in one hour. Open this link and enter your password to keep access.", answers: ["Yes", "No"] },
-  { label: "Math claim", text: "Is this claim correct?\n\nA 20% increase followed by a 20% decrease returns a price to its original value.", answers: ["Yes", "No"] },
-  { label: "Two answers", text: "Which answer better explains why seasons occur on Earth?\n\nAnswer A: Earth's tilted axis changes the angle and duration of sunlight during its orbit.\n\nAnswer B: Earth is much closer to the Sun in summer and farther away in winter.", answers: ["Answer A", "Answer B", "Equally good"] },
 ];
 const money = (n: number | null) =>
   n === null ? "Unknown" : `$${n.toFixed(6)}`;
@@ -63,6 +61,13 @@ function newId() {
   return crypto.randomUUID();
 }
 export function Playground({ initial }: { initial?: Challenge }) {
+  const pathname = usePathname();
+  const battleView = pathname === "/battle";
+  const editorUrl = useRef("/");
+  function editQuestion() {
+    window.history.pushState(null, "", editorUrl.current);
+    setFocusTarget(c.kind === "judgment" ? "content" : "prompt");
+  }
   const [c, setC] = useState<Challenge>(initial ?? simpleBlank);
   const advanced = c.kind === "comparison";
   const [modelSettings, setModelSettings] = useState(false);
@@ -143,9 +148,9 @@ export function Playground({ initial }: { initial?: Challenge }) {
     (m) => m.kind === "chat" && m.provider === jp && keys[jp].trim(),
   );
   const providerLabel = PROVIDERS.find((p) => p.id === jp)!.label;
-  const pool = available.filter((m) => m.tier === tier);
+  const pool = available.filter((m) => m.tier === tier && !m.compareOnly);
   const selected =
-    available.find((m) => `${m.provider}:${m.id}` === opponent) ?? available[0];
+    available.find((m) => `${m.provider}:${m.id}` === opponent) ?? available.find((m) => !m.compareOnly);
   const candidates = mode === "arena" ? pool : selected ? [selected] : [];
   const jev = getJevModel(jp);
   const estimates = jev
@@ -315,6 +320,11 @@ export function Playground({ initial }: { initial?: Challenge }) {
     setSettings(false);
     setBusy(true);
     setMatch(null);
+    if (!battleView) {
+      editorUrl.current = window.location.pathname + window.location.search;
+      window.history.pushState(null, "", "/battle");
+      window.scrollTo(0, 0);
+    }
     try {
       const runs = await Promise.all(
         specs.map((s) =>
@@ -376,12 +386,12 @@ export function Playground({ initial }: { initial?: Challenge }) {
       >
         {announcement}
       </p>
-      <div className="composer-intro">
+      <div className="composer-intro" hidden={battleView}>
         <h1>Ask a question.</h1>
         <p>One question. Two model judgments.</p>
       </div>
       <div className="composer-flow">
-        <section className="editor composer" aria-label="Set up experiment">
+        <section className="editor composer" aria-label="Set up experiment" hidden={battleView}>
           <fieldset
             disabled={busy}
             style={{ border: 0, margin: 0, minWidth: 0, padding: 0 }}
@@ -452,7 +462,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                 onClose={(event) => { if (!event.currentTarget.open) setSettings(false); }}>
               <Button variant="ghost" className="dialog-close" aria-label="Close model setup" onClick={() => setSettings(false)}><X size={18} /></Button>
               <h2 id="preflight-heading" tabIndex={-1}>{keys[jp].trim() ? "Ready to compare" : connections ? "Use your API key" : "Connect OpenRouter"}</h2>
-              <p className="hint preflight-intro">{connections ? "Only kept in this tab. Cleared on refresh." : "Use your own credits to run two models."}</p>
+              <p className="hint preflight-intro">We do not save your API key. It stays in this tab and clears on refresh.</p>
               {!keys[jp].trim() && !connections && <>
                 <OpenRouterConnect disabled={!settings} onConnected={(key: string) => {
                   setKeys((current) => ({ ...current, openrouter: key }));
@@ -529,7 +539,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                           key={`${m.provider}:${m.id}`}
                           value={`${m.provider}:${m.id}`}
                         >
-                          {m.label} · {m.provider}
+                          {m.label} · {m.provider}{m.compareOnly ? " · Experimental (not live-tested)" : ""}
                         </option>
                       ))}
                     </NativeSelect>
@@ -643,8 +653,11 @@ export function Playground({ initial }: { initial?: Challenge }) {
             </div>
           </fieldset>
         </section>
-        <p className="composer-context">Compare anonymously. Vote to reveal. <Link href="/try">Try without a key <ArrowRight size={12} /></Link></p>
-        <div>
+        <p className="composer-context" hidden={battleView}>Compare anonymously. Vote to reveal. <Link href="/try">Try without a key <ArrowRight size={12} /></Link></p>
+        <div hidden={!battleView}>
+          <Button variant="ghost" disabled={busy} onClick={editQuestion}>Edit question</Button>
+          {error && <p className="error" role="alert">{error}</p>}
+          <details><summary>Your question</summary><p style={{ whiteSpace: "pre-wrap" }}>{c.kind === "judgment" ? c.content : c.prompt}</p></details>
           {(busy || match) && <section className="arena-panel" aria-label="Comparison results">
             <div className="section-bar">
               <h2 ref={resultHeading} tabIndex={-1}>
@@ -797,6 +810,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
                         setC(swapped);
                         setFocusTarget("prompt");
                         setMatch(null);
+                        editQuestion();
                       }
                     }}
                   >

@@ -77,12 +77,20 @@ test("synthetic battle hides metadata until vote, never stores keys", async ({
     page.getByText("Which judgment is better?", { exact: true }),
   ).toBeVisible();
   const results = page.getByRole("region", { name: "Comparison results" });
+  await expect(page).toHaveURL("/battle");
+  await expect(page.getByRole("region", { name: "Set up experiment" })).not.toBeVisible();
   await expect(page.getByRole("heading", { name: "The arena", exact: true })).toBeFocused();
   await expect(results).not.toContainText("gemini");
   await expect(results).not.toContainText("probability");
   await page.getByRole("button", { name: "Both good", exact: true }).click();
   await expect(results).toContainText("google/gemini-2.5-flash");
   await expect(results).toContainText("typesafe/jev-1.13");
+  expect(calls).toHaveLength(2);
+  await page.goBack();
+  await expect(page.getByLabel("Question and context")).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL("/battle");
+  await expect(results).toBeVisible();
   expect(calls).toHaveLength(2);
   const stored = await page.evaluate(() =>
     JSON.stringify({
@@ -124,6 +132,7 @@ test("comparison form and incomplete paid attempts do not create a winner", asyn
   await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
   await page.getByRole("button", { name: "Start judging" }).click();
   await expect(page.getByText(/This match is incomplete/)).toBeVisible();
+  await page.getByRole("button", { name: "Edit question", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Both good", exact: true }),
   ).toHaveCount(0);

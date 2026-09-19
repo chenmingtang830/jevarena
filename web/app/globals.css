@@ -614,6 +614,7 @@ label {
   width: auto;
   margin-top: 4px;
 }
+[hidden] { display: none !important; }
 .settings-dialog .check-label input[type="checkbox"] {
   width: 16px;
   height: 16px;

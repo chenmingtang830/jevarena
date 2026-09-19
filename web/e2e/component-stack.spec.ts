@@ -14,7 +14,7 @@ test("registry components preserve the quick-start and preflight boundary", asyn
   await page.goto("/play");
   await expect(page.getByRole("textbox", { name: "Question and context" })).toHaveAttribute("data-slot", "textarea");
   await expect(page.getByRole("textbox", { name: "Option 1", exact: true })).toHaveAttribute("data-slot", "input");
-  const starter = page.getByRole("button", { name: "Phishing email", exact: true });
+  const starter = page.getByRole("button", { name: "A surprising remainder", exact: true });
   await expect(starter).toHaveAttribute("data-slot", "button");
   await starter.click();
   await expect(page.getByRole("region", { name: "Privacy before you run" })).toBeVisible();

@@ -22,6 +22,7 @@ export interface Model {
   priceSource: string;
   verifiedAt: string;
   validation: "contract-only";
+  compareOnly?: boolean;
 }
 const date = "2026-09-19";
 const make = (
@@ -46,6 +47,14 @@ const make = (
   validation: "contract-only",
 });
 export const MODELS: Model[] = [
+  ...([
+    ["openai/gpt-4.1-mini", "GPT-4.1 mini", 0.4, 1.6],
+    ["google/gemini-2.5-flash-lite", "Gemini 2.5 Flash-Lite", 0.1, 0.4],
+    ["deepseek/deepseek-v3.2", "DeepSeek V3.2", 0.269, 0.4],
+  ] as const).map(([id, label, input, output]) => ({
+    ...make("openrouter", id, label, "chat", "low-cost", input, output, "https://openrouter.ai/api/v1/models"),
+    compareOnly: true,
+  })),
   make(
     "vercel",
     "deepseek/deepseek-v4.1-flash",

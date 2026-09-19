@@ -102,9 +102,8 @@ test("all three quick starts fill question and possible answers without calls", 
   });
   await page.goto("/play");
   const examples = [
-    { label: "Phishing email", question: /Is this email likely to be phishing\?/, context: /enter your password/, answers: ["Yes", "No"] },
-    { label: "Math claim", question: /Is this claim correct\?/, context: /20% increase/, answers: ["Yes", "No"] },
-    { label: "Two answers", question: /Which answer better explains/, context: /Answer A:.*\n\nAnswer B:/s, answers: ["Answer A", "Answer B", "Equally good"] },
+    { label: "A surprising remainder", question: /Which option/, context: /6\^3 mod 89/, answers: ["38", "9", "53", "39"] },
+    { label: "A bigger power", question: /Which option/, context: /19\^9 mod 7/, answers: ["1", "0", "4", "6"] },
   ];
   for (const example of examples) {
     await page.getByRole("button", { name: example.label, exact: true }).click();

@@ -75,6 +75,9 @@ test("running requires explicit versioned consent and shortcuts never accept or 
   expect(stored).not.toContain("synthetic-key-never-stored");
   expect(stored).not.toContain(consentName);
   await page.reload();
+  await expect(page.getByRole("heading", { name: "No active battle" })).toBeVisible();
+  expect(calls).toHaveLength(2);
+  await page.getByRole("link", { name: "Start a new question" }).click();
   await question.fill("Fresh tab-memory consent check");
   await start.click();
   await expect(consent).toHaveCount(0);
