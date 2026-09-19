@@ -50,10 +50,17 @@ jobs:
             --file supabase/migrations/202609190002_withdrawal_race.sql \
             --file supabase/migrations/202609190004_pro_capacity.sql \
             --file supabase/tests/intake-integrity.sql
+      - name: Test optional account history in isolated database
+        run: |
+          psql --no-psqlrc --set ON_ERROR_STOP=1 \
+            --file supabase/tests/history-auth-fixture.sql \
+            --file supabase/migrations/202609190005_private_history.sql \
+            --file supabase/tests/history-integrity.sql
   test:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_CONTRIBUTIONS_ENABLED: 'true'
+      NEXT_PUBLIC_HISTORY_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6

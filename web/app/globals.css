@@ -779,6 +779,14 @@ label {
 .advanced-task { padding: 24px; }
 .model-settings { border-top: 1px solid var(--line); padding: 24px; }
 .model-settings h2 { font-size: 21px; }
+.settings-dialog { width: min(620px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); margin: auto; overflow-y: auto; border: 1px solid var(--line); border-radius: 12px; padding: 24px; color: var(--ink); background: var(--paper); }
+.settings-dialog::backdrop { background: rgb(24 26 32 / 45%); }
+.settings-dialog .dialog-close { float: right; min-width: 44px; min-height: 44px; }
+.history-save { padding: 16px 0; max-width: 70ch; }
+.history-list { list-style: none; padding: 0; }
+.history-list li { padding: 20px 0; border-bottom: 1px solid var(--line); }
+.policy-page > h2 { margin-top: 32px; margin-bottom: 12px; }
+.policy-page > p { margin-bottom: 16px; }
 .preflight-intro { margin-bottom: 20px; }
 .composer .example-confirm { margin: 12px 20px; }
 .composer .editor-body > .hint { margin: 12px 24px; }

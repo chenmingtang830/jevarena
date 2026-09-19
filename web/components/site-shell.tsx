@@ -42,6 +42,9 @@ export function SiteFooter() {
         <Link href="/methodology">How it works</Link>
         <Link href="/results">Research results</Link>
         <Link href="/contribute">Contribute</Link>
+        {process.env.NEXT_PUBLIC_HISTORY_ENABLED==="true" && <Link href="/history">My history</Link>}
+        <Link href="/terms">Terms</Link>
+        <Link href="/privacy">Privacy</Link>
         <a href={`${REPO}/discussions`}>Community</a>
         <span>Independent, community-built.</span>
       </div>

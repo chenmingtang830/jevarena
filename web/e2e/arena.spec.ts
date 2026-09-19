@@ -70,6 +70,7 @@ test("synthetic battle hides metadata until vote, never stores keys", async ({
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
+  await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
   await page.getByRole("button", { name: "Start judging" }).click();
   await expect(
     page.getByText("Which judgment is better?", { exact: true }),
@@ -119,6 +120,7 @@ test("comparison form and incomplete paid attempts do not create a winner", asyn
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
+  await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
   await page.getByRole("button", { name: "Start judging" }).click();
   await expect(page.getByText(/This match is incomplete/)).toBeVisible();
   await expect(
@@ -152,6 +154,7 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
   await page
     .getByLabel("OpenRouter", { exact: true })
     .fill("test-only-not-a-real-key");
+  await page.getByRole("checkbox", { name: "I agree to Terms and acknowledge Privacy", exact: true }).check();
   await page.locator("summary").filter({ hasText: "Model settings" }).click();
   await page.getByRole("button", { name: "Compare · pick a model" }).click();
   await page
@@ -161,6 +164,8 @@ test("explicit Compare, cancellation and retry retain attempts", async ({
   await page.getByRole("button", { name: "Start judging" }).click();
   await page.getByRole("button", { name: "Cancel requests" }).click();
   await expect(page.getByText(/This match is incomplete/)).toBeVisible();
+  await page.getByRole("button", { name: "Start judging" }).click();
+  await expect(page.getByRole("dialog", { name: "Ready to compare" })).toBeVisible();
   await page.getByRole("button", { name: "Start judging" }).click();
   await expect(
     page.locator("summary").filter({ hasText: "2 attempts in this session" }),
