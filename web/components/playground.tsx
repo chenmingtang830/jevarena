@@ -157,9 +157,7 @@ export function Playground({ initial }: { initial?: Challenge }) {
       );
       resultHeading.current?.focus({ preventScroll: true });
       (document.querySelector(".battle-question") ?? resultHeading.current)?.scrollIntoView({
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "instant"
-          : "smooth",
+        behavior: "instant",
         block: "start",
       });
     }

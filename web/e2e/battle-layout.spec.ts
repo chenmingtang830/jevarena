@@ -33,7 +33,7 @@ test("battle keeps the question visible and contribution control aligned and key
   await checkbox.focus();
   await checkbox.press("Space");
   await expect(checkbox).not.toBeChecked();
-  await expect(page.getByText("Private mode: no community submission. Your answer stays in this tab.")).toBeVisible();
+  await expect(page.locator(".public-contribution-choice:visible").getByText("Private mode: no community submission. Your answer stays in this tab.")).toBeVisible();
   await page.getByRole("button", { name: "Both good", exact: true }).click();
   expect(submissions).toBe(0);
   const results = page.getByRole("region", { name: "Comparison results" });
