@@ -1,37 +1,64 @@
-# JevArena public preview
+# JevArena launch notes
 
-An independent, open-source playground to find where Jev's judgments hold up—and where they fail.
+## Links
 
-## Try it
+- Product: https://jevarena-lab.vercel.app/
+- Examples: https://jevarena-lab.vercel.app/try
+- Community: https://jevarena-lab.vercel.app/community
+- Submit a question: https://jevarena-lab.vercel.app/community/submit
+- Run locally: https://jevarena-lab.vercel.app/run-locally
+- Source: https://github.com/chenmingtang830/jevarena
 
-- [Ask your own question](https://jevarena-lab.vercel.app/): enter context and possible answers, connect OpenRouter, review the estimated cost, then compare Jev with another judge.
-- [Try without a key](https://jevarena-lab.vercel.app/try): guess on recorded examples and reveal their source-reported results. This does not run a model.
-- [Community examples](https://jevarena-lab.vercel.app/cases): five actual test inputs from Pooya Parsa's public Jev experiments, with original post, account and pinned data attribution.
-- [Run locally](https://jevarena-lab.vercel.app/run-locally): inspect the code and run on your machine instead of entering a key on the hosted site.
+## X thread draft — not posted
 
-Votes happen before model identities, latency and cost are revealed. Keys are held in tab memory and cleared on refresh, not saved to a server key vault. Providers still receive submitted tasks. Private research submission is optional and separate from public sharing.
+**1/5**
 
-## Help improve it
-
-- [Contribute a reproducible case](https://github.com/chenmingtang830/jevarena/issues/new?template=case.yml). Include the original task, options, source, model/version, run settings and evidence for the answer. Redact credentials and private data.
-- [Report a website bug](https://github.com/chenmingtang830/jevarena/issues/new?template=bug.yml).
-- [Discuss challenges, failures and learnings](https://github.com/chenmingtang830/jevarena/discussions).
-- Submit focused PRs with tests. All contributions require maintainer review; a submitted result does not automatically become a verified benchmark result.
-
-## Preview boundaries
-
-OpenRouter is the public live path. Vercel AI Gateway is local opt-in. Login is not enabled. Some selectable opponents are experimental and not live-tested. Community source observations are not our own reruns. Small canaries verify bounded workflows, not model superiority. There is no global ranking or unlimited traffic guarantee.
-
-Code is Apache-2.0; original case contributions use CC BY 4.0; third-party content retains its original license. JevArena is not affiliated with Arena or the model providers. [Privacy](https://jevarena-lab.vercel.app/privacy) · [Security reporting](https://github.com/chenmingtang830/jevarena/security/advisories/new).
-
-## X launch draft — not yet posted
-
-> built JevArena to find where Jev gets judgments wrong.
+> built JevArena to find the questions where Jev holds up—and where it doesn’t.
 >
-> try real community questions without a key, or bring OpenRouter to compare judges. open source, public preview.
+> ask a question, put Jev against another model, vote before the names are revealed, then compare the judgment, speed, and cost.
 >
-> bring your hardest cases + PRs:
-> https://jevarena-lab.vercel.app
+> https://jevarena-lab.vercel.app/
+
+**2/5**
+
+> the flow is simple:
+>
+> 1. ask a question
+> 2. add the possible answers
+> 3. connect OpenRouter
+> 4. pick any model to face Jev
+>
+> your API key stays in the tab and clears on refresh.
+>
+> https://jevarena-lab.vercel.app/
+
+**3/5**
+
+> no key yet? try the recorded examples first.
+>
+> make your own choice, reveal what Jev picked, then rerun the same question with your own models if you want.
+>
+> https://jevarena-lab.vercel.app/try
+
+**4/5**
+
+> the part i care about most is the community dataset.
+>
+> submit a hard question, let Jev screen it for publication, then anyone can copy the prompt and test different models.
+>
+> https://jevarena-lab.vercel.app/community
+> https://jevarena-lab.vercel.app/community/submit
+
+**5/5**
+
+> JevArena is open source. bring hard cases, inspect the methodology, or send a PR.
+>
+> the goal isn’t another one-number leaderboard. it’s a useful map of where Jev still fails.
+>
 > https://github.com/chenmingtang830/jevarena
 
-No claims of model superiority, zero infrastructure logging, independently reproduced community results, or guaranteed costs should be added without new evidence.
+## Claim boundaries
+
+Do not claim model superiority, independent reproduction, zero infrastructure
+logging, or guaranteed cost. A community vote is preference, not correctness;
+AI screening is a publication safety check, not fact-checking.

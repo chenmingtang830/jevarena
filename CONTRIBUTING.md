@@ -1,17 +1,38 @@
 # Contributing to JevArena
 
-Start with a [case report](https://github.com/chenmingtang830/jevarena/issues/new?template=case.yml), [website bug](https://github.com/chenmingtang830/jevarena/issues/new?template=bug.yml), or a small PR. See our [community conduct](CODE_OF_CONDUCT.md).
+Choose the smallest useful path:
 
-All code and accepted case contributions pass through a PR, successful CI, and owner review before merge. External fork workflows require maintainer approval. See [the review gate](docs/REVIEW_GATE.md) for exact enforcement and the same-account author limitation.
+- [Submit a question](https://jevarena-lab.vercel.app/community/submit) for AI screening and possible publication.
+- [Report a case](https://github.com/chenmingtang830/jevarena/issues/new?template=case.yml) with its source, model/version, settings, and answer evidence.
+- [Report a bug](https://github.com/chenmingtang830/jevarena/issues/new?template=bug.yml).
+- Open a focused pull request with tests.
 
-Use GitHub Discussions for Challenges, Failures, and Learnings. Submit reproducible cases through Issues or a PR. Never include API keys, private conversations, personal data, or content you lack permission to publish.
+Never include API keys, private conversations, personal data, or material you
+cannot publish. A community vote is preference, not correctness. Keep
+`community-submitted`, `reproduced`, `reviewed`, and `disputed` evidence
+states distinct.
 
-Export a case in the playground, preview every field, then attach the JSON to an issue. Large cases belong in attachments, not URL query strings. Validate cases with `uv run jevjudge community validate case.json`: this checks the shared schema plus task fingerprints, option IDs, run associations, and vote references. The JSON Schema alone cannot express all cross-record checks. The current template registry is `web/lib/cases.ts`. Include provenance, model aliases and actual versions (unknown is valid), prompt version, settings, network conditions, and evidence for the expected answer.
+For case JSON, preview every field and run:
 
-Optional private research submission is separate from public GitHub contribution. Its unchecked consent form sends only the previewed case, not your model API key, and supplies a deletion receipt. Research consent does not authorize publication. Deployment gates, retention, and withdrawal are described in [the collection contract](docs/DATA_COLLECTION.md). To inspect a downloaded case offline, use `uv run jevjudge community import case.json --out data/community/new-receipt`; import does not call models or promote the case into a benchmark.
+```sh
+uv run jevjudge community validate case.json
+```
 
-Code contributions are under Apache-2.0. By contributing original case text, labels, or notes you agree to license those original contributions under CC BY 4.0. Third-party datasets retain their original licenses: link their pinned sources instead of copying them into this repository without a license review. Do not relabel third-party material CC BY.
+For code changes, run:
 
-Community-submitted means untrusted browser data. Reproduced, reviewed, and disputed are separate evidence states assigned by maintainers after inspection. A preference vote is never a correctness label. A PR must explain any evidence-status change; self-reported browser status is not trusted.
+```sh
+uv run python -m unittest discover -s tests
+cd web
+npm ci
+npm test
+npm run build
+npm run typecheck
+CI=true npm run test:e2e
+```
 
-Run `uv run python -m unittest discover -s tests` and, from web, `npm ci && npm test && npm run build && npm run typecheck`. For the full browser suite, build with `NEXT_PUBLIC_CONTRIBUTIONS_ENABLED=true NEXT_PUBLIC_HISTORY_ENABLED=true npm run build`, then run `CI=true npm run test:e2e`. Browser tests use synthetic responses, never paid APIs. These test flags do not enable production accounts or authorize a public relay.
+Browser tests use synthetic responses and never call paid models. All changes
+require passing CI and maintainer review; see [the review gate](docs/REVIEW_GATE.md).
+
+Code is Apache-2.0. Original case text, labels, and notes are contributed under
+CC BY 4.0. Third-party data keeps its own license and attribution. See the
+[data contract](docs/DATA_COLLECTION.md) and [community conduct](CODE_OF_CONDUCT.md).
