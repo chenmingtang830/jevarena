@@ -1,5 +1,17 @@
 # JevArena
 
+## Supabase development access
+
+This repository includes a project-scoped, read-only Supabase MCP connection in
+`.mcp.json`. It is limited to the JevArena project and the Database and Docs
+feature groups. Authenticate through Supabase OAuth when your coding client
+prompts; no access token or service-role key belongs in this repository.
+
+Production schema changes remain migration-led. Review SQL under
+`supabase/migrations/`, run the database security advisors, and apply a reviewed
+migration separately. The MCP connection intentionally cannot write to the
+production database.
+
 An independent, open-source judgment arena. Try recorded examples without an account or API key; connect OpenRouter or run locally to test your own questions. Every live battle includes Jev. The Python research harness remains **JevJudge-Bench**.
 
 [Play JevArena](https://jevarena-lab.vercel.app) · [Try without a key](https://jevarena-lab.vercel.app/try) · [Contribute a case](https://github.com/chenmingtang830/jevarena/issues/new?template=case.yml) · [Community](https://github.com/chenmingtang830/jevarena/discussions)
