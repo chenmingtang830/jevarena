@@ -17,6 +17,24 @@ export const metadata: Metadata = {
     title: "JevArena — Put judgment to the test",
     description:
       "Explore where Jev excels, and where it needs work. Independent, open-source, BYOK.",
+    type: "website",
+    url: "/",
+    siteName: "JevArena",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "JevArena — Put judgment to the test",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "JevArena — Put judgment to the test",
+    description:
+      "Ask a question, compare Jev with another judge, then reveal quality, speed, and cost.",
+    images: ["/og-image.png"],
   },
 };
 
