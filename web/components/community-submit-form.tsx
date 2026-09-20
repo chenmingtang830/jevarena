@@ -2,9 +2,11 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { ChallengeSchema, type CaseContribution } from "@/lib/contracts";
+import { assessCommunityQuestion } from "@/lib/community-question-quality";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { ContributionSubmit } from "./contribution-submit";
+import { CommunityQuestionQuality } from "./community-question-quality";
 import { AUTO_REVIEW, PUBLIC_COLLECTION } from "./public-contribution-choice";
 import styles from "./community-submit-form.module.css";
 
@@ -16,10 +18,11 @@ export function CommunitySubmitForm() {
   const [publicMode, setPublicMode] = useState(true);
   const [error, setError] = useState("");
   const [submission, setSubmission] = useState<CaseContribution | null>(null);
+  const quality = assessCommunityQuestion(question, answers);
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!ENABLED || !publicMode || submission) return;
+    if (!ENABLED || !publicMode || submission || quality.status === "blocked") return;
     setError("");
     const options = answers.split(/\r?\n/).map((label) => label.trim()).filter(Boolean);
     if (!question.trim()) { setError("Enter a question."); return; }
@@ -50,10 +53,11 @@ export function CommunitySubmitForm() {
         </label>
         <p className="hint">{publicMode ? "Jev screens your question through Vercel. It publishes if it passes. No API key needed." : "Private mode: nothing will be submitted. Your question stays in this tab."}</p>
         {publicMode && <p className="hint">By submitting, you confirm this is yours to share under CC BY 4.0 and contains no sensitive information. <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link></p>}
-        {!submission && <Button type="submit" disabled={!publicMode || !ENABLED}>Submit question</Button>}
+        {!submission && <Button type="submit" disabled={!publicMode || !ENABLED || quality.status === "blocked"}>Submit question</Button>}
       </fieldset>
       {error && <p className="error" role="alert">{error}</p>}
     </form>
+    <CommunityQuestionQuality quality={quality} />
     {submission && <ContributionSubmit value={submission} publicCandidate />}
   </>;
 }

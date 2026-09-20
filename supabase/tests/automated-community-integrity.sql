@@ -1,4 +1,4 @@
--- ISOLATED TEST DATABASE ONLY. Apply 001, 002, 004, 006 and 007 first.
+-- ISOLATED TEST DATABASE ONLY. Apply 001, 002, 004, 006, 007 and 008 first.
 begin;
 do $test$
 declare
@@ -13,7 +13,7 @@ declare
   fn text; role_name text; test_id uuid;
 begin
   foreach role_name in array array['anon','authenticated'] loop
-    foreach fn in array array['public.jevarena_claim_moderation(uuid,integer)','public.jevarena_finish_moderation(uuid,uuid,boolean,text,text)','public.jevarena_public_questions()'] loop
+    foreach fn in array array['public.jevarena_claim_moderation(uuid,integer)','public.jevarena_finish_moderation(uuid,uuid,boolean,text,text)','public.jevarena_public_questions()','public.jevarena_list_held_moderation(integer)','public.jevarena_resolve_held_moderation(uuid,text,text,text)'] loop
       if has_function_privilege(role_name,fn,'execute') then raise exception '% can execute %',role_name,fn; end if;
     end loop;
     if has_table_privilege(role_name,'jevarena_private.moderation_jobs','select') then raise exception 'jobs exposed to %',role_name; end if;
@@ -62,14 +62,25 @@ begin
   r := public.jevarena_claim_moderation(held_id,4); claim := (r->>'claimToken')::uuid;
   r := public.jevarena_finish_moderation(held_id,claim,false,'Hold','typesafe-ai/jev');
   if r->>'ok' is distinct from 'true' then raise exception 'hold failed'; end if;
+  r := public.jevarena_list_held_moderation(1);
+  if jsonb_array_length(r->'items') <> 1 or r::text like '%PRIVATE%' then raise exception 'held queue leaks or misses item'; end if;
+  r := public.jevarena_resolve_held_moderation(held_id,'publish','reviewer','Reviewed complete item for publication.');
+  if r->>'ok' is distinct from 'true' then raise exception 'human approval failed'; end if;
+  select item into entry from jsonb_array_elements(public.jevarena_public_questions()->'items') item where item->>'id'=held_id::text;
+  if entry->'moderation'->>'humanReviewed' is distinct from 'true' or entry::text like '%reviewer%' then raise exception 'human review public projection unsafe'; end if;
+  if (select human_reason from jevarena_private.moderation_jobs where contribution_id=held_id) is distinct from 'Reviewed complete item for publication.' then raise exception 'human reason not retained privately'; end if;
+  r := public.jevarena_resolve_held_moderation(held_id,'reject','reviewer','This must not overwrite an approval.');
+  if r->>'ok' is distinct from 'false' then raise exception 'human approval overwritten'; end if;
   r := public.jevarena_claim_moderation(expired_id,4); claim := (r->>'claimToken')::uuid;
   r := public.jevarena_finish_moderation(expired_id,claim,true,'Safe','typesafe-ai/jev');
   update jevarena_private.contributions set expires_at=now()-interval '1 minute' where id=expired_id;
   r := public.jevarena_claim_moderation(waiting_id,4);
   if r->>'ok' is distinct from 'true' then raise exception 'waiting setup failed'; end if;
-  if jsonb_array_length(public.jevarena_public_questions()->'items') <> 1 then raise exception 'held/expired/processing became public'; end if;
+  if jsonb_array_length(public.jevarena_public_questions()->'items') <> 2 then raise exception 'approved/expired/processing visibility incorrect'; end if;
   r := public.jevarena_delete_contribution(published_id,repeat('b',64));
   if r->>'deleted' is distinct from 'true' then raise exception 'withdrawal failed'; end if;
+  r := public.jevarena_delete_contribution(held_id,repeat('b',64));
+  if r->>'deleted' is distinct from 'true' then raise exception 'human-approved withdrawal failed'; end if;
   if public.jevarena_public_questions()->'items' <> '[]'::jsonb then raise exception 'withdrawal did not immediately remove public question'; end if;
   if (select reserved_cents from jevarena_private.moderation_budget) <> 4 then raise exception 'failed/withdrawn attempts refunded'; end if;
 end;

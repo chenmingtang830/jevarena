@@ -33,6 +33,6 @@ test("question submission validates answers before upload", async ({ page }) => 
   await page.goto("/community/submit");
   await page.getByLabel("Your question").fill("Question");
   await page.getByLabel("Possible answers").fill("Only one");
-  await page.getByRole("button", { name: "Submit question", exact: true }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText("2–10");
+  await expect(page.getByRole("button", { name: "Submit question", exact: true })).toBeDisabled();
+  await expect(page.getByRole("region", { name: "Question quality" })).toContainText("Add at least two possible answers");
 });

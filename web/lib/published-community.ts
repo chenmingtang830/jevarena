@@ -12,6 +12,7 @@ export const PublicCommunityItemSchema = z.strictObject({
     decision: z.literal("publish"),
     reason: z.string().min(1).max(2000),
     model: z.string().min(1).max(160),
+    humanReviewed: z.literal(true).optional(),
   }),
 }).superRefine((value, ctx) => {
   const options = modelInput(value.challenge).options;

@@ -1,0 +1,19 @@
+.quality { margin: 24px 0 4px; padding: 20px 0; border-block: 1px solid var(--line); }
+.heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.heading h2 { margin: 0; font-size: 18px; }
+.heading p, .note { margin: 6px 0 0; max-width: 68ch; font-size: 13px; color: var(--secondary); }
+.status { flex: 0 0 auto; margin-top: 2px; padding: 3px 7px; border: 1px solid var(--line); border-radius: 4px; font-family: var(--font-proof); font-size: 11px; font-weight: 500; line-height: 1.3; }
+.status[data-status="ready"] { border-color: var(--primary); color: var(--primary); }
+.status[data-status="review"] { color: #775a16; }
+.status[data-status="blocked"] { border-color: var(--danger); color: var(--danger); }
+.checks { display: grid; gap: 10px; padding: 0; margin: 18px 0 0; list-style: none; }
+.checks li { display: grid; grid-template-columns: minmax(130px, 0.28fr) minmax(0, 1fr); gap: 16px; font-size: 13px; color: var(--secondary); }
+.checks strong { color: var(--ink); font-weight: 550; }
+.checks li[data-status="review"] strong { color: #775a16; }
+.checks li[data-status="blocked"] strong { color: var(--danger); }
+@media (max-width: 500px) {
+  .heading, .checks li { display: block; }
+  .status { display: inline-block; margin-top: 12px; }
+  .checks li + li { margin-top: 14px; }
+  .checks li span { display: block; margin-top: 3px; }
+}

@@ -51,6 +51,7 @@ jobs:
             --file supabase/migrations/202609190004_pro_capacity.sql \
             --file supabase/migrations/202609190006_public_candidate_consent.sql \
             --file supabase/migrations/202609190007_automated_community.sql \
+            --file supabase/migrations/20260920083713_human_review_queue.sql \
             --file supabase/tests/intake-integrity.sql \
             --file supabase/tests/public-consent-integrity.sql \
             --file supabase/tests/automated-community-integrity.sql
