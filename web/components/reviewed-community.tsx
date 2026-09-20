@@ -23,7 +23,7 @@ function PublishedQuestionRow({ item }: { item: PublishedQuestion }) {
   }
   return <article className={styles.question}>
     <h2>{item.challenge.title}</h2>
-    <p className={styles.meta}><time dateTime={item.submittedAt}>{item.submittedAt.slice(0, 10)}</time> · AI-screened · not fact-checked</p>
+    <p className={styles.meta}><time dateTime={item.submittedAt}>{item.submittedAt.slice(0, 10)}</time> · AI-screened{item.moderation.humanReviewed ? " · human-reviewed for publication" : ""} · not fact-checked</p>
     <p className={styles.prompt}>{questionPrompt(item.challenge)}</p>
     <div className={styles.actions}>
       <Button onClick={replay} disabled={opening}>{opening ? "Opening…" : "Choose models & run"}</Button>
